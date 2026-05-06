@@ -1,0 +1,141 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Notes</title>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body { font-family: system-ui, sans-serif; background: #0f0f0f; color: #e0e0e0; min-height: 100vh; display: flex; flex-direction: column; }
+    nav { padding: 1rem 1.5rem; border-bottom: 1px solid #222; display: flex; align-items: center; gap: 1rem; }
+    nav a { color: #888; font-size: 0.85rem; text-decoration: none; }
+    nav a:hover { color: #fff; }
+    nav span { color: #333; }
+    nav h1 { font-size: 1rem; color: #fff; margin-left: auto; margin-right: auto; }
+    .layout { display: flex; flex: 1; overflow: hidden; height: calc(100vh - 49px); }
+    .sidebar { width: 260px; border-right: 1px solid #222; display: flex; flex-direction: column; }
+    .sidebar-header { padding: 1rem; border-bottom: 1px solid #222; display: flex; gap: 0.5rem; }
+    .sidebar-header button { flex: 1; padding: 0.5rem; background: #2a2a2a; border: 1px solid #333; border-radius: 6px; color: #fff; cursor: pointer; font-size: 0.85rem; }
+    .sidebar-header button:hover { background: #333; }
+    .note-list { flex: 1; overflow-y: auto; }
+    .note-item { padding: 0.85rem 1rem; border-bottom: 1px solid #1a1a1a; cursor: pointer; }
+    .note-item:hover { background: #1a1a1a; }
+    .note-item.active { background: #1e2a3a; border-left: 2px solid #4a9eff; }
+    .note-item h3 { font-size: 0.9rem; color: #ddd; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .note-item time { font-size: 0.75rem; color: #555; }
+    .editor { flex: 1; display: flex; flex-direction: column; }
+    .editor-toolbar { padding: 0.75rem 1rem; border-bottom: 1px solid #222; display: flex; gap: 0.5rem; align-items: center; }
+    .editor-toolbar input { flex: 1; background: transparent; border: none; color: #fff; font-size: 1rem; font-weight: 600; outline: none; }
+    .editor-toolbar button { padding: 0.35rem 0.75rem; border-radius: 5px; border: 1px solid #333; background: #1a1a1a; color: #ccc; cursor: pointer; font-size: 0.8rem; }
+    .editor-toolbar button:hover { background: #2a2a2a; }
+    .editor-toolbar .del { color: #e05; border-color: #500; }
+    .editor-toolbar .del:hover { background: #200; }
+    textarea { flex: 1; background: transparent; border: none; color: #ccc; font-family: inherit; font-size: 0.95rem; padding: 1.25rem; outline: none; resize: none; line-height: 1.6; }
+    .empty-state { flex: 1; display: flex; align-items: center; justify-content: center; color: #444; font-size: 0.9rem; }
+  </style>
+</head>
+<body>
+  <nav>
+    <a href="/">Home</a>
+    <span>/</span>
+    <h1>Notes</h1>
+  </nav>
+  <div class="layout">
+    <div class="sidebar">
+      <div class="sidebar-header">
+        <button id="btn-new">+ New Note</button>
+      </div>
+      <div class="note-list" id="note-list"></div>
+    </div>
+    <div class="editor" id="editor">
+      <div class="empty-state">Select a note or create a new one.</div>
+    </div>
+  </div>
+
+  <script>
+    const API = '/api/notes';
+    let notes = [], activeId = null, saveTimer = null;
+
+    const listEl = document.getElementById('note-list');
+    const editorEl = document.getElementById('editor');
+
+    async function loadNotes() {
+      notes = await fetch(API + '/notes').then(r => r.json());
+      renderList();
+    }
+
+    function renderList() {
+      listEl.innerHTML = notes.map(n => `
+        <div class="note-item ${n.id === activeId ? 'active' : ''}" data-id="${n.id}">
+          <h3>${escHtml(n.title)}</h3>
+          <time>${new Date(n.updated_at).toLocaleDateString()}</time>
+        </div>`).join('');
+      listEl.querySelectorAll('.note-item').forEach(el =>
+        el.addEventListener('click', () => openNote(+el.dataset.id)));
+    }
+
+    function openNote(id) {
+      activeId = id;
+      const n = notes.find(x => x.id === id);
+      editorEl.innerHTML = `
+        <div class="editor-toolbar">
+          <input id="note-title" value="${escHtml(n.title)}" placeholder="Title">
+          <button class="del" id="btn-del">Delete</button>
+          <button id="btn-save">Save</button>
+        </div>
+        <textarea id="note-body" placeholder="Start writing...">${escHtml(n.body || '')}</textarea>`;
+      renderList();
+
+      const titleEl = document.getElementById('note-title');
+      const bodyEl = document.getElementById('note-body');
+
+      [titleEl, bodyEl].forEach(el => el.addEventListener('input', scheduleSave));
+      document.getElementById('btn-save').addEventListener('click', saveNote);
+      document.getElementById('btn-del').addEventListener('click', deleteNote);
+    }
+
+    function scheduleSave() {
+      clearTimeout(saveTimer);
+      saveTimer = setTimeout(saveNote, 1200);
+    }
+
+    async function saveNote() {
+      clearTimeout(saveTimer);
+      const title = document.getElementById('note-title')?.value.trim();
+      const body = document.getElementById('note-body')?.value;
+      if (!title) return;
+      await fetch(`${API}/notes/${activeId}`, {
+        method: 'PUT', headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ title, body })
+      });
+      const n = notes.find(x => x.id === activeId);
+      if (n) { n.title = title; n.body = body; n.updated_at = new Date().toISOString(); }
+      renderList();
+    }
+
+    async function deleteNote() {
+      if (!confirm('Delete this note?')) return;
+      await fetch(`${API}/notes/${activeId}`, { method: 'DELETE' });
+      activeId = null;
+      editorEl.innerHTML = '<div class="empty-state">Select a note or create a new one.</div>';
+      await loadNotes();
+    }
+
+    document.getElementById('btn-new').addEventListener('click', async () => {
+      const res = await fetch(API + '/notes', {
+        method: 'POST', headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ title: 'Untitled', body: '' })
+      });
+      const { id } = await res.json();
+      await loadNotes();
+      openNote(id);
+    });
+
+    function escHtml(s) {
+      return String(s ?? '').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+    }
+
+    loadNotes();
+  </script>
+</body>
+</html>

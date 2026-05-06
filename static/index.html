@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>AI Playground</title>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body { font-family: system-ui, sans-serif; background: #0f0f0f; color: #e0e0e0; min-height: 100vh; }
+    header { padding: 2rem; border-bottom: 1px solid #222; }
+    header h1 { font-size: 1.75rem; font-weight: 700; color: #fff; }
+    header p { color: #888; margin-top: 0.25rem; }
+    main { padding: 2rem; max-width: 960px; }
+    h2 { font-size: 1rem; text-transform: uppercase; letter-spacing: 0.1em; color: #666; margin-bottom: 1rem; }
+    .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: 1rem; }
+    .card {
+      background: #1a1a1a; border: 1px solid #2a2a2a; border-radius: 10px;
+      padding: 1.25rem; text-decoration: none; color: inherit;
+      transition: border-color 0.15s, transform 0.1s;
+    }
+    .card:hover { border-color: #555; transform: translateY(-2px); }
+    .card h3 { font-size: 1rem; color: #fff; margin-bottom: 0.35rem; }
+    .card p { font-size: 0.85rem; color: #777; }
+    .badge { display: inline-block; font-size: 0.7rem; background: #2a2a2a; color: #aaa; border-radius: 4px; padding: 2px 6px; margin-bottom: 0.5rem; }
+    #dynamic-tools .empty { color: #555; font-size: 0.9rem; }
+  </style>
+</head>
+<body>
+  <header>
+    <h1>AI Playground</h1>
+    <p>A collection of mini tools, each with its own database.</p>
+  </header>
+  <main>
+    <h2>Built-in Tools</h2>
+    <div class="grid">
+      <a class="card" href="/notes/">
+        <span class="badge">notes.sqlite</span>
+        <h3>Notes</h3>
+        <p>Create and manage plain-text notes.</p>
+      </a>
+    </div>
+
+    <h2 style="margin-top:2rem;">Registered Tools</h2>
+    <div class="grid" id="dynamic-tools">
+      <p class="empty">Loading…</p>
+    </div>
+  </main>
+
+  <script>
+    fetch('/api/tools')
+      .then(r => r.json())
+      .then(tools => {
+        const el = document.getElementById('dynamic-tools');
+        if (!tools.length) {
+          el.innerHTML = '<p class="empty">No tools registered yet.</p>';
+          return;
+        }
+        el.innerHTML = tools.map(t => `
+          <a class="card" href="/${t.name}/">
+            <span class="badge">${t.name}.sqlite</span>
+            <h3>${t.label}</h3>
+            <p>${t.description || ''}</p>
+          </a>`).join('');
+      });
+  </script>
+</body>
+</html>
