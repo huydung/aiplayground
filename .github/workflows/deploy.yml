@@ -16,12 +16,12 @@ jobs:
 
       - name: Deploy to production
         if: github.ref == 'refs/heads/main'
-        run: fly deploy --app hdai-prod
+        run: flyctl deploy --app hdai-prod
         env:
           FLY_API_TOKEN: ${{ secrets.FLY_API_TOKEN }}
 
       - name: Deploy to beta
         if: github.ref == 'refs/heads/beta'
-        run: fly deploy --app hdai-beta
+        run: flyctl deploy --app hdai-beta
         env:
           FLY_API_TOKEN: ${{ secrets.FLY_API_TOKEN }}
