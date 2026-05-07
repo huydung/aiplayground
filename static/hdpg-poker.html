@@ -316,7 +316,15 @@
         function useLocalStorage(key, initialValue) {
           const { data, update } = useContext(DataCtx);
           const value = (data && key in data) ? data[key] : initialValue;
-          const setValue = useCallback((v) => update(key, v), [key, update]);
+          const setValue = useCallback((v) => {
+            if (v instanceof Function) {
+              // Functional update: mirror the same initialValue fallback used for reads,
+              // so callers like setQuizStats(s => s.by...) never receive undefined.
+              update(key, prev => v(prev !== undefined ? prev : initialValue));
+            } else {
+              update(key, v);
+            }
+          }, [key, update]);
           return [value, setValue];
         }
 
