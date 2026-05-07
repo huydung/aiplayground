@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>AI Playground</title>
+  <title>Huy Dũng's AI Playground</title>
   <style>
     * { box-sizing: border-box; margin: 0; padding: 0; }
     body { font-family: system-ui, sans-serif; background: #0f0f0f; color: #e0e0e0; min-height: 100vh; }
@@ -27,46 +27,19 @@
 </head>
 <body>
   <header>
-    <h1>AI Playground</h1>
-    <p>A collection of mini tools, each with its own database.</p>
+    <h1>Huy Dũng's AI Playground</h1>
+    <p>A collection of mini tools, each with its own database — by <strong>DaveHd</strong></p>
   </header>
   <main>
-    <h2>Built-in Tools</h2>
+    <h2>Available Tools</h2>
     <div class="grid">
-      <a class="card" href="/notes/">
-        <span class="badge">notes.sqlite</span>
-        <h3>Notes</h3>
-        <p>Create and manage plain-text notes.</p>
-      </a>
       <a class="card" href="/hdpg-poker.html">
         <span class="badge">poker.sqlite</span>
         <h3>HD Poker God</h3>
         <p>Session tracker, hand history, and GTO quiz — with per-user accounts.</p>
       </a>
     </div>
-
-    <h2 style="margin-top:2rem;">Registered Tools</h2>
-    <div class="grid" id="dynamic-tools">
-      <p class="empty">Loading…</p>
-    </div>
   </main>
 
-  <script>
-    fetch('/api/tools')
-      .then(r => r.json())
-      .then(tools => {
-        const el = document.getElementById('dynamic-tools');
-        if (!tools.length) {
-          el.innerHTML = '<p class="empty">No tools registered yet.</p>';
-          return;
-        }
-        el.innerHTML = tools.map(t => `
-          <a class="card" href="/${t.name}/">
-            <span class="badge">${t.name}.sqlite</span>
-            <h3>${t.label}</h3>
-            <p>${t.description || ''}</p>
-          </a>`).join('');
-      });
-  </script>
 </body>
 </html>
