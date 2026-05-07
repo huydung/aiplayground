@@ -293,6 +293,24 @@
           },
         ];
 
+        // --- RESULT HELPERS ---
+        const getResultLabel = (result) => {
+          if (result === 'fair-win')  return 'Fair Win';
+          if (result === 'lucky-win') return 'Lucky Win';
+          if (result === 'fair-lost') return 'Fair Lost';
+          if (result === 'bad-beat')  return 'Bad Beat';
+          if (result === 'won')       return 'Fair Win';   // legacy
+          if (result === 'lost')      return 'Fair Lost';  // legacy
+          if (result === 'fold')      return 'Fold';
+          return 'Skip';
+        };
+        const getResultColor = (result) => {
+          if (result === 'fair-win' || result === 'lucky-win' || result === 'won') return 'text-green-500';
+          if (result === 'fair-lost' || result === 'bad-beat' || result === 'lost') return 'text-red-500';
+          if (result === 'fold') return 'text-orange-400';
+          return 'text-neutral-400';
+        };
+
         // --- CUSTOM HOOKS ---
         // Reads from / writes to the server-synced DataCtx (same interface as useLocalStorage)
         function useLocalStorage(key, initialValue) {
@@ -556,7 +574,8 @@
           useEffect(() => { if (!Array.isArray(discTokensRaw)) setDiscTokens([]); }, []);
           const [startTime, setStartTime] = useLocalStorage('pt2_start', Date.now());
           const [commOpen, setCommOpen] = useLocalStorage('pt2_comm', true);
-          const [miracleBudget, setMiracleBudget] = useLocalStorage('pt2_mb', 3);
+          // Miracle budget is derived: starts at 1, gains 1 per 8 discipline tokens earned
+          const miracleBudget = 1 + Math.floor(discTokens.length / 8);
           
           // Navigation State
           const [activeTab, setActiveTab] = useState('session'); // 'session', 'add', 'history', 'sessions', 'stats'
@@ -627,7 +646,7 @@
                   onAddHand={() => { setEditingHandId(null); setActiveTab('add'); }}
                   onEditHand={(id) => { setEditingHandId(id); setActiveTab('add'); }}
                   showToast={showToast}
-                  miracleBudget={miracleBudget} setMiracleBudget={setMiracleBudget}
+                  miracleBudget={miracleBudget}
                 />;
               case 'add':
                 return <ScreenAddHand
@@ -775,7 +794,7 @@
         }
 
         // --- SCREEN: SESSION (DASHBOARD) ---
-        function ScreenSession({ hands, discTokens, setDiscTokens, startTime, commOpen, setCommOpen, navigate, endSession, onAddHand, onEditHand, showToast, miracleBudget, setMiracleBudget }) {
+        function ScreenSession({ hands, discTokens, setDiscTokens, startTime, commOpen, setCommOpen, navigate, endSession, onAddHand, onEditHand, showToast, miracleBudget }) {
           const shakeRef = useRef(null);
           const scrollRef = useRef(null);
           const [listHidden, setListHidden] = useState(true);
@@ -907,6 +926,8 @@
                   const miraclesUsed = hands.filter(h => h.isMiracle).length;
                   const over = miraclesUsed > miracleBudget;
                   const atLimit = miraclesUsed >= miracleBudget;
+                  const nextAt = (Math.floor(discTokens.length / 8) + 1) * 8;
+                  const tokensToNext = nextAt - discTokens.length;
                   return (
                     <div className={`mb-4 flex items-center justify-between px-4 py-3 rounded-xl border ${over ? 'bg-red-500/10 border-red-500/40' : atLimit ? 'bg-orange-500/10 border-orange-500/30' : 'bg-neutral-900 border-neutral-800'}`}>
                       <div className="flex items-center gap-2">
@@ -915,18 +936,15 @@
                           <span className={`text-sm font-semibold ${over ? 'text-red-400' : atLimit ? 'text-orange-400' : 'text-neutral-300'}`}>
                             Miracle budget
                           </span>
-                          {atLimit && <div className="text-[10px] text-orange-400/80">Slow down — think before calling</div>}
+                          {atLimit
+                            ? <div className="text-[10px] text-orange-400/80">Slow down — think before calling</div>
+                            : <div className="text-[10px] text-neutral-600">+1 in {tokensToNext} token{tokensToNext !== 1 ? 's' : ''}</div>
+                          }
                         </div>
                       </div>
-                      <div className="flex items-center gap-2">
-                        <span className={`font-mono font-black text-lg ${over ? 'text-red-400' : atLimit ? 'text-orange-400' : 'text-neutral-300'}`}>
-                          {miraclesUsed}/{miracleBudget}
-                        </span>
-                        <div className="flex gap-1">
-                          <button onClick={() => setMiracleBudget(prev => Math.max(1, prev - 1))} className="w-6 h-6 rounded bg-neutral-800 border border-neutral-700 text-neutral-400 flex items-center justify-center text-xs hover:bg-neutral-700 active:scale-90 transition-all">−</button>
-                          <button onClick={() => setMiracleBudget(prev => prev + 1)} className="w-6 h-6 rounded bg-neutral-800 border border-neutral-700 text-neutral-400 flex items-center justify-center text-xs hover:bg-neutral-700 active:scale-90 transition-all">+</button>
-                        </div>
-                      </div>
+                      <span className={`font-mono font-black text-lg ${over ? 'text-red-400' : atLimit ? 'text-orange-400' : 'text-neutral-300'}`}>
+                        {miraclesUsed}/{miracleBudget}
+                      </span>
                     </div>
                   );
                 })()}
@@ -977,8 +995,8 @@
                         </div>
                         <div className="flex-1">
                           <div className="flex items-center gap-2">
-                            <span className={`text-sm font-medium ${h.result === 'won' ? 'text-green-500' : h.result === 'lost' ? 'text-red-500' : h.result === 'fold' ? 'text-orange-400' : 'text-neutral-400'}`}>
-                              {h.result === 'won' ? 'Won' : h.result === 'lost' ? 'Lost' : h.result === 'fold' ? 'Fold' : 'Skip'}
+                            <span className={`text-sm font-medium ${getResultColor(h.result)}`}>
+                              {getResultLabel(h.result)}
                             </span>
                             <span className={`text-[10px] font-mono px-1.5 py-0.5 rounded ${h.isVPIP ? 'bg-yellow-500/10 text-yellow-500' : 'bg-neutral-800 text-neutral-500'}`}>
                               {h.isVPIP ? 'VPIP' : h.result === 'skip' ? 'SKIP' : 'FOLD'}
@@ -1036,7 +1054,7 @@
                             <option value="">No hand attached</option>
                             {hands.slice().reverse().map(h => (
                               <option key={h.id} value={h.id}>
-                                #{h.num} · {h.card1 ? `${h.card1.rank}${h.card1.suit}` : '?'}{h.card2 ? ` ${h.card2.rank}${h.card2.suit}` : ''} · {h.result === 'won' ? 'Won' : h.result === 'lost' ? 'Lost' : h.result === 'fold' ? 'Fold' : 'Skip'}
+                                #{h.num} · {h.card1 ? `${h.card1.rank}${h.card1.suit}` : '?'}{h.card2 ? ` ${h.card2.rank}${h.card2.suit}` : ''} · {getResultLabel(h.result)}
                               </option>
                             ))}
                           </select>
@@ -1105,8 +1123,8 @@
                                 {tok.hand.card1.rank}{tok.hand.card1.suit} {tok.hand.card2.rank}{tok.hand.card2.suit}
                               </span>
                             )}
-                            <span className={`text-sm font-medium ${tok.hand.result === 'won' ? 'text-green-400' : tok.hand.result === 'lost' ? 'text-red-400' : tok.hand.result === 'fold' ? 'text-orange-400' : 'text-neutral-400'}`}>
-                              {tok.hand.result === 'won' ? 'Won' : tok.hand.result === 'lost' ? 'Lost' : tok.hand.result === 'fold' ? 'Fold' : 'Skip'}
+                            <span className={`text-sm font-medium ${getResultColor(tok.hand.result)}`}>
+                              {getResultLabel(tok.hand.result)}
                             </span>
                           </div>
                           {tok.hand.total > 0 && <div className="text-xs text-neutral-500 font-mono mt-1">{tok.hand.total} chips in</div>}
@@ -1323,6 +1341,7 @@
           const totalIn = Object.values(bets).reduce((acc, val) => acc + (parseFloat(val) || 0), 0);
           // Skip = folded preflop without voluntarily committing chips (e.g. SB/BB posting then folding)
           const isVPIP = result !== 'skip' && (parseFloat(bets.preflop) || 0) > 0;
+          const miraclesUsed = hands.filter(h => h.isMiracle && h.id !== (editingHandId || -1)).length;
 
           // Show a card for 1s, then auto-hide
           const peekCard = (slot) => {
@@ -1572,16 +1591,12 @@
                 </div>
 
                 {/* Miracle Call Toggle */}
-                {(() => {
-                  const miraclesUsed = hands.filter(h => h.isMiracle && h.id !== (editingHandId || -1)).length;
-                  const budgetExhausted = !isMiracle && miraclesUsed >= miracleBudget;
-                  return budgetExhausted ? (
-                    <div className="bg-red-500/10 border border-red-500/30 rounded-xl p-3 text-sm text-red-400 flex items-center gap-2">
-                      <span>🎲</span>
-                      <span>Miracle budget exhausted ({miraclesUsed}/{miracleBudget}). Are you sure this is worth it?</span>
-                    </div>
-                  ) : null;
-                })()}
+                {(!isMiracle && miraclesUsed >= miracleBudget) && (
+                  <div className="bg-red-500/10 border border-red-500/30 rounded-xl p-3 text-sm text-red-400 flex items-center gap-2">
+                    <span>🎲</span>
+                    <span>Miracle budget exhausted ({miraclesUsed}/{miracleBudget}). Are you sure this is worth it?</span>
+                  </div>
+                )}
                 <button
                   onClick={() => setIsMiracle(!isMiracle)}
                   className={`w-full flex items-center justify-between p-4 rounded-xl border transition-all
@@ -1592,7 +1607,9 @@
                   <div className="flex items-center gap-3">
                     <span className="text-xl">🎲</span>
                     <div className="text-left">
-                      <div className={`text-sm font-medium ${isMiracle ? 'text-orange-400' : 'text-neutral-300'}`}>Miracle call</div>
+                      <div className={`text-sm font-medium ${isMiracle ? 'text-orange-400' : 'text-neutral-300'}`}>
+                        Miracle Call ({miraclesUsed}/{miracleBudget})
+                      </div>
                       <div className="text-[10px] text-neutral-500 mt-0.5">Low-odds call — knew it was risky</div>
                     </div>
                   </div>
@@ -1610,9 +1627,20 @@
                       Skip
                     </button>
                     <button onClick={() => setResult('fold')} className={`py-3 rounded-xl border text-sm font-bold transition-all ${result === 'fold' ? 'bg-orange-500/20 border-orange-500 text-orange-300 ring-2 ring-orange-500' : 'bg-neutral-800 border-neutral-700 text-neutral-400 hover:bg-neutral-700'}`}>
-                      Fold                     </button>
-                    <button onClick={() => setResult('lost')} className={`py-3 rounded-xl border text-sm font-bold transition-all ${result === 'lost' ? 'bg-red-500/20 border-red-500 text-red-400 ring-2 ring-red-500 shadow-[0_0_15px_rgba(239,68,68,0.15)]' : 'bg-neutral-800 border-neutral-700 text-neutral-400 hover:bg-neutral-700'}`}>Lost</button>
-                    <button onClick={() => setResult('won')} className={`py-3 rounded-xl border text-sm font-bold transition-all ${result === 'won' ? 'bg-green-500/20 border-green-500 text-green-400 ring-2 ring-green-500 shadow-[0_0_15px_rgba(34,197,94,0.15)]' : 'bg-neutral-800 border-neutral-700 text-neutral-400 hover:bg-neutral-700'}`}>Won</button>
+                      Fold
+                    </button>
+                    <button onClick={() => setResult('fair-lost')} className={`py-3 rounded-xl border text-sm font-bold transition-all ${result === 'fair-lost' ? 'bg-red-500/20 border-red-500 text-red-400 ring-2 ring-red-500' : 'bg-neutral-800 border-neutral-700 text-neutral-400 hover:bg-neutral-700'}`}>
+                      Fair Lost
+                    </button>
+                    <button onClick={() => setResult('fair-win')} className={`py-3 rounded-xl border text-sm font-bold transition-all ${result === 'fair-win' ? 'bg-green-500/20 border-green-500 text-green-400 ring-2 ring-green-500' : 'bg-neutral-800 border-neutral-700 text-neutral-400 hover:bg-neutral-700'}`}>
+                      Fair Win
+                    </button>
+                    <button onClick={() => setResult('bad-beat')} className={`py-3 rounded-xl border text-sm font-bold transition-all ${result === 'bad-beat' ? 'bg-red-500/20 border-red-400 text-red-300 ring-2 ring-red-400 shadow-[0_0_15px_rgba(239,68,68,0.2)]' : 'bg-neutral-800 border-neutral-700 text-neutral-400 hover:bg-neutral-700'}`}>
+                      Bad Beat
+                    </button>
+                    <button onClick={() => setResult('lucky-win')} className={`py-3 rounded-xl border text-sm font-bold transition-all ${result === 'lucky-win' ? 'bg-green-500/20 border-green-400 text-green-300 ring-2 ring-green-400 shadow-[0_0_15px_rgba(34,197,94,0.2)]' : 'bg-neutral-800 border-neutral-700 text-neutral-400 hover:bg-neutral-700'}`}>
+                      Lucky Win
+                    </button>
                   </div>
                 </div>
 
@@ -1744,8 +1772,8 @@
                               </span>
                             )}
                          </div>
-                         <span className={`text-sm font-medium ${h.result === 'won' ? 'text-green-500' : h.result === 'lost' ? 'text-red-500' : h.result === 'fold' ? 'text-orange-400' : 'text-neutral-400'}`}>
-                           {h.result === 'won' ? 'Won' : h.result === 'lost' ? 'Lost' : h.result === 'fold' ? 'Fold' : 'Skip'}
+                         <span className={`text-sm font-medium ${getResultColor(h.result)}`}>
+                           {getResultLabel(h.result)}
                          </span>
                        </div>
                        
@@ -1805,8 +1833,10 @@
           };
 
           const getHeatmapColor = (h) => {
-            if (h.result === 'won')  return 'bg-green-950 border-green-900';
-            if (h.result === 'lost') return 'bg-red-950 border-red-900';
+            if (h.result === 'won'  || h.result === 'fair-win')  return 'bg-green-950 border-green-900';
+            if (h.result === 'lucky-win')  return 'bg-green-950 border-green-400';   // bright outline = variance
+            if (h.result === 'lost' || h.result === 'fair-lost') return 'bg-red-950 border-red-900';
+            if (h.result === 'bad-beat')   return 'bg-red-950 border-red-400';       // bright outline = variance
             if (h.result === 'fold') return 'bg-orange-950/60 border-orange-900/50';
             return 'bg-neutral-800 border-neutral-700';   // skip — neutral
           };
@@ -1870,10 +1900,12 @@
                         {isOpen && (() => {
                           const hs = s.hands || [];
                           const counts = {
-                            won:  hs.filter(h => h.result === 'won').length,
-                            lost: hs.filter(h => h.result === 'lost').length,
+                            fairWin:  hs.filter(h => h.result === 'fair-win' || h.result === 'won').length,
+                            luckyWin: hs.filter(h => h.result === 'lucky-win').length,
+                            fairLost: hs.filter(h => h.result === 'fair-lost' || h.result === 'lost').length,
+                            badBeat:  hs.filter(h => h.result === 'bad-beat').length,
                             fold: hs.filter(h => h.result === 'fold').length,
-                            skip: hs.filter(h => h.result === 'skip' || (!h.isVPIP && h.result !== 'won' && h.result !== 'lost' && h.result !== 'fold')).length,
+                            skip: hs.filter(h => !['won','lost','fair-win','lucky-win','fair-lost','bad-beat','fold'].includes(h.result)).length,
                           };
                           const ratedAll  = hs.filter(h => h.playRating);
                           const ratedVPIP = hs.filter(h => h.isVPIP && h.playRating);
@@ -1909,8 +1941,10 @@
 
                             {/* Result legend */}
                             <div className="flex gap-3 flex-wrap mb-3 px-1">
-                              <div className="flex items-center gap-1.5"><div className="w-2.5 h-2.5 rounded-sm bg-green-950 border border-green-900"></div><span className="text-[10px] text-neutral-400">Won <span className="font-bold">{counts.won}</span></span></div>
-                              <div className="flex items-center gap-1.5"><div className="w-2.5 h-2.5 rounded-sm bg-red-950 border border-red-900"></div><span className="text-[10px] text-neutral-400">Lost <span className="font-bold">{counts.lost}</span></span></div>
+                              <div className="flex items-center gap-1.5"><div className="w-2.5 h-2.5 rounded-sm bg-green-950 border border-green-900"></div><span className="text-[10px] text-neutral-400">Fair Win <span className="font-bold">{counts.fairWin}</span></span></div>
+                              <div className="flex items-center gap-1.5"><div className="w-2.5 h-2.5 rounded-sm bg-green-950 border border-green-400"></div><span className="text-[10px] text-neutral-400">Lucky Win <span className="font-bold">{counts.luckyWin}</span></span></div>
+                              <div className="flex items-center gap-1.5"><div className="w-2.5 h-2.5 rounded-sm bg-red-950 border border-red-900"></div><span className="text-[10px] text-neutral-400">Fair Lost <span className="font-bold">{counts.fairLost}</span></span></div>
+                              <div className="flex items-center gap-1.5"><div className="w-2.5 h-2.5 rounded-sm bg-red-950 border border-red-400"></div><span className="text-[10px] text-neutral-400">Bad Beat <span className="font-bold">{counts.badBeat}</span></span></div>
                               <div className="flex items-center gap-1.5"><div className="w-2.5 h-2.5 rounded-sm bg-orange-950/60 border border-orange-900/50"></div><span className="text-[10px] text-neutral-400">Fold <span className="font-bold">{counts.fold}</span></span></div>
                               <div className="flex items-center gap-1.5"><div className="w-2.5 h-2.5 rounded-sm bg-neutral-800 border border-neutral-700"></div><span className="text-[10px] text-neutral-400">Skip <span className="font-bold">{counts.skip}</span></span></div>
                             </div>
@@ -1941,8 +1975,8 @@
               {/* Hand detail modal */}
               {viewingHand && (() => {
                 const h = viewingHand;
-                const resultColor = h.result === 'won' ? 'text-green-400' : h.result === 'lost' ? 'text-red-400' : h.result === 'fold' ? 'text-orange-400' : 'text-neutral-400';
-                const resultLabel = h.result === 'won' ? 'Won' : h.result === 'lost' ? 'Lost' : h.result === 'fold' ? 'Fold' : 'Skip';
+                const resultColor = getResultColor(h.result);
+                const resultLabel = getResultLabel(h.result);
                 const starColor = h.playRating ? STAR_COLOR[h.playRating] : '';
                 return (
                   <div className="fixed inset-0 bg-black/80 z-50 flex items-end justify-center" onClick={() => setViewingHand(null)}>
