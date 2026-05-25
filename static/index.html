@@ -23,6 +23,7 @@
     .card p { font-size: 0.85rem; color: #777; }
     .badge { display: inline-block; font-size: 0.7rem; background: #2a2a2a; color: #aaa; border-radius: 4px; padding: 2px 6px; margin-bottom: 0.5rem; }
     #dynamic-tools .empty { color: #555; font-size: 0.9rem; }
+    .section { margin-top: 2.5rem; }
   </style>
 </head>
 <body>
@@ -31,15 +32,39 @@
     <p>A collection of mini tools, each with its own database — by <strong>DaveHd</strong></p>
   </header>
   <main>
-    <h2>Available Tools</h2>
-    <div class="grid">
-      <a class="card" href="/hdpg-poker.html">
-        <span class="badge">poker.sqlite</span>
-        <h3>HD Poker God</h3>
-        <p>Session tracker, hand history, and GTO quiz — with per-user accounts.</p>
-      </a>
+    <div class="section">
+      <h2>Available Tools</h2>
+      <div class="grid">
+        <a class="card" href="/hdpg-poker.html">
+          <span class="badge">poker.sqlite</span>
+          <h3>HD Poker God</h3>
+          <p>Session tracker, hand history, and GTO quiz — with per-user accounts.</p>
+        </a>
+      </div>
+    </div>
+
+    <div class="section" id="projects-section" style="display:none">
+      <h2>Projects</h2>
+      <div class="grid" id="projects-grid"></div>
     </div>
   </main>
 
+  <script>
+    fetch('/api/projects')
+      .then(r => r.json())
+      .then(projects => {
+        if (!projects.length) return;
+        const section = document.getElementById('projects-section');
+        const grid = document.getElementById('projects-grid');
+        projects.forEach(p => {
+          const a = document.createElement('a');
+          a.className = 'card';
+          a.href = p.url;
+          a.innerHTML = `<h3>${p.label}</h3>${p.description ? `<p>${p.description}</p>` : ''}`;
+          grid.appendChild(a);
+        });
+        section.style.display = '';
+      });
+  </script>
 </body>
 </html>

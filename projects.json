@@ -1,0 +1,8 @@
+{
+  "_comment": "Configure static project folders dropped into projects/. Each key is a folder name. 'hidden: true' means the project is served but not listed on the homepage.",
+  "example-project": {
+    "label": "Example Project",
+    "description": "An example hidden project — accessible at /projects/example-project/ but not listed on the homepage.",
+    "hidden": true
+  }
+}

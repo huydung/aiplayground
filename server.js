@@ -5,9 +5,12 @@ const { getDb, mainDb } = require('./db');
 
 const app = express();
 const PORT = process.env.PORT || 3000;
+const PROJECTS_DIR = path.join(__dirname, 'projects');
+const PROJECTS_CONFIG = path.join(__dirname, 'projects.json');
 
 app.use(express.json());
 app.use(express.static(path.join(__dirname, 'static')));
+app.use('/projects', express.static(PROJECTS_DIR));
 
 // Bootstrap main DB
 mainDb.exec(`
@@ -42,6 +45,36 @@ if (fs.existsSync(toolsDir)) {
       app.use(`/api/${toolName}`, router);
     });
 }
+
+// List static projects
+app.get('/api/projects', (req, res) => {
+  let config = {};
+  if (fs.existsSync(PROJECTS_CONFIG)) {
+    try { config = JSON.parse(fs.readFileSync(PROJECTS_CONFIG, 'utf8')); } catch (_) {}
+  }
+
+  const projects = [];
+  if (fs.existsSync(PROJECTS_DIR)) {
+    for (const entry of fs.readdirSync(PROJECTS_DIR, { withFileTypes: true })) {
+      if (!entry.isDirectory()) continue;
+      const name = entry.name;
+      const indexPath = path.join(PROJECTS_DIR, name, 'index.html');
+      if (!fs.existsSync(indexPath)) continue;
+
+      const cfg = config[name] || {};
+      if (cfg.hidden) continue;
+
+      projects.push({
+        name,
+        label: cfg.label || name,
+        description: cfg.description || null,
+        url: `/projects/${name}/`,
+      });
+    }
+  }
+
+  res.json(projects);
+});
 
 // List registered tools
 app.get('/api/tools', (req, res) => {
