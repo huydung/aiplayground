@@ -1,5 +1,5 @@
 {
-  "_comment": "Configure static project folders dropped into projects/. Each key is a folder name. 'hidden: true' means the project is served but not listed on the homepage.",
+  "_comment": "Folder entries: key = folder name under projects/, 'hidden: true' = served but not listed. Link entries: external URLs shown as cards on the homepage.",
   "worklife-needs": {
     "label": "Five Needs For Work & Life",
     "description": "Rate how well your current role fulfills five core work-life needs — livelihood, integrity, connection, significance, and progression — and visualize the result as a flower.",
@@ -9,5 +9,12 @@
     "label": "NASA Moon Survival Exercise",
     "description": "A classic team-building exercise: rank 15 survival items after an emergency moon landing and compare your choices against NASA's expert ratings.",
     "hidden": false
-  }
+  },
+  "links": [
+    {
+      "label": "Workshop Results Dashboard",
+      "description": "Aggregated results and response data from the workshop exercises — powered by Google Sheets.",
+      "url": "https://script.google.com/macros/s/AKfycbzVFUeoYES_5_sRWvH2d9eAuiuZqmepfJiB7hQVROQe7ipxS5lhXBoHFmdW8QuRyTKHqA/exec"
+    }
+  ]
 }

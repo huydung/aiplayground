@@ -46,7 +46,7 @@ if (fs.existsSync(toolsDir)) {
     });
 }
 
-// List static projects
+// List static projects and external links
 app.get('/api/projects', (req, res) => {
   let config = {};
   if (fs.existsSync(PROJECTS_CONFIG)) {
@@ -54,6 +54,8 @@ app.get('/api/projects', (req, res) => {
   }
 
   const projects = [];
+
+  // Local static folders
   if (fs.existsSync(PROJECTS_DIR)) {
     for (const entry of fs.readdirSync(PROJECTS_DIR, { withFileTypes: true })) {
       if (!entry.isDirectory()) continue;
@@ -65,10 +67,23 @@ app.get('/api/projects', (req, res) => {
       if (cfg.hidden) continue;
 
       projects.push({
-        name,
         label: cfg.label || name,
         description: cfg.description || null,
         url: `/projects/${name}/`,
+        external: false,
+      });
+    }
+  }
+
+  // External links
+  if (Array.isArray(config.links)) {
+    for (const link of config.links) {
+      if (!link.url || !link.label) continue;
+      projects.push({
+        label: link.label,
+        description: link.description || null,
+        url: link.url,
+        external: true,
       });
     }
   }

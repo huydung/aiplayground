@@ -60,6 +60,7 @@
           const a = document.createElement('a');
           a.className = 'card';
           a.href = p.url;
+          if (p.external) { a.target = '_blank'; a.rel = 'noopener noreferrer'; }
           a.innerHTML = `<h3>${p.label}</h3>${p.description ? `<p>${p.description}</p>` : ''}`;
           grid.appendChild(a);
         });
