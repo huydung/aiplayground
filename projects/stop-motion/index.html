@@ -1,0 +1,822 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Dự Án Phim LEGO Stop Motion — Worksheet</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Merriweather:ital,wght@0,300;0,700;0,900;1,400&family=Be+Vietnam+Pro:ital,wght@0,300;0,400;0,500;0,700;1,400&display=swap" rel="stylesheet">
+  <style>
+    /* ── B&W palette — all grays, prints cleanly ── */
+    :root {
+      --bg-dark:      #8e011f;
+      --bg-mid:       #bd0129;
+      --border-dark:  #51000c;
+      --border-med:   #888888;
+      --border-light: #cccccc;
+      --fill-light:   #f2f2f2;
+      --fill-page:    #f8f8f8;
+      --ink:          #1a1a1a;
+      --white:        #ffffff;
+      --font-serif:   'Merriweather', Georgia, serif;
+      --font-sans:    'Be Vietnam Pro', 'Segoe UI', system-ui, sans-serif;
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: var(--font-sans);
+      color: var(--ink);
+      background: #888;
+      line-height: 1.55;
+      -webkit-print-color-adjust: exact;
+      print-color-adjust: exact;
+    }
+
+    /* ── A4 page shell ── */
+    .page {
+      width: 210mm;
+      height: 297mm;
+      background: white;
+      margin: 8mm auto;
+      padding: 0;
+      position: relative;
+      box-shadow: 0 3px 12px rgba(0,0,0,.3);
+      overflow: hidden;
+      page-break-after: always;
+      break-after: page;
+    }
+    .page-body { padding: 10mm 15mm 18mm 15mm; }
+
+    @media print {
+      body { background: white; margin: 0; }
+      .page {
+        margin: 0;
+        box-shadow: none;
+        width: 100%;
+        height: 297mm;
+        page-break-after: always;
+        break-after: page;
+        -webkit-print-color-adjust: exact;
+        print-color-adjust: exact;
+      }
+      .no-print { display: none !important; }
+    }
+    @page { size: A4; margin: 0; }
+
+    /* ── Typography ── */
+    h1 { font-family: var(--font-serif); font-weight: 700; }
+    h2 { font-family: var(--font-serif); font-weight: 700; color: var(--ink); }
+
+    /* ── Page header band ── */
+    .page-header {
+      background: var(--bg-dark);
+      padding: 7mm 15mm 6mm;
+      margin-bottom: 0;
+    }
+    .page-header h1 { color: white; font-size: 17pt; line-height: 1.2; }
+    .page-header .sub { color: #ccc; font-size: 8pt; margin-top: 2px; }
+
+    .day-badge {
+      display: inline-block;
+      background: #555;
+      color: white;
+      font-weight: 700;
+      font-size: 7.5pt;
+      letter-spacing: .06em;
+      padding: 1.5px 9px;
+      border-radius: 20px;
+      margin-bottom: 4px;
+    }
+
+    /* ── Section title ── */
+    .st {
+      font-family: var(--font-serif);
+      font-weight: 700;
+      color: var(--ink);
+      font-size: 10.5pt;
+      border-bottom: 2px solid var(--border-dark);
+      padding-bottom: 2px;
+      margin: 5mm 0 3mm;
+      display: flex;
+      align-items: center;
+      gap: 5px;
+    }
+    .st:first-child { margin-top: 0; }
+
+    .step-pill {
+      display: inline-block;
+      background: var(--bg-dark);
+      color: white;
+      font-family: var(--font-sans);
+      font-size: 7pt;
+      font-weight: 700;
+      letter-spacing: .05em;
+      padding: 1px 7px;
+      flex-shrink: 0;
+    }
+
+    /* ── Write-in fields ── */
+    .fr { display: flex; align-items: flex-end; gap: 3mm; margin-bottom: 2mm; font-size: 9pt; }
+    .fl { white-space: nowrap; font-weight: 500; min-width: 30mm; font-size: 8.5pt; }
+    .ln { flex: 1; border-bottom: 1.2px solid var(--ink); min-height: 5mm; }
+    .ln2 { border-bottom: 1.2px solid var(--border-med); min-height: 5mm; margin-bottom: 1.5mm; }
+
+    /* ── Checklist ── */
+    .ci {
+      display: flex; align-items: flex-start; gap: 2.5mm;
+      padding: 1.6mm 0; font-size: 8.5pt;
+      border-bottom: .5px solid var(--border-light);
+      line-height: 1.4;
+    }
+    .ci:last-child { border-bottom: none; }
+    .cb { width: 4.5mm; height: 4.5mm; border: 1.5px solid var(--border-dark); flex-shrink: 0; margin-top: 1px; }
+
+    /* ── Callout ── */
+    .callout {
+      background: var(--fill-light);
+      border-left: 3.5px solid var(--border-dark);
+      padding: 2.5mm 4mm;
+      margin: 2.5mm 0;
+      font-size: 8.5pt;
+      line-height: 1.5;
+    }
+    .callout strong { color: var(--ink); }
+
+    /* ── Two-column ── */
+    .twocol { display: grid; grid-template-columns: 1fr 1fr; gap: 5mm; }
+
+    /* ── Storyboard ── */
+    .sbgrid { display: grid; grid-template-columns: 1fr 1fr; gap: 3mm; margin-top: 2mm; }
+    .sbf { border: 1.5px solid var(--border-dark); }
+    .sbhead {
+      background: var(--bg-mid);
+      color: white;
+      font-family: var(--font-sans);
+      font-size: 7pt;
+      font-weight: 700;
+      padding: 1.5mm 3mm;
+      display: flex;
+      justify-content: space-between;
+    }
+    .sbhead span:last-child { font-weight: 400; opacity: .75; }
+    .sbdraw { height: 28mm; background: white; border-bottom: 1px solid var(--border-light); }
+    .sbfoot { padding: 1.5mm 2.5mm 1.5mm; background: var(--fill-page); }
+    .sbfoot-lbl { font-size: 6.5pt; color: #777; margin-bottom: .5mm; }
+    .sbline { border-bottom: .8px solid var(--border-light); min-height: 4.5mm; width: 100%; }
+
+    /* ── Eval table ── */
+    .etable { width: 100%; border-collapse: collapse; font-size: 8.5pt; margin-top: 2mm; }
+    .etable th {
+      background: var(--bg-dark);
+      color: white;
+      font-family: var(--font-sans);
+      font-weight: 700;
+      padding: 2mm 3mm;
+      text-align: center;
+      font-size: 7.5pt;
+    }
+    .etable th:first-child { text-align: left; }
+    .etable td { padding: 2mm 3mm; border-bottom: .8px solid var(--border-light); font-size: 8pt; }
+    .etable td:not(:first-child) { text-align: center; border-left: .5px solid var(--border-light); font-size: 12pt; color: #555; }
+    .etable tr:last-child td { border-bottom: none; }
+    .etable tr:nth-child(even) td { background: var(--fill-page); }
+
+    /* ── Compare table ── */
+    .ctable { width: 100%; border-collapse: collapse; font-size: 8.5pt; margin-top: 2mm; }
+    .ctable th { background: var(--bg-dark); color: white; font-weight: 700; padding: 2mm 3mm; font-size: 7.5pt; }
+    .ctable th:first-child { text-align: left; }
+    .ctable td {
+      padding: 1.5mm 3mm 0.5mm;
+      border-bottom: .8px solid var(--border-light);
+      border-left: .5px solid var(--border-light);
+      vertical-align: bottom;
+    }
+    .ctable td:first-child { font-weight: 500; background: var(--fill-page); border-left: none; vertical-align: middle; padding: 2mm 3mm; }
+    .ctable tr:last-child td { border-bottom: none; }
+    /* write-in line inside each compare cell */
+    .ctable td:not(:first-child) { height: 10mm; }
+    .cwrite { border-bottom: 1px solid var(--border-med); width: 100%; display: block; min-height: 4.5mm; margin-top: 1.5mm; }
+
+    /* ── Theory boxes ── */
+    .tgrid { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 3mm; margin-top: 2.5mm; }
+    .tbox { border: 1.5px solid var(--border-dark); padding: 2.5mm; }
+    .tbox-title {
+      font-family: var(--font-serif);
+      font-weight: 700;
+      color: var(--ink);
+      font-size: 9pt;
+      margin-bottom: 1.5mm;
+      padding-bottom: 1.5mm;
+      border-bottom: 1.5px solid var(--border-dark);
+    }
+    .ti { font-size: 8pt; margin-bottom: 1.5mm; line-height: 1.4; }
+    .ti strong { color: var(--ink); }
+    .tip {
+      background: var(--fill-light);
+      border-left: 2.5px solid var(--border-dark);
+      padding: 1.5mm 2.5mm;
+      font-size: 7pt;
+      margin-top: 1.5mm;
+      line-height: 1.35;
+    }
+
+    /* ── Story arc ── */
+    .arc { display: flex; margin: 2.5mm 0 3mm; font-size: 7pt; }
+    .ai {
+      flex: 1; padding: 2mm 1.5mm; text-align: center;
+      border: 1px solid var(--border-med); border-right: none; line-height: 1.3;
+    }
+    .ai:last-child { border-right: 1px solid var(--border-med); }
+    .ai.on { background: var(--bg-mid); color: white; border-color: var(--bg-mid); }
+    .ai-label { font-weight: 700; font-size: 7.5pt; }
+    .ai-sub { font-size: 6pt; opacity: .8; margin-top: .8mm; }
+
+    /* ── Responsibility table ── */
+    .rtable { width: 100%; border-collapse: collapse; font-size: 8.5pt; margin-top: 2mm; }
+    .rtable th {
+      background: var(--bg-dark);
+      color: white;
+      font-family: var(--font-sans);
+      font-weight: 700;
+      padding: 2mm 3mm;
+      font-size: 8pt;
+    }
+    .rtable th:first-child { text-align: left; width: 52%; }
+    .rtable th:not(:first-child) { text-align: center; width: 16%; }
+    .rtable td { padding: 1.8mm 3mm; border-bottom: .8px solid var(--border-light); font-size: 8.5pt; }
+    .rtable td:not(:first-child) { text-align: center; border-left: .5px solid var(--border-light); }
+    .rtable tr:last-child td { border-bottom: none; }
+    .rtable tr:nth-child(even) td { background: var(--fill-page); }
+    .rcb { display: inline-block; width: 4.5mm; height: 4.5mm; border: 1.5px solid var(--border-dark); vertical-align: middle; }
+
+    /* ── Cover specifics ── */
+    .cover-hero {
+      background: var(--bg-dark);
+      padding: 8mm 15mm 7mm;
+      min-height: 38mm;
+      display: flex; flex-direction: column; justify-content: flex-end;
+    }
+    .ctitle { color: white; font-family: var(--font-serif); font-weight: 700; font-size: 20pt; line-height: 1.15; margin-bottom: 2mm; }
+    .ctitle span { color: #ccc; }
+    .cmeta { color: #aaa; font-size: 8pt; margin-top: 2mm; }
+
+    .sched-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 4mm; margin: 3.5mm 0; }
+    .scard { border: 2px solid var(--border-dark); padding: 3mm; }
+    .sday { font-family: var(--font-serif); font-weight: 700; color: var(--ink); font-size: 11pt; margin-bottom: 2mm; }
+    .sstep { display: flex; align-items: center; gap: 2mm; font-size: 8pt; padding: 1.2mm 0; border-bottom: .5px solid var(--border-light); }
+    .sstep:last-child { border-bottom: none; }
+    .snum { background: var(--bg-dark); color: white; width: 4.5mm; height: 4.5mm; display: flex; align-items: center; justify-content: center; font-size: 6.5pt; font-weight: 700; flex-shrink: 0; }
+
+    /* ── Page footer ── */
+    .pf {
+      position: absolute; bottom: 6mm; left: 15mm; right: 15mm;
+      display: flex; justify-content: space-between; align-items: center;
+      font-size: 7pt; color: #aaa;
+      border-top: .5px solid var(--border-light);
+      padding-top: 1.5mm;
+    }
+    .pnum { font-weight: 700; color: var(--ink); }
+
+    /* ── Print button (screen only) ── */
+    .print-btn {
+      position: fixed; bottom: 20px; right: 20px; z-index: 100;
+      background: var(--bg-dark); color: white;
+      border: none; padding: 10px 20px; font-size: 13px;
+      font-family: var(--font-sans); font-weight: 700;
+      cursor: pointer; border-radius: 6px;
+      box-shadow: 0 3px 10px rgba(0,0,0,.4);
+    }
+    .print-btn:hover { background: #333; }
+  </style>
+</head>
+<body>
+
+<button class="print-btn no-print" onclick="window.print()">🖨️ In Worksheet</button>
+
+<!-- ═══════════════════════════════════════════════════
+     PAGE 1 — COVER
+═══════════════════════════════════════════════════ -->
+<div class="page">
+  <div class="cover-hero">
+    <div class="ctitle">Làm Phim LEGO Stop Motion</div>
+    <div class="cmeta">Nam Anh (11 tuổi) &nbsp;·&nbsp; Ngọc Linh (7 tuổi) &nbsp;·&nbsp; iPad &nbsp;·&nbsp; Stop Motion Studio &nbsp;·&nbsp; Hè 2026</div>
+  </div>
+
+  <div class="page-body">
+    <h2 class="st">Cách dùng worksheet này</h2>
+    <div class="callout">
+      <strong>Mục tiêu:</strong> Sau 2 buổi, hai anh em sẽ biết kể chuyện hay, quay phim đẹp, và tự thấy mình tiến bộ — bằng cách <em>làm thật, sai thật, và tự cải thiện.</em>
+    </div>
+
+    <div class="sched-grid">
+      <div class="scard">
+        <div class="sday">📅 Thứ Ba — Lần đầu thử</div>
+        <div class="sstep"><div class="snum">1</div>Đọc "Bí Kíp" (trang 2)</div>
+        <div class="sstep"><div class="snum">2</div>Nghĩ câu chuyện &amp; vẽ storyboard (trang 3)</div>
+        <div class="sstep"><div class="snum">3</div>Setup &amp; quay bộ phim đầu tiên (trang 4)</div>
+        <div class="sstep"><div class="snum">4</div>Xem lại &amp; tự đánh giá (trang 4)</div>
+      </div>
+      <div class="scard">
+        <div class="sday">📅 Thứ Sáu — Làm tốt hơn</div>
+        <div class="sstep"><div class="snum">1</div>Đọc lại bài học từ Thứ Ba (trang 5)</div>
+        <div class="sstep"><div class="snum">2</div>Nghĩ câu chuyện MỚI &amp; storyboard mới (trang 5)</div>
+        <div class="sstep"><div class="snum">3</div>Setup TỐT HƠN &amp; quay phim lần 2 (trang 6)</div>
+        <div class="sstep"><div class="snum">4</div>So sánh hai bộ phim (trang 6)</div>
+      </div>
+    </div>
+
+    <h2 class="st">Phân công vai trò — Ai làm gì?</h2>
+    <p style="font-size:8pt; color:#555; margin-bottom:2mm;">Hai anh em tự bàn rồi <strong>tick vào ô</strong> — ai chịu trách nhiệm phần nào. Có thể cùng làm!</p>
+
+    <table class="rtable">
+      <thead>
+        <tr>
+          <th>Đầu việc</th>
+          <th>Nam Anh</th>
+          <th>Ngọc Linh</th>
+          <th>Cùng nhau</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr><td>Nghĩ câu chuyện &amp; tên phim</td><td><span class="rcb"></span></td><td><span class="rcb"></span></td><td><span class="rcb"></span></td></tr>
+        <tr><td>Vẽ storyboard từng cảnh</td><td><span class="rcb"></span></td><td><span class="rcb"></span></td><td><span class="rcb"></span></td></tr>
+        <tr><td>Chuẩn bị phông nền &amp; đạo cụ</td><td><span class="rcb"></span></td><td><span class="rcb"></span></td><td><span class="rcb"></span></td></tr>
+        <tr><td>Đặt iPad &amp; giữ cố định</td><td><span class="rcb"></span></td><td><span class="rcb"></span></td><td><span class="rcb"></span></td></tr>
+        <tr><td>Di chuyển nhân vật LEGO</td><td><span class="rcb"></span></td><td><span class="rcb"></span></td><td><span class="rcb"></span></td></tr>
+        <tr><td>Bấm nút chụp từng frame</td><td><span class="rcb"></span></td><td><span class="rcb"></span></td><td><span class="rcb"></span></td></tr>
+        <tr><td>Kiểm tra lại từng cảnh vừa quay</td><td><span class="rcb"></span></td><td><span class="rcb"></span></td><td><span class="rcb"></span></td></tr>
+        <tr><td>Chọn &amp; thêm nhạc nền / âm thanh</td><td><span class="rcb"></span></td><td><span class="rcb"></span></td><td><span class="rcb"></span></td></tr>
+        <tr><td>Export video &amp; lưu lại</td><td><span class="rcb"></span></td><td><span class="rcb"></span></td><td><span class="rcb"></span></td></tr>
+      </tbody>
+    </table>
+
+    <div class="callout" style="margin-top:3mm;">
+      <strong>Nhớ nhé:</strong> Đây là dự án của <em>cả hai</em> — anh hỏi ý kiến em, em nghe hướng dẫn của anh. Ai nhận việc gì thì làm hết sức ở việc đó!
+    </div>
+  </div>
+
+  <div class="pf">
+    <span>Dự án Phim LEGO Stop Motion — Hè 2026</span>
+    <span class="pnum">1 / 6</span>
+  </div>
+</div>
+
+
+<!-- ═══════════════════════════════════════════════════
+     PAGE 2 — BÍ KÍP
+═══════════════════════════════════════════════════ -->
+<div class="page">
+  <div class="page-header">
+    <h1>📖 Bí Kíp Làm Phim Hay</h1>
+    <div class="sub">Đọc kỹ trước khi bắt đầu — giữ trang này để tham khảo trong lúc làm</div>
+  </div>
+
+  <div class="page-body" style="padding-top:8mm;">
+    <div class="tgrid">
+      <div class="tbox">
+        <div class="tbox-title">✍️ Câu Chuyện Hay</div>
+        <div class="ti">1. Nhân vật<br>Ai là nhân vật chính? Họ muốn gì? Ta cần <em>thích</em> họ!</div>
+        <div class="ti">2. Vấn đề<br>Điều gì ngăn cản họ? Bạn xấu, sự cố, hay bí ẩn?</div>
+        <div class="ti">3. Hành động<br>Họ làm gì để giải quyết? Có thử và thất bại không?</div>
+        <div class="ti">4. Kết thúc<br>Vui? Bất ngờ? Cảm động?</div>
+        <div class="tip"><strong>Công thức:</strong> [Nhân vật] muốn [X], nhưng [vấn đề], vì vậy họ [hành động], và cuối cùng [kết thúc].</div>
+      </div>
+
+      <div class="tbox">
+        <div class="tbox-title">📷 Góc Quay &amp; Bố Cục</div>
+        <div class="ti">🔭 Toàn cảnh (Wide)<br>Thấy cả bối cảnh. Dùng để mở đầu cảnh.</div>
+        <div class="ti">🧍 Trung cảnh (Medium)<br>Nhân vật + hành động. Dùng cho phần chính.</div>
+        <div class="ti">🔍 Cận cảnh (Close-up)<br>Mặt hoặc chi tiết nhỏ. Dùng cho cảm xúc.</div>
+        <div class="ti">👁️ Từ trên xuống (Top-down)<br>Camera nhìn thẳng xuống — giống nhìn bản đồ.</div>
+        <div class="tip"><strong>Quy tắc 1/3:</strong> Đừng để nhân vật chính ở giữa mãi — thử dịch sang 1/3 trái hoặc phải. Ngay lập tức "chuyên nghiệp" hơn!</div>
+      </div>
+
+      <div class="tbox">
+        <div class="tbox-title">⚙️ Stop Motion Studio</div>
+        <div class="ti">New Project → FPS = 10<br>(10 ảnh/giây — vừa đủ mượt)</div>
+        <div class="ti">Bật Onion Skin 👻<br>Thấy ảnh trước mờ mờ → dễ căn vị trí</div>
+        <div class="ti">Di chuyển RẤT NHỎ<br>Mỗi lần ~1 ngón tay. Càng nhỏ càng mượt!</div>
+        <div class="ti">Tay ra khỏi khung<br>Chụp xong mới đưa tay vào di chuyển tiếp.</div>
+        <div class="tip"><strong>Nhớ:</strong> 1 giây phim = 10 ảnh. Cảnh 3 giây → chụp ~30 ảnh.</div>
+      </div>
+    </div>
+
+    <div style="display:grid; grid-template-columns:1fr 1fr; gap:3mm; margin-top:3mm;">
+      <div class="tbox">
+        <div class="tbox-title">💡 Ánh Sáng</div>
+        <div class="ti">Không để ánh sáng từ phía sau vì nhân vật sẽ tối thui!</div>
+        <div class="ti">Ánh sáng từ bên cạnh → tạo bóng đổ đẹp, phim trông "có chiều sâu".</div>
+        <div class="ti">Không thay đổi khi đang quay — quạt quay,đèn bật/tắt → cảnh bị nhấp nháy, hỏng!</div>
+        <div class="tip"><strong>Mẹo:</strong> Dùng đèn bàn thay vì cửa sổ — ổn định hơn nhiều.</div>
+      </div>
+      <div class="tbox">
+        <div class="tbox-title">🎬 Kỹ Thuật Dựng Cảnh</div>
+        <div class="ti">Hướng di chuyển nhất quán — nhân vật đi sang phải ở cảnh 1 thì cảnh 2 không được đột ngột đi trái.</div>
+        <div class="ti">Nhịp cảnh (Pacing) — cảnh hành động nhanh → di chuyển nhiều mỗi frame; cảnh cảm xúc → di chuyển ít, chậm.</div>
+        <div class="ti">Dùng cận cảnh để chuyển cảnh — cắt vào chi tiết nhỏ giúp chuyển scene mượt hơn.</div>
+        <div class="tip"><strong>Nhớ:</strong> Thay đổi góc quay mỗi khi sang cảnh mới — xem phim sẽ không nhàm!</div>
+      </div>
+    </div>
+
+    <!-- <h2 class="st" style="margin-top:4mm;">🎯 Cung Bậc Câu Chuyện (Story Arc)</h2>
+    <div class="arc">
+      <div class="ai"><div class="ai-label">Mở đầu</div><div class="ai-sub">Giới thiệu nhân vật &amp; bối cảnh</div></div>
+      <div class="ai on"><div class="ai-label">Xung đột ↑</div><div class="ai-sub">Vấn đề xuất hiện, căng thẳng tăng</div></div>
+      <div class="ai on"><div class="ai-label">Đỉnh điểm 🔥</div><div class="ai-sub">Khoảnh khắc quyết định</div></div>
+      <div class="ai"><div class="ai-label">Giải quyết</div><div class="ai-sub">Vấn đề được xử lý</div></div>
+      <div class="ai"><div class="ai-label">Kết thúc</div><div class="ai-sub">Bài học / cảm xúc cuối</div></div>
+    </div> -->
+
+    <h2 class="st" style="margin-top:4mm;">📐 3 Mô Hình Story Arc — Chọn 1 Để Dùng Cho Phim Của Mình</h2>
+    <p style="font-size:7.5pt; color:#666; margin-bottom:2.5mm;">Mỗi mô hình cho thấy 6 cảnh nên diễn ra như thế nào. Chọn cái hợp với câu chuyện, rồi điền nhân vật LEGO của mình vào!</p>
+    <div style="display:grid; grid-template-columns:1fr 1fr 1fr; gap:3mm;">
+
+      <div class="tbox">
+        <div class="tbox-title">⚔️ Phiêu Lưu &amp; Chinh Phục</div>
+        <div style="display:flex; flex-direction:column; gap:1.5mm; margin-top:1.5mm;">
+          <div style="display:flex; gap:2mm; align-items:baseline; font-size:7.5pt; line-height:1.35;"><span style="background:var(--bg-dark);color:white;padding:0 2.5mm;font-weight:700;flex-shrink:0;font-size:6.5pt;line-height:1.7;">1</span><span>Cuộc sống bình thường của nhân vật</span></div>
+          <div style="display:flex; gap:2mm; align-items:baseline; font-size:7.5pt; line-height:1.35;"><span style="background:var(--bg-dark);color:white;padding:0 2.5mm;font-weight:700;flex-shrink:0;font-size:6.5pt;line-height:1.7;">2</span><span>Có điều gì đó xảy ra — thế giới thay đổi</span></div>
+          <div style="display:flex; gap:2mm; align-items:baseline; font-size:7.5pt; line-height:1.35;"><span style="background:var(--bg-mid);color:white;padding:0 2.5mm;font-weight:700;flex-shrink:0;font-size:6.5pt;line-height:1.7;">3</span><span>Lên đường — thử thách đầu tiên</span></div>
+          <div style="display:flex; gap:2mm; align-items:baseline; font-size:7.5pt; line-height:1.35;"><span style="background:var(--bg-mid);color:white;padding:0 2.5mm;font-weight:700;flex-shrink:0;font-size:6.5pt;line-height:1.7;">4</span><span>🔥 Thất bại / tình huống tệ nhất</span></div>
+          <div style="display:flex; gap:2mm; align-items:baseline; font-size:7.5pt; line-height:1.35;"><span style="background:var(--bg-dark);color:white;padding:0 2.5mm;font-weight:700;flex-shrink:0;font-size:6.5pt;line-height:1.7;">5</span><span>Tìm ra cách — đứng dậy lần cuối</span></div>
+          <div style="display:flex; gap:2mm; align-items:baseline; font-size:7.5pt; line-height:1.35;"><span style="background:var(--bg-dark);color:white;padding:0 2.5mm;font-weight:700;flex-shrink:0;font-size:6.5pt;line-height:1.7;">6</span><span>Chiến thắng + mọi thứ tốt đẹp hơn</span></div>
+        </div>
+        <div class="tip" style="margin-top:2mm;"><strong>Ví dụ:</strong> Nhân vật nhỏ muốn leo đỉnh núi → bị ngã → tìm ra bí quyết → chinh phục!</div>
+      </div>
+
+      <div class="tbox">
+        <div class="tbox-title">🆘 Giải Cứu &amp; Hợp Tác</div>
+        <div style="display:flex; flex-direction:column; gap:1.5mm; margin-top:1.5mm;">
+          <div style="display:flex; gap:2mm; align-items:baseline; font-size:7.5pt; line-height:1.35;"><span style="background:var(--bg-dark);color:white;padding:0 2.5mm;font-weight:700;flex-shrink:0;font-size:6.5pt;line-height:1.7;">1</span><span>Ai đó / điều gì đó đang gặp nguy hiểm</span></div>
+          <div style="display:flex; gap:2mm; align-items:baseline; font-size:7.5pt; line-height:1.35;"><span style="background:var(--bg-dark);color:white;padding:0 2.5mm;font-weight:700;flex-shrink:0;font-size:6.5pt;line-height:1.7;">2</span><span>Anh hùng nghe tin — lên kế hoạch</span></div>
+          <div style="display:flex; gap:2mm; align-items:baseline; font-size:7.5pt; line-height:1.35;"><span style="background:var(--bg-mid);color:white;padding:0 2.5mm;font-weight:700;flex-shrink:0;font-size:6.5pt;line-height:1.7;">3</span><span>Vượt qua trở ngại đầu tiên trên đường</span></div>
+          <div style="display:flex; gap:2mm; align-items:baseline; font-size:7.5pt; line-height:1.35;"><span style="background:var(--bg-mid);color:white;padding:0 2.5mm;font-weight:700;flex-shrink:0;font-size:6.5pt;line-height:1.7;">4</span><span>🔥 Gần như thất bại — tình thế nguy cấp</span></div>
+          <div style="display:flex; gap:2mm; align-items:baseline; font-size:7.5pt; line-height:1.35;"><span style="background:var(--bg-dark);color:white;padding:0 2.5mm;font-weight:700;flex-shrink:0;font-size:6.5pt;line-height:1.7;">5</span><span>Bạn bè hợp sức → khoảnh khắc quyết định</span></div>
+          <div style="display:flex; gap:2mm; align-items:baseline; font-size:7.5pt; line-height:1.35;"><span style="background:var(--bg-dark);color:white;padding:0 2.5mm;font-weight:700;flex-shrink:0;font-size:6.5pt;line-height:1.7;">6</span><span>Giải cứu thành công — cùng ăn mừng!</span></div>
+        </div>
+        <div class="tip" style="margin-top:2mm;"><strong>Ví dụ:</strong> Chú mèo bị kẹt trên cao → bạn bè tìm cách giúp → kế hoạch gần thất bại → hợp lực → giải cứu!</div>
+      </div>
+
+      <div class="tbox">
+        <div class="tbox-title">😅 Sai Lầm &amp; Bài Học</div>
+        <div style="display:flex; flex-direction:column; gap:1.5mm; margin-top:1.5mm;">
+          <div style="display:flex; gap:2mm; align-items:baseline; font-size:7.5pt; line-height:1.35;"><span style="background:var(--bg-dark);color:white;padding:0 2.5mm;font-weight:700;flex-shrink:0;font-size:6.5pt;line-height:1.7;">1</span><span>Nhân vật muốn điều gì đó — chọn cách dễ</span></div>
+          <div style="display:flex; gap:2mm; align-items:baseline; font-size:7.5pt; line-height:1.35;"><span style="background:var(--bg-dark);color:white;padding:0 2.5mm;font-weight:700;flex-shrink:0;font-size:6.5pt;line-height:1.7;">2</span><span>Cách đó tạo ra vấn đề mới không ngờ tới</span></div>
+          <div style="display:flex; gap:2mm; align-items:baseline; font-size:7.5pt; line-height:1.35;"><span style="background:var(--bg-mid);color:white;padding:0 2.5mm;font-weight:700;flex-shrink:0;font-size:6.5pt;line-height:1.7;">3</span><span>Mọi thứ càng ngày càng tệ hơn (hài!)</span></div>
+          <div style="display:flex; gap:2mm; align-items:baseline; font-size:7.5pt; line-height:1.35;"><span style="background:var(--bg-mid);color:white;padding:0 2.5mm;font-weight:700;flex-shrink:0;font-size:6.5pt;line-height:1.7;">4</span><span>🔥 Thảm hoạ đạt đỉnh — không thể tệ hơn!</span></div>
+          <div style="display:flex; gap:2mm; align-items:baseline; font-size:7.5pt; line-height:1.35;"><span style="background:var(--bg-dark);color:white;padding:0 2.5mm;font-weight:700;flex-shrink:0;font-size:6.5pt;line-height:1.7;">5</span><span>Nhận ra điều mình đã làm sai — xin lỗi</span></div>
+          <div style="display:flex; gap:2mm; align-items:baseline; font-size:7.5pt; line-height:1.35;"><span style="background:var(--bg-dark);color:white;padding:0 2.5mm;font-weight:700;flex-shrink:0;font-size:6.5pt;line-height:1.7;">6</span><span>Sửa lại được — học bài học quan trọng</span></div>
+        </div>
+        <div class="tip" style="margin-top:2mm;"><strong>Ví dụ:</strong> Muốn tiệc hoàn hảo → tự làm hết không nhờ ai → mọi thứ hỏng → nhờ bạn bè → vui hơn dự kiến!</div>
+      </div>
+
+    </div>
+
+  </div>
+
+  <div class="pf">
+    <span>Dự án Phim LEGO Stop Motion — Hè 2026</span>
+    <span class="pnum">2 / 6</span>
+  </div>
+</div>
+
+
+<!-- ═══════════════════════════════════════════════════
+     PAGE 3 — THỨ BA: LÊN KẾ HOẠCH & STORYBOARD
+═══════════════════════════════════════════════════ -->
+<div class="page">
+  <div class="page-header">
+    <div class="day-badge">📅 NGÀY 1 — THỨ BA</div>
+    <h1>Bước 1–2: Lên Kế Hoạch &amp; Storyboard</h1>
+    <div class="sub">Trước khi quay bất kỳ cảnh nào — hãy nghĩ và vẽ ra trước!</div>
+  </div>
+
+  <div class="page-body" style="padding-top:6mm;">
+    <h2 class="st"><span class="step-pill">BƯỚC 1</span> Câu Chuyện Của Mình</h2>
+    <div class="callout">
+      <strong>Công thức:</strong> [Nhân vật] muốn [X], nhưng [vấn đề], vì vậy họ [hành động], và cuối cùng [kết thúc].
+    </div>
+    <div style="margin-top:2mm;">
+      <div class="fr"><span class="fl">🎬 Tên phim:</span><span class="ln"></span></div>
+      <div class="fr"><span class="fl">🦸 Nhân vật chính:</span><span class="ln"></span></div>
+      <div class="fr"><span class="fl">👥 Nhân vật phụ:</span><span class="ln"></span></div>
+      <div class="fr"><span class="fl">❓ Vấn đề / thử thách:</span><span class="ln"></span></div>
+      <div style="padding-left:33.5mm;"><div class="ln2"></div></div>
+      <div class="fr"><span class="fl">🏁 Kết thúc:</span><span class="ln"></span></div>
+      <div class="fr"><span class="fl">🏙️ Bối cảnh (ở đâu?):</span><span class="ln"></span></div>
+    </div>
+
+    <h2 class="st" style="margin-top:4mm;"><span class="step-pill">BƯỚC 2</span> Storyboard — Vẽ Từng Cảnh</h2>
+    <p style="font-size:7.5pt; color:#666; margin-bottom:2mm;">Vẽ phác thảo đơn giản cho 6 cảnh — không cần đẹp, miễn là hai anh em hiểu nhau là được!</p>
+
+    <div class="sbgrid">
+      <div class="sbf">
+        <div class="sbhead"><span>CẢNH 1</span><span>Giới thiệu</span></div>
+        <div class="sbdraw"></div>
+        <div class="sbfoot">
+          <div class="sbfoot-lbl">Diễn ra gì:</div><div class="sbline"></div>
+        </div>
+      </div>
+      <div class="sbf">
+        <div class="sbhead"><span>CẢNH 2</span><span>Xung đột bắt đầu</span></div>
+        <div class="sbdraw"></div>
+        <div class="sbfoot">
+          <div class="sbfoot-lbl">Diễn ra gì:</div><div class="sbline"></div>
+        </div>
+      </div>
+      <div class="sbf">
+        <div class="sbhead"><span>CẢNH 3</span><span>Hành động</span></div>
+        <div class="sbdraw"></div>
+        <div class="sbfoot">
+          <div class="sbfoot-lbl">Diễn ra gì:</div><div class="sbline"></div>
+        </div>
+      </div>
+      <div class="sbf">
+        <div class="sbhead"><span>CẢNH 4</span><span>Đỉnh điểm 🔥</span></div>
+        <div class="sbdraw"></div>
+        <div class="sbfoot">
+          <div class="sbfoot-lbl">Diễn ra gì:</div><div class="sbline"></div>
+        </div>
+      </div>
+      <div class="sbf">
+        <div class="sbhead"><span>CẢNH 5</span><span>Giải quyết</span></div>
+        <div class="sbdraw"></div>
+        <div class="sbfoot">
+          <div class="sbfoot-lbl">Diễn ra gì:</div><div class="sbline"></div>
+        </div>
+      </div>
+      <div class="sbf">
+        <div class="sbhead"><span>CẢNH 6</span><span>Kết thúc</span></div>
+        <div class="sbdraw"></div>
+        <div class="sbfoot">
+          <div class="sbfoot-lbl">Diễn ra gì:</div><div class="sbline"></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="pf">
+    <span>Dự án Phim LEGO Stop Motion — Hè 2026</span>
+    <span class="pnum">3 / 6</span>
+  </div>
+</div>
+
+
+<!-- ═══════════════════════════════════════════════════
+     PAGE 4 — THỨ BA: CHECKLIST & TỰ ĐÁNH GIÁ
+═══════════════════════════════════════════════════ -->
+<div class="page">
+  <div class="page-header">
+    <div class="day-badge">📅 NGÀY 1 — THỨ BA</div>
+    <h1>Bước 3–4: Setup, Quay Phim &amp; Tự Đánh Giá</h1>
+    <div class="sub">Tick từng ô trước khi bắt đầu quay — đừng bỏ qua bước nào!</div>
+  </div>
+
+  <div class="page-body" style="padding-top:6mm;">
+    <div class="twocol">
+      <div>
+        <h2 class="st"><span class="step-pill">BƯỚC 3</span> Checklist Chuẩn Bị</h2>
+        <div class="ci"><div class="cb"></div><div>iPad đặt <strong>CỐ ĐỊNH</strong> (chồng sách / giá đỡ)</div></div>
+        <div class="ci"><div class="cb"></div><div>Phông nền đã chuẩn bị, không lộn xộn</div></div>
+        <div class="ci"><div class="cb"></div><div>Ánh sáng ổn định (không mở/đóng cửa sổ)</div></div>
+        <div class="ci"><div class="cb"></div><div>Tất cả nhân vật LEGO đã sẵn sàng</div></div>
+        <div class="ci"><div class="cb"></div><div>Stop Motion Studio đã mở</div></div>
+        <div class="ci"><div class="cb"></div><div>Đã tạo <strong>Project mới</strong>, FPS = <strong>10</strong></div></div>
+        <div class="ci"><div class="cb"></div><div>Onion Skin đã <strong>bật 👻</strong></div></div>
+        <div class="ci"><div class="cb"></div><div>Đã test thử 10 frames — xem ổn chưa?</div></div>
+        <div class="ci" style="background:var(--fill-light);"><div class="cb"></div><div><strong>✅ Sẵn sàng quay phim thật!</strong></div></div>
+      </div>
+      <div>
+        <h2 class="st"><span class="step-pill">BƯỚC 4</span> Trong Lúc Quay</h2>
+        <div class="ci"><div class="cb"></div><div>Tay ra khỏi khung <strong>trước khi</strong> bấm chụp</div></div>
+        <div class="ci"><div class="cb"></div><div>Di chuyển nhỏ từng bước — đừng nhảy cóc</div></div>
+        <div class="ci"><div class="cb"></div><div>Không làm rung giá đỡ iPad</div></div>
+        <div class="ci"><div class="cb"></div><div>Theo đúng storyboard đã vẽ ở trang 3</div></div>
+        <div class="ci"><div class="cb"></div><div>Dùng Onion Skin để căn chỉnh vị trí</div></div>
+        <div class="ci"><div class="cb"></div><div>Thêm nhạc nền hoặc hiệu ứng âm thanh</div></div>
+        <div class="ci"><div class="cb"></div><div>Xem lại toàn bộ phim ít nhất 1 lần</div></div>
+        <div class="ci"><div class="cb"></div><div>Lưu &amp; export video</div></div>
+        <div class="callout" style="margin-top:2.5mm; font-size:8pt;">
+          <strong>Tip:</strong> Nếu có cảnh bị lỗi — <em>ghi chú lại</em> để làm tốt hơn ở Thứ Sáu. Hôm nay cứ quay tiếp!
+        </div>
+      </div>
+    </div>
+
+    <h2 class="st" style="margin-top:4mm;">⭐ Tự Đánh Giá — Sau Khi Xem Lại Phim</h2>
+    <p style="font-size:7.5pt; color:#666; margin-bottom:2mm;">Xem lại phim rồi cả hai anh em cùng đánh giá thật thành thật — khoanh tròn vào ô!</p>
+
+    <table class="etable">
+      <thead>
+        <tr>
+          <th style="width:46%; text-align:left;">Tiêu chí</th>
+          <th>😐 Cần cải thiện</th>
+          <th>🙂 Được rồi</th>
+          <th>😄 Tốt lắm!</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr><td>Câu chuyện dễ hiểu, có đầu có đuôi</td><td>○</td><td>○</td><td>○</td></tr>
+        <tr><td>Dùng nhiều góc quay khác nhau</td><td>○</td><td>○</td><td>○</td></tr>
+        <tr><td>Camera ổn định, không bị rung</td><td>○</td><td>○</td><td>○</td></tr>
+        <tr><td>Chuyển động mượt mà, không nhảy cóc</td><td>○</td><td>○</td><td>○</td></tr>
+        <tr><td>Ánh sáng đều, không tối / chói</td><td>○</td><td>○</td><td>○</td></tr>
+        <tr><td>Âm thanh / nhạc nền phù hợp</td><td>○</td><td>○</td><td>○</td></tr>
+      </tbody>
+    </table>
+
+    <div style="margin-top:4mm;">
+      <p style="font-size:9pt; font-weight:700; margin-bottom:2mm;">📝 3 điều muốn làm TỐT HƠN ở Thứ Sáu:</p>
+      <div class="fr"><span style="font-size:9pt; min-width:6mm; font-weight:700;">1.</span><span class="ln"></span></div>
+      <div class="fr"><span style="font-size:9pt; min-width:6mm; font-weight:700;">2.</span><span class="ln"></span></div>
+      <div class="fr"><span style="font-size:9pt; min-width:6mm; font-weight:700;">3.</span><span class="ln"></span></div>
+    </div>
+
+    <div style="margin-top:4mm; background:var(--bg-dark); padding:4mm 5mm; text-align:center;">
+      <p style="font-family:var(--font-serif); font-weight:700; color:white; font-size:12pt;">
+        🎉 Chúc mừng — bạn vừa làm xong bộ phim LEGO đầu tiên!
+      </p>
+      <p style="color:#bbb; font-size:8pt; margin-top:1.5mm;">
+        Giữ trang này lại — Thứ Sáu sẽ cần nhìn vào "3 điều cần cải thiện" để làm tốt hơn.
+      </p>
+    </div>
+  </div>
+
+  <div class="pf">
+    <span>Dự án Phim LEGO Stop Motion — Hè 2026</span>
+    <span class="pnum">4 / 6</span>
+  </div>
+</div>
+
+
+<!-- ═══════════════════════════════════════════════════
+     PAGE 5 — THỨ SÁU: LÊN KẾ HOẠCH & STORYBOARD MỚI
+═══════════════════════════════════════════════════ -->
+<div class="page">
+  <div class="page-header">
+    <div class="day-badge">📅 NGÀY 2 — THỨ SÁU</div>
+    <h1>Bước 1–2: Học Từ Lần 1 &amp; Storyboard Mới</h1>
+    <div class="sub">Lần này làm tốt hơn — vì mình đã biết mình cần cải thiện gì!</div>
+  </div>
+
+  <div class="page-body" style="padding-top:6mm;">
+
+    <h2 class="st"><span class="step-pill">BƯỚC 1</span> Câu Chuyện Mới</h2>
+    <div class="callout">
+      <strong>Công thức:</strong> [Nhân vật] muốn [X], nhưng [vấn đề], vì vậy họ [hành động], và cuối cùng [kết thúc].
+    </div>
+    <div style="margin-top:2mm;">
+      <div class="fr"><span class="fl">🎬 Tên phim:</span><span class="ln"></span></div>
+      <div class="fr"><span class="fl">🦸 Nhân vật chính:</span><span class="ln"></span></div>
+      <div class="fr"><span class="fl">👥 Nhân vật phụ:</span><span class="ln"></span></div>
+      <div class="fr"><span class="fl">❓ Vấn đề / thử thách:</span><span class="ln"></span></div>
+      <div style="padding-left:33.5mm;"><div class="ln2"></div></div>
+      <div class="fr"><span class="fl">🏁 Kết thúc:</span><span class="ln"></span></div>
+      <div class="fr"><span class="fl">🏙️ Bối cảnh (ở đâu?):</span><span class="ln"></span></div>
+    </div>
+
+    <h2 class="st" style="margin-top:4mm;"><span class="step-pill">BƯỚC 2</span> Storyboard Mới — Vẽ Từng Cảnh</h2>
+    <div class="sbgrid">
+      <div class="sbf">
+        <div class="sbhead"><span>CẢNH 1</span><span>Giới thiệu</span></div>
+        <div class="sbdraw"></div>
+        <div class="sbfoot">
+          <div class="sbfoot-lbl">Diễn ra gì:</div><div class="sbline"></div>
+        </div>
+      </div>
+      <div class="sbf">
+        <div class="sbhead"><span>CẢNH 2</span><span>Xung đột bắt đầu</span></div>
+        <div class="sbdraw"></div>
+        <div class="sbfoot">
+          <div class="sbfoot-lbl">Diễn ra gì:</div><div class="sbline"></div>
+        </div>
+      </div>
+      <div class="sbf">
+        <div class="sbhead"><span>CẢNH 3</span><span>Hành động</span></div>
+        <div class="sbdraw"></div>
+        <div class="sbfoot">
+          <div class="sbfoot-lbl">Diễn ra gì:</div><div class="sbline"></div>
+        </div>
+      </div>
+      <div class="sbf">
+        <div class="sbhead"><span>CẢNH 4</span><span>Đỉnh điểm 🔥</span></div>
+        <div class="sbdraw"></div>
+        <div class="sbfoot">
+          <div class="sbfoot-lbl">Diễn ra gì:</div><div class="sbline"></div>
+        </div>
+      </div>
+      <div class="sbf">
+        <div class="sbhead"><span>CẢNH 5</span><span>Giải quyết</span></div>
+        <div class="sbdraw"></div>
+        <div class="sbfoot">
+          <div class="sbfoot-lbl">Diễn ra gì:</div><div class="sbline"></div>
+        </div>
+      </div>
+      <div class="sbf">
+        <div class="sbhead"><span>CẢNH 6</span><span>Kết thúc</span></div>
+        <div class="sbdraw"></div>
+        <div class="sbfoot">
+          <div class="sbfoot-lbl">Diễn ra gì:</div><div class="sbline"></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="pf">
+    <span>Dự án Phim LEGO Stop Motion — Hè 2026</span>
+    <span class="pnum">5 / 6</span>
+  </div>
+</div>
+
+
+<!-- ═══════════════════════════════════════════════════
+     PAGE 6 — THỨ SÁU: CHECKLIST & SO SÁNH
+═══════════════════════════════════════════════════ -->
+<div class="page">
+  <div class="page-header">
+    <div class="day-badge">📅 NGÀY 2 — THỨ SÁU</div>
+    <h1>Bước 3–4: Setup, Quay &amp; So Sánh Hai Bộ Phim</h1>
+    <div class="sub">Áp dụng những gì đã học — rồi tự xem mình tiến bộ bao nhiêu!</div>
+  </div>
+
+  <div class="page-body" style="padding-top:6mm;">
+    <div class="twocol">
+      <div>
+        <h2 class="st"><span class="step-pill">BƯỚC 3</span> Checklist Chuẩn Bị</h2>
+        <div class="ci"><div class="cb"></div><div>iPad cố định — <em>chắc hơn Thứ Ba!</em></div></div>
+        <div class="ci"><div class="cb"></div><div>Phông nền đẹp hơn, gọn hơn lần trước</div></div>
+        <div class="ci"><div class="cb"></div><div>Ánh sáng đã kiểm tra kỹ</div></div>
+        <div class="ci"><div class="cb"></div><div>Nhân vật LEGO sẵn sàng</div></div>
+        <div class="ci"><div class="cb"></div><div>Stop Motion Studio → Project mới</div></div>
+        <div class="ci"><div class="cb"></div><div>FPS = 10, Onion Skin đã bật</div></div>
+        <div class="ci"><div class="cb"></div><div>Test thử, chỉnh xong rồi mới quay thật</div></div>
+        <div class="ci" style="background:var(--fill-light);"><div class="cb"></div><div><strong>✅ Sẵn sàng — lần này sẽ xịn hơn!</strong></div></div>
+      </div>
+      <div>
+        <h2 class="st"><span class="step-pill">BƯỚC 4</span> Trong Lúc Quay</h2>
+        <div class="ci"><div class="cb"></div><div>Cố ý <strong>thay đổi góc quay</strong> giữa các cảnh</div></div>
+        <div class="ci"><div class="cb"></div><div>Di chuyển <strong>nhỏ hơn &amp; đều hơn</strong> lần trước</div></div>
+        <div class="ci"><div class="cb"></div><div>Tay ra ngoài khung trước khi chụp</div></div>
+        <div class="ci"><div class="cb"></div><div>Theo đúng storyboard trang 5</div></div>
+        <div class="ci"><div class="cb"></div><div>Xem lại từng cảnh ngay sau khi quay</div></div>
+        <div class="ci"><div class="cb"></div><div>Thêm nhạc nền / hiệu ứng âm thanh</div></div>
+        <div class="ci"><div class="cb"></div><div>Export và lưu video</div></div>
+        <div class="callout" style="margin-top:2.5mm; font-size:8pt;">
+          <strong>Nhớ:</strong> 3 điều cần cải thiện từ Thứ Ba — đã làm khác ở lần này chưa?
+        </div>
+      </div>
+    </div>
+
+    <h2 class="st" style="margin-top:4mm;">🏆 So Sánh Hai Bộ Phim</h2>
+    <p style="font-size:7.5pt; color:#666; margin-bottom:2mm;">Xem hai phim liên tiếp rồi cùng điền vào bảng — ghi điểm, nhận xét ngắn, hoặc vẽ ☺ / ☹:</p>
+
+    <table class="ctable">
+      <thead>
+        <tr>
+          <th style="width:34%; text-align:left;">Tiêu chí</th>
+          <th style="width:33%;">📅 Phim Thứ Ba</th>
+          <th style="width:33%;">📅 Phim Thứ Sáu</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr><td>Câu chuyện (rõ ràng, hấp dẫn?)</td><td><span class="cwrite"></span></td><td><span class="cwrite"></span></td></tr>
+        <tr><td>Góc quay (đa dạng, sáng tạo?)</td><td><span class="cwrite"></span></td><td><span class="cwrite"></span></td></tr>
+        <tr><td>Chuyển động (mượt mà?)</td><td><span class="cwrite"></span></td><td><span class="cwrite"></span></td></tr>
+        <tr><td>Kỹ thuật (camera ổn, ánh sáng đều?)</td><td><span class="cwrite"></span></td><td><span class="cwrite"></span></td></tr>
+        <tr><td>Âm thanh / nhạc nền</td><td><span class="cwrite"></span></td><td><span class="cwrite"></span></td></tr>
+        <tr><td>⭐ Điểm yêu thích nhất</td><td><span class="cwrite"></span></td><td><span class="cwrite"></span></td></tr>
+      </tbody>
+    </table>
+
+    <div style="margin-top:4mm; display:grid; grid-template-columns:1fr 1fr; gap:4mm;">
+      <div>
+        <p style="font-size:8.5pt; font-weight:700; margin-bottom:2mm;">💬 Nam Anh nói về dự án này:</p>
+        <div class="ln2"></div><div class="ln2"></div><div class="ln2"></div>
+      </div>
+      <div>
+        <p style="font-size:8.5pt; font-weight:700; margin-bottom:2mm;">💬 Ngọc Linh nói về dự án này:</p>
+        <div class="ln2"></div><div class="ln2"></div><div class="ln2"></div>
+      </div>
+    </div>
+
+    <div style="margin-top:4mm; background:var(--bg-dark); padding:5mm 6mm; text-align:center;">
+      <p style="font-family:var(--font-serif); font-weight:700; color:white; font-size:13pt; line-height:1.3;">
+        🎬 Chúc mừng anh em đã hoàn thành Dự án Hè!
+      </p>
+      <p style="color:#bbb; font-size:8pt; margin-top:2mm; line-height:1.6;">
+        Các bạn vừa học cách kể chuyện, quay phim, và làm stop motion.<br>
+        Quan trọng hơn — các bạn đã <em>làm thật, nhận phản hồi, và tiến bộ thật.</em><br>
+        Đó là cách học tốt nhất thế giới.
+      </p>
+    </div>
+  </div>
+
+  <div class="pf">
+    <span>Dự án Phim LEGO Stop Motion — Hè 2026</span>
+    <span class="pnum">6 / 6</span>
+  </div>
+</div>
+
+</body>
+</html>

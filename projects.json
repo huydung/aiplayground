@@ -10,6 +10,11 @@
     "description": "A classic team-building exercise: rank 15 survival items after an emergency moon landing and compare your choices against NASA's expert ratings.",
     "hidden": false
   },
+  "stop-motion": {
+    "label": "Làm Phim LEGO Stop Motion",
+    "description": "Worksheet 6 trang cho Nam Anh & Ngọc Linh — quay phim LEGO stop motion Hè 2026. In ra, làm thật, tự cải thiện.",
+    "hidden": false
+  },
   "links": [
     {
       "label": "Leadership Skills Inventory",
