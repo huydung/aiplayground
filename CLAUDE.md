@@ -4,9 +4,9 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Git workflow
 
-**Always push to the `beta` branch first** before pushing to any other branch or main.
+**Always push directly to `main`.** Do not use `beta` automatically.
 
-The active development branch is `claude/document-app-features-T364z`.
+Only switch to `beta` when explicitly told **"let's sync and test on beta"** — that signals a high-risk or heavily WIP change. In that case: sync `beta` from `main`, do development there, and do not merge back to `main` until told to.
 
 ## Commands
 
