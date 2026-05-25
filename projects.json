@@ -12,8 +12,8 @@
   },
   "links": [
     {
-      "label": "Workshop Results Dashboard",
-      "description": "Aggregated results and response data from the workshop exercises — powered by Google Sheets.",
+      "label": "Leadership Skills Inventory",
+      "description": "A 3–5 min self-assessment across three core leadership skill areas — Technical, Human, and Conceptual — with a personalized report and actionable improvement suggestions. Based on Northouse, Ch. 3.",
       "url": "https://script.google.com/macros/s/AKfycbzVFUeoYES_5_sRWvH2d9eAuiuZqmepfJiB7hQVROQe7ipxS5lhXBoHFmdW8QuRyTKHqA/exec"
     }
   ]
