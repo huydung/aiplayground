@@ -1,0 +1,973 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Five Needs For Life</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: #e6f7ff;
+            margin: 0;
+            padding: 10px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            min-height: 100vh;
+            box-sizing: border-box;
+        }
+        
+        h1 {
+            color: #444;
+            text-align: center;
+            margin-bottom: 20px;
+            font-size: 1.6rem;
+        }
+        
+        .main-container {
+            display: flex;
+            flex-direction: row;
+            justify-content: center;
+            width: 100%;
+            max-width: 1200px;
+            gap: 20px;
+        }
+        
+        .sliders-container {
+            width: 20%;
+            background-color: rgba(255, 255, 255, 0.7);
+            padding: 15px;
+            border-radius: 15px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+            flex-shrink: 0;
+        }
+        
+        .flower-container {
+            flex-grow: 1;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 500px;
+            position: relative;
+            width: 45%;
+        }
+        
+        .form-container {
+            width: 25%;
+            background-color: rgba(255, 255, 255, 0.7);
+            padding: 15px;
+            border-radius: 15px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+            flex-shrink: 0;
+        }
+        
+        .slider-group {
+            margin-bottom: 15px;
+            padding: 8px;
+            border-radius: 8px;
+            background-color: rgba(255, 255, 255, 0.5);
+            transition: background-color 0.3s;
+            position: relative;
+        }
+        
+        .slider-group:hover {
+            background-color: rgba(255, 255, 255, 0.8);
+        }
+        
+        .slider-label {
+            display: flex;
+            align-items: center;
+            margin-bottom: 5px;
+            font-weight: bold;
+            color: #333;
+            font-size: 0.85em;
+        }
+        
+        .emoji {
+            margin-right: 8px;
+            font-size: 1.3em;
+        }
+        
+        .slider {
+            width: 100%;
+            margin-top: 5px;
+            accent-color: #4CAF50;
+        }
+        
+        /* Form styles */
+        .form-section {
+            margin-top: 20px;
+            border-top: 1px solid #ddd;
+            padding-top: 15px;
+        }
+        
+        .form-section h3 {
+            margin-top: 0;
+            margin-bottom: 15px;
+            font-size: 1.1em;
+            color: #333;
+            text-align: center;
+        }
+        
+        .form-group {
+            margin-bottom: 15px;
+        }
+        
+        .form-group label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: bold;
+            font-size: 0.9em;
+            color: #444;
+        }
+        
+        .form-group select,
+        .form-group input {
+            width: 100%;
+            padding: 8px;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+            font-size: 0.9em;
+            background-color: white;
+        }
+        
+        .disclaimer {
+            margin: 15px 0;
+            padding: 10px;
+            background-color: rgba(255, 255, 255, 0.5);
+            border-radius: 4px;
+            font-size: 0.8em;
+            color: #555;
+            text-align: center;
+        }
+        
+        #submitButton {
+            display: block;
+            width: 100%;
+            padding: 10px;
+            background-color: #4CAF50;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            font-size: 1em;
+            font-weight: bold;
+            cursor: pointer;
+            transition: background-color 0.3s;
+        }
+        
+        #submitButton:hover {
+            background-color: #3e8e41;
+        }
+        
+        #submitButton:disabled {
+            background-color: #cccccc;
+            cursor: not-allowed;
+        }
+        
+        #submissionStatus {
+            margin-top: 10px;
+            padding: 10px;
+            border-radius: 4px;
+            font-size: 0.9em;
+            text-align: center;
+            display: none;
+        }
+        
+        .success {
+            background-color: #dff0d8;
+            color: #3c763d;
+        }
+        
+        .error {
+            background-color: #f2dede;
+            color: #a94442;
+        }
+        
+        .thank-you {
+            text-align: center;
+            padding: 20px;
+            background-color: rgba(255, 255, 255, 0.7);
+            border-radius: 8px;
+            margin-top: 20px;
+        }
+        
+        .thank-you h3 {
+            color: #4CAF50;
+            margin-bottom: 15px;
+        }
+        
+        .thank-you p {
+            color: #444;
+            margin-bottom: 10px;
+        }
+        
+        @media (max-width: 768px) {
+            .main-container {
+                flex-direction: column;
+                align-items: center;
+                gap: 15px;
+            }
+            
+            .sliders-container {
+                width: 90%;
+                max-width: 100%;
+                margin-bottom: 0;
+                padding: 10px;
+            }
+            
+            .flower-container {
+                width: 100%;
+                min-height: 350px;
+                order: 2;
+            }
+            
+            .form-container {
+                width: 90%;
+                max-width: 100%;
+                padding: 10px;
+                order: 3;
+            }
+            
+            h1 {
+                font-size: 1.4rem;
+                margin-bottom: 15px;
+            }
+            
+            .slider-group {
+                margin-bottom: 8px;
+            }
+            
+            .slider-label {
+                font-size: 0.8em;
+            }
+            
+            .form-section h3 {
+                font-size: 1em;
+            }
+            
+            .form-group label {
+                font-size: 0.8em;
+            }
+            
+            .form-group select,
+            .form-group input {
+                padding: 6px;
+                font-size: 0.8em;
+            }
+            
+            .disclaimer {
+                font-size: 0.7em;
+                padding: 8px;
+            }
+            
+            #submitButton {
+                padding: 8px;
+                font-size: 0.9em;
+            }
+        }
+    </style>
+</head>
+<body>
+    <h1>Five Needs For Life</h1>
+    <div class="main-container">
+        <div class="sliders-container">
+            <div class="slider-group">
+                <div class="slider-label">
+                    <span class="emoji">💰</span>
+                    <span>Livelihood</span>
+                </div>
+                <input type="range" min="-2" max="3" value="0" class="slider" id="slider1">
+            </div>
+            <div class="slider-group">
+                <div class="slider-label">
+                    <span class="emoji">🧭</span>
+                    <span>Integrity</span>
+                </div>
+                <input type="range" min="-2" max="3" value="0" class="slider" id="slider2">
+            </div>
+            <div class="slider-group">
+                <div class="slider-label">
+                    <span class="emoji">👥</span>
+                    <span>Connection</span>
+                </div>
+                <input type="range" min="-2" max="3" value="0" class="slider" id="slider3">
+            </div>
+            
+            
+            
+            <div class="slider-group">
+                <div class="slider-label">
+                    <span class="emoji">✨</span>
+                    <span>Significant</span>
+                </div>
+                <input type="range" min="-2" max="3" value="0" class="slider" id="slider4">
+            </div>
+            
+            <div class="slider-group">
+                <div class="slider-label">
+                    <span class="emoji">🚀</span>
+                    <span>Progression</span>
+                </div>
+                <input type="range" min="-2" max="3" value="0" class="slider" id="slider5">
+            </div>
+        </div>
+        
+        <div class="flower-container" id="flowerContainer"></div>
+        
+        <div class="form-container">
+            <div class="form-section">
+                <h3>Share Your Results</h3>
+                <form id="resultsForm">
+                    <div class="form-group">
+                        <label for="seniority">Professional Experience</label>
+                        <select id="seniority" name="seniority" required>
+                            <option value="" selected disabled>Select your experience</option>
+                            <option value="< 1 year">Less than 1 year</option>
+                            <option value="1-3 years">1-3 years</option>
+                            <option value="3-5 years">3-5 years</option>
+                            <option value="5-10 years">5-10 years</option>
+                            <option value="10-15 years">10-15 years</option>
+                            <option value="15+ years">15+ years</option>
+                        </select>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="jobProfile">Job Title/Role</label>
+                        <input type="text" id="jobProfile" name="jobProfile" placeholder="Enter your job title" required>
+                    </div>
+                    
+                    <div class="disclaimer">
+                        <p>All responses are anonymous and will only be used in aggregation for research purposes.</p>
+                    </div>
+                    
+                    <button type="submit" id="submitButton">Submit Results</button>
+                </form>
+                <div id="submissionStatus"></div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Constants for the flower dimensions
+        const svgWidth = 600;
+        const svgHeight = 500;
+        const centerX = svgWidth / 2;
+        const centerY = svgHeight / 2;
+        const pistilRadius = 65;
+        const maxPetalLength = 200;
+        
+        // Needs categories with their data
+        const needs = [
+            { name: "Economic Security & Stability", emoji: "💰", color: "#FFD700", angle: 126 },
+            { name: "Authenticity, Values & Autonomy", emoji: "🧭", color: "#FF7F50", angle: 54 },
+            { name: "Connection, Community & Recognition", emoji: "👥", color: "#5B9BD5", angle: -90 },
+            { name: "Impact & Meaningful Contribution", emoji: "✨", color: "#4CAF50", angle: -18 },            
+            { name: "Growth, Mastery & Future Orientation", emoji: "📈", color: "#9370DB", angle: 198 }
+        ];
+
+        // Create the SVG element
+        const createSVG = () => {
+            const container = document.getElementById('flowerContainer');
+            container.innerHTML = '';
+            
+            // Make SVG responsive
+            const svg = document.createElementNS("http://www.w3.org/2000/svg", "svg");
+            svg.setAttribute("viewBox", `0 0 ${svgWidth} ${svgHeight}`);
+            svg.setAttribute("width", "100%");
+            svg.setAttribute("height", "100%");
+            svg.style.maxHeight = "70vh";
+            svg.style.display = "block";
+            svg.id = "flowerSVG";
+            
+            container.appendChild(svg);
+            return svg;
+        };
+
+        // Get the current values from all sliders
+        const getSliderValues = () => {
+            return [1, 2, 3, 4, 5].map(i => parseInt(document.getElementById(`slider${i}`).value));
+        };
+
+        // Draw a petal - new petal shape
+        const drawPetal = (svg, angle, length, width, color, emoji) => {
+            // Make petals wider and more visible even at small values
+            const petalWidth = width * 100; // Increased width factor
+            
+            // Make length at least 40% of maxPetalLength even for value 1 
+            const adjustedLength = Math.max(length, maxPetalLength * 0.4);
+            
+            // Calculate the end point of the petal
+            const endX = centerX + adjustedLength * Math.cos(angle * Math.PI / 180);
+            const endY = centerY + adjustedLength * Math.sin(angle * Math.PI / 180);
+            
+            // Calculate control points for the bezier curves - making them wider
+            // Wider angle spread to make petals touch each other
+            const ctrl1Angle = angle - 50; 
+            const ctrl2Angle = angle + 50;
+            
+            const ctrl1X = centerX + adjustedLength * 0.8 * Math.cos(ctrl1Angle * Math.PI / 180);
+            const ctrl1Y = centerY + adjustedLength * 0.8 * Math.sin(ctrl1Angle * Math.PI / 180);
+            const ctrl2X = centerX + adjustedLength * 0.8 * Math.cos(ctrl2Angle * Math.PI / 180);
+            const ctrl2Y = centerY + adjustedLength * 0.8 * Math.sin(ctrl2Angle * Math.PI / 180);
+            
+            // Additional control points for the heart-like petal shape
+            const ctrl3X = centerX + adjustedLength * 0.9 * Math.cos((angle - 25) * Math.PI / 180);
+            const ctrl3Y = centerY + adjustedLength * 0.9 * Math.sin((angle - 25) * Math.PI / 180);
+            const ctrl4X = centerX + adjustedLength * 0.9 * Math.cos((angle + 25) * Math.PI / 180);
+            const ctrl4Y = centerY + adjustedLength * 0.9 * Math.sin((angle + 25) * Math.PI / 180);
+            
+            // Create a gradient for the petal
+            const gradientId = `petalGradient${angle}`;
+            const gradient = document.createElementNS("http://www.w3.org/2000/svg", "linearGradient");
+            gradient.setAttribute("id", gradientId);
+            gradient.setAttribute("x1", "0%");
+            gradient.setAttribute("y1", "0%");
+            gradient.setAttribute("x2", "100%");
+            gradient.setAttribute("y2", "100%");
+            
+            const stop1 = document.createElementNS("http://www.w3.org/2000/svg", "stop");
+            stop1.setAttribute("offset", "0%");
+            stop1.setAttribute("stop-color", color);
+            
+            const stop2 = document.createElementNS("http://www.w3.org/2000/svg", "stop");
+            stop2.setAttribute("offset", "100%");
+            stop2.setAttribute("stop-color", lightenColor(color, 50));
+            
+            gradient.appendChild(stop1);
+            gradient.appendChild(stop2);
+            
+            const defs = document.createElementNS("http://www.w3.org/2000/svg", "defs");
+            defs.appendChild(gradient);
+            svg.appendChild(defs);
+            
+            // Draw the petal using path with a new shape (heart-like)
+            const path = document.createElementNS("http://www.w3.org/2000/svg", "path");
+            path.setAttribute("d", `
+                M ${centerX} ${centerY}
+                Q ${ctrl1X} ${ctrl1Y}, ${endX} ${endY}
+                Q ${ctrl4X} ${ctrl4Y}, ${centerX} ${centerY}
+                Z
+            `);
+            path.setAttribute("fill", `url(#${gradientId})`);
+            path.setAttribute("stroke", darkenColor(color, 20));
+            path.setAttribute("stroke-width", "1");
+            path.setAttribute("filter", "drop-shadow(0px 2px 3px rgba(0,0,0,0.2))");
+            svg.appendChild(path);
+            
+            // Add texture to the petal
+            for (let i = 0; i < 8; i++) {
+                const lineAngle = angle - 15 + (i * 5);
+                const lineLength = length * 0.7 * (0.5 + Math.random() * 0.5);
+                const startX = centerX + pistilRadius * 0.8 * Math.cos(lineAngle * Math.PI / 180);
+                const startY = centerY + pistilRadius * 0.8 * Math.sin(lineAngle * Math.PI / 180);
+                const endLineX = centerX + lineLength * Math.cos(lineAngle * Math.PI / 180);
+                const endLineY = centerY + lineLength * Math.sin(lineAngle * Math.PI / 180);
+                
+                const line = document.createElementNS("http://www.w3.org/2000/svg", "line");
+                line.setAttribute("x1", startX);
+                line.setAttribute("y1", startY);
+                line.setAttribute("x2", endLineX);
+                line.setAttribute("y2", endLineY);
+                line.setAttribute("stroke", darkenColor(color, 10));
+                line.setAttribute("stroke-width", "0.5");
+                line.setAttribute("opacity", "0.3");
+                svg.appendChild(line);
+            }
+            
+            // Add emoji near the end of the petal, outside but close to the tip
+            const emojiDistance = length * 1.1; // Just beyond the petal tip
+            const emojiX = centerX + emojiDistance * Math.cos(angle * Math.PI / 180);
+            const emojiY = centerY + emojiDistance * Math.sin(angle * Math.PI / 180);
+            
+            const foreignObject = document.createElementNS("http://www.w3.org/2000/svg", "foreignObject");
+            foreignObject.setAttribute("x", emojiX - 15);
+            foreignObject.setAttribute("y", emojiY - 15);
+            foreignObject.setAttribute("width", "30");
+            foreignObject.setAttribute("height", "30");
+            
+            const emojiDiv = document.createElement("div");
+            emojiDiv.style.textAlign = "center";
+            emojiDiv.style.fontSize = "20px";
+            emojiDiv.innerHTML = emoji;
+            
+            foreignObject.appendChild(emojiDiv);
+            svg.appendChild(foreignObject);
+        };
+
+        // Draw a damage hole in the pistil - now using background color and irregular shape
+        const drawDamage = (svg, angle, size) => {
+            // Size is -1 or -2, representing the severity of the damage
+            // Reduced damage size by 30% as requested
+            const damageSize = Math.abs(size) * 14; // Reduced from 20 to 14 (30% smaller)
+            
+            // Calculate the position of the damage on the pistil
+            const damageX = centerX + (pistilRadius - damageSize/2) * Math.cos(angle * Math.PI / 180);
+            const damageY = centerY + (pistilRadius - damageSize/2) * Math.sin(angle * Math.PI / 180);
+            
+            // Create an irregular "bitten" shape instead of a perfect circle
+            const bitePath = document.createElementNS("http://www.w3.org/2000/svg", "path");
+            
+            // Generate irregular bitten mark with multiple points
+            let pathData = `M ${damageX},${damageY} `;
+            const numPoints = 12;
+            
+            for (let i = 0; i < numPoints; i++) {
+                const pointAngle = (i / numPoints) * 2 * Math.PI;
+                // Vary the radius to create irregularity - some points extend further
+                const biteFactor = 0.7 + Math.random() * 0.6; // Between 0.7 and 1.3
+                const pointRadius = damageSize * biteFactor;
+                
+                const px = damageX + pointRadius * Math.cos(pointAngle);
+                const py = damageY + pointRadius * Math.sin(pointAngle);
+                
+                pathData += `L ${px},${py} `;
+            }
+            
+            pathData += "Z"; // Close the path
+            
+            bitePath.setAttribute("d", pathData);
+            bitePath.setAttribute("fill", "#e6f7ff"); // Same as background color
+            bitePath.setAttribute("stroke", "none"); // No outline
+            svg.appendChild(bitePath);
+        };
+
+        // Draw the pistil (center of the flower)
+        const drawPistil = (svg, damageLevel) => {
+            // Calculate color based on damage level (0 to 10, where 10 is maximum damage)
+            // 0 damage = bright yellow, max damage = dark brown
+            const normalColor = "#FFD700"; // Bright yellow
+            const maxDamageColor = "#5D4037"; // Dark brown
+            
+            // Calculate color based on damage proportion
+            const maxPossibleDamage = 10; // -2 for all 5 categories would be 10
+            const damageProportion = Math.min(damageLevel / maxPossibleDamage, 1);
+            const pistilColor = interpolateColor(normalColor, maxDamageColor, damageProportion);
+            
+            // Create a gradient for the pistil
+            const gradientId = "pistilGradient";
+            const gradient = document.createElementNS("http://www.w3.org/2000/svg", "radialGradient");
+            gradient.setAttribute("id", gradientId);
+            gradient.setAttribute("cx", "50%");
+            gradient.setAttribute("cy", "50%");
+            gradient.setAttribute("r", "50%");
+            gradient.setAttribute("fx", "40%");
+            gradient.setAttribute("fy", "40%");
+            
+            const stop1 = document.createElementNS("http://www.w3.org/2000/svg", "stop");
+            stop1.setAttribute("offset", "0%");
+            stop1.setAttribute("stop-color", lightenColor(pistilColor, 20));
+            
+            const stop2 = document.createElementNS("http://www.w3.org/2000/svg", "stop");
+            stop2.setAttribute("offset", "70%");
+            stop2.setAttribute("stop-color", pistilColor);
+            
+            const stop3 = document.createElementNS("http://www.w3.org/2000/svg", "stop");
+            stop3.setAttribute("offset", "100%");
+            stop3.setAttribute("stop-color", darkenColor(pistilColor, 20));
+            
+            gradient.appendChild(stop1);
+            gradient.appendChild(stop2);
+            gradient.appendChild(stop3);
+            
+            const defs = document.createElementNS("http://www.w3.org/2000/svg", "defs");
+            defs.appendChild(gradient);
+            svg.appendChild(defs);
+            
+            // Draw the pistil as a circle
+            const circle = document.createElementNS("http://www.w3.org/2000/svg", "circle");
+            circle.setAttribute("cx", centerX);
+            circle.setAttribute("cy", centerY);
+            circle.setAttribute("r", pistilRadius);
+            circle.setAttribute("fill", `url(#${gradientId})`);
+            circle.setAttribute("stroke", darkenColor(pistilColor, 30));
+            circle.setAttribute("stroke-width", "2");
+            // Removed the drop shadow
+            svg.appendChild(circle);
+            
+            // Add texture dots to the pistil
+            for (let i = 0; i < 50; i++) {
+                const angle = Math.random() * 360;
+                const distance = Math.random() * pistilRadius * 0.8;
+                const dotX = centerX + distance * Math.cos(angle * Math.PI / 180);
+                const dotY = centerY + distance * Math.sin(angle * Math.PI / 180);
+                const dotSize = 1 + Math.random() * 2;
+                
+                const dot = document.createElementNS("http://www.w3.org/2000/svg", "circle");
+                dot.setAttribute("cx", dotX);
+                dot.setAttribute("cy", dotY);
+                dot.setAttribute("r", dotSize);
+                dot.setAttribute("fill", darkenColor(pistilColor, 30));
+                dot.setAttribute("opacity", "0.7");
+                svg.appendChild(dot);
+            }
+        };
+
+        // Draw the complete flower
+        const drawFlower = () => {
+            const values = getSliderValues();
+            const svg = createSVG();
+            
+            // First draw the stem (so it's behind everything)
+            drawStem(svg);
+            
+            // Then draw ground (over the stem)
+            drawGround(svg);
+            
+            // Calculate pistil damage level
+            const damageLevel = values.reduce((sum, val) => sum + (val < 0 ? Math.abs(val) : 0), 0);
+            
+            // Draw petals first (so they appear behind the pistil)
+            values.forEach((value, index) => {
+                if (value > 0) {
+                    // Calculate petal size based on value (1-3)
+                    // Adjusted scale to make level 1 more visible
+                    // Now a value of 1 will give 50% of max length instead of 33%
+                    const petalLength = ((value * 0.5) / 3 + 0.5) * maxPetalLength;
+                    const petalWidth = value / 3;
+                    
+                    drawPetal(svg, needs[index].angle, petalLength, petalWidth, needs[index].color, needs[index].emoji);
+                } else {
+                    // Still draw the emoji even if no petal is visible (for values 0, -1, -2)
+                    drawEmojiOnly(svg, needs[index].angle, needs[index].emoji);
+                }
+            });
+            
+            // Draw the pistil
+            drawPistil(svg, damageLevel);
+            
+            // Draw damage holes on top
+            values.forEach((value, index) => {
+                if (value < 0) {
+                    drawDamage(svg, needs[index].angle, value);
+                }
+            });
+        };
+        
+        // Function to draw just the emoji without a petal
+        const drawEmojiOnly = (svg, angle, emoji) => {
+            // Position emoji near the pistil
+            const emojiDistance = pistilRadius * 1.4; // Just outside the pistil
+            const emojiX = centerX + emojiDistance * Math.cos(angle * Math.PI / 180);
+            const emojiY = centerY + emojiDistance * Math.sin(angle * Math.PI / 180);
+            
+            const foreignObject = document.createElementNS("http://www.w3.org/2000/svg", "foreignObject");
+            foreignObject.setAttribute("x", emojiX - 15);
+            foreignObject.setAttribute("y", emojiY - 15);
+            foreignObject.setAttribute("width", "30");
+            foreignObject.setAttribute("height", "30");
+            
+            const emojiDiv = document.createElement("div");
+            emojiDiv.style.textAlign = "center";
+            emojiDiv.style.fontSize = "20px";
+            emojiDiv.innerHTML = emoji;
+            
+            foreignObject.appendChild(emojiDiv);
+            svg.appendChild(foreignObject);
+        };
+        
+        // Draw the ground/grass - simplified version
+        const drawGround = (svg) => {
+            // Create a gradient for the grass
+            const gradientId = "grassGradient";
+            const gradient = document.createElementNS("http://www.w3.org/2000/svg", "linearGradient");
+            gradient.setAttribute("id", gradientId);
+            gradient.setAttribute("x1", "0%");
+            gradient.setAttribute("y1", "0%");
+            gradient.setAttribute("x2", "0%");
+            gradient.setAttribute("y2", "100%");
+            
+            const stop1 = document.createElementNS("http://www.w3.org/2000/svg", "stop");
+            stop1.setAttribute("offset", "0%");
+            stop1.setAttribute("stop-color", "#4CAF50");
+            
+            const stop2 = document.createElementNS("http://www.w3.org/2000/svg", "stop");
+            stop2.setAttribute("offset", "100%");
+            stop2.setAttribute("stop-color", "#2E7D32");
+            
+            gradient.appendChild(stop1);
+            gradient.appendChild(stop2);
+            
+            const defs = svg.querySelector("defs") || document.createElementNS("http://www.w3.org/2000/svg", "defs");
+            if (!svg.querySelector("defs")) {
+                svg.appendChild(defs);
+            }
+            defs.appendChild(gradient);
+            
+            // Draw a thicker curved ground
+            const groundPath = document.createElementNS("http://www.w3.org/2000/svg", "path");
+            
+            // Define a simple curved path for the ground with more height
+            // Starting from left edge, curving up in the middle, then down to right edge
+            const groundY = svgHeight - 50; // Higher start point for a thicker ground
+            const curveHeight = 30; // Increased curve height
+            
+            const pathD = `
+                M 0,${svgHeight}
+                L 0,${groundY + curveHeight/2}
+                C ${svgWidth/4},${groundY - curveHeight} ${svgWidth*3/4},${groundY - curveHeight} ${svgWidth},${groundY + curveHeight/2}
+                L ${svgWidth},${svgHeight}
+                Z
+            `;
+            
+            groundPath.setAttribute("d", pathD);
+            groundPath.setAttribute("fill", `url(#${gradientId})`);
+            svg.appendChild(groundPath);
+            
+            // Add job title text if available
+            const jobProfile = document.getElementById('jobProfile').value.trim();
+            const seniority = document.getElementById('seniority').value;
+            
+            if (jobProfile || seniority) {
+                let displayText = "";
+                
+                if (jobProfile) {
+                    displayText += jobProfile.toUpperCase();
+                    
+                    if (seniority) {
+                        displayText += ` (${seniority} xp)`;
+                    }
+                } else if (seniority) {
+                    displayText = seniority;
+                }
+                
+                if (displayText) {
+                    const text = document.createElementNS("http://www.w3.org/2000/svg", "text");
+                    text.setAttribute("x", svgWidth / 2);
+                    text.setAttribute("y", svgHeight - 20); // Positioned lower, clearly on the grass
+                    text.setAttribute("text-anchor", "middle");
+                    text.setAttribute("fill", "white");
+                    text.setAttribute("font-size", "16px");
+                    text.setAttribute("font-weight", "bold");
+                    text.setAttribute("font-family", "Arial, sans-serif");
+                    text.textContent = displayText;
+                    
+                    // Add a shadow effect for better visibility
+                    text.setAttribute("filter", "drop-shadow(0px 1px 1px rgba(0,0,0,0.7))");
+                    
+                    svg.appendChild(text);
+                }
+            }
+        };
+        
+        // Draw the stem (trunk only - no leaves)
+        const drawStem = (svg) => {
+            // Calculate stem start position (bottom of pistil)
+            const stemTopX = centerX;
+            const stemTopY = centerY + pistilRadius;
+            const stemBottomY = svgHeight; // Reach all the way to the bottom of SVG
+            const stemWidth = 14; // Slightly thicker trunk
+            
+            // Create stem gradient
+            const stemGradientId = "stemGradient";
+            const stemGradient = document.createElementNS("http://www.w3.org/2000/svg", "linearGradient");
+            stemGradient.setAttribute("id", stemGradientId);
+            stemGradient.setAttribute("x1", "0%");
+            stemGradient.setAttribute("y1", "0%");
+            stemGradient.setAttribute("x2", "100%");
+            stemGradient.setAttribute("y2", "0%");
+            
+            const stemStop1 = document.createElementNS("http://www.w3.org/2000/svg", "stop");
+            stemStop1.setAttribute("offset", "0%");
+            stemStop1.setAttribute("stop-color", "#2E7D32");
+            
+            const stemStop2 = document.createElementNS("http://www.w3.org/2000/svg", "stop");
+            stemStop2.setAttribute("offset", "50%");
+            stemStop2.setAttribute("stop-color", "#388E3C");
+            
+            const stemStop3 = document.createElementNS("http://www.w3.org/2000/svg", "stop");
+            stemStop3.setAttribute("offset", "100%");
+            stemStop3.setAttribute("stop-color", "#2E7D32");
+            
+            stemGradient.appendChild(stemStop1);
+            stemGradient.appendChild(stemStop2);
+            stemGradient.appendChild(stemStop3);
+            
+            const defs = svg.querySelector("defs") || document.createElementNS("http://www.w3.org/2000/svg", "defs");
+            if (!svg.querySelector("defs")) {
+                svg.appendChild(defs);
+            }
+            defs.appendChild(stemGradient);
+            
+            // Draw the stem with a slight curve
+            const stem = document.createElementNS("http://www.w3.org/2000/svg", "path");
+            const controlX = centerX + 15; // Add a slight curve
+            stem.setAttribute("d", `M ${stemTopX},${stemTopY} Q ${controlX},${(stemTopY + stemBottomY)/2} ${stemTopX},${stemBottomY}`);
+            stem.setAttribute("stroke", `url(#${stemGradientId})`);
+            stem.setAttribute("stroke-width", stemWidth);
+            stem.setAttribute("fill", "none");
+            svg.appendChild(stem);
+        };
+
+        // Helper function to lighten a color
+        function lightenColor(color, percent) {
+            const num = parseInt(color.slice(1), 16);
+            const amt = Math.round(2.55 * percent);
+            const R = Math.min(255, (num >> 16) + amt);
+            const G = Math.min(255, (num >> 8 & 0x00FF) + amt);
+            const B = Math.min(255, (num & 0x0000FF) + amt);
+            return `#${(0x1000000 + (R << 16) + (G << 8) + B).toString(16).slice(1)}`;
+        }
+
+        // Helper function to darken a color
+        function darkenColor(color, percent) {
+            const num = parseInt(color.slice(1), 16);
+            const amt = Math.round(2.55 * percent);
+            const R = Math.max(0, (num >> 16) - amt);
+            const G = Math.max(0, (num >> 8 & 0x00FF) - amt);
+            const B = Math.max(0, (num & 0x0000FF) - amt);
+            return `#${(0x1000000 + (R << 16) + (G << 8) + B).toString(16).slice(1)}`;
+        }
+
+        // Helper function to interpolate between two colors
+        function interpolateColor(color1, color2, factor) {
+            const r1 = parseInt(color1.slice(1, 3), 16);
+            const g1 = parseInt(color1.slice(3, 5), 16);
+            const b1 = parseInt(color1.slice(5, 7), 16);
+            
+            const r2 = parseInt(color2.slice(1, 3), 16);
+            const g2 = parseInt(color2.slice(3, 5), 16);
+            const b2 = parseInt(color2.slice(5, 7), 16);
+            
+            const r = Math.round(r1 + factor * (r2 - r1));
+            const g = Math.round(g1 + factor * (g2 - g1));
+            const b = Math.round(b1 + factor * (b2 - b1));
+            
+            return `#${(r << 16 | g << 8 | b).toString(16).padStart(6, '0')}`;
+        }
+
+        // Setup event listeners for sliders and form fields
+        function setupSliders() {
+            // Set up sliders
+            for (let i = 1; i <= 5; i++) {
+                const slider = document.getElementById(`slider${i}`);
+                
+                // Set initial color based on value
+                updateSliderColor(slider);
+                
+                slider.addEventListener('input', function() {
+                    drawFlower();
+                    updateSliderColor(this);
+                });
+            }
+            
+            // Set up form field live updates
+            const jobProfileInput = document.getElementById('jobProfile');
+            const senioritySelect = document.getElementById('seniority');
+            
+            jobProfileInput.addEventListener('input', drawFlower);
+            senioritySelect.addEventListener('change', drawFlower);
+        }
+        
+        // Update slider color based on its value
+        function updateSliderColor(slider) {
+            const value = parseInt(slider.value);
+            if (value < 0) {
+                slider.style.accentColor = '#E53935'; // Red for negative values
+            } else if (value > 0) {
+                slider.style.accentColor = '#4CAF50'; // Green for positive values
+            } else {
+                slider.style.accentColor = '#757575'; // Gray for zero
+            }
+        }
+        
+        // Handle form submission
+        function setupForm() {
+            const form = document.getElementById('resultsForm');
+            const submitButton = document.getElementById('submitButton');
+            const statusDiv = document.getElementById('submissionStatus');
+            const formSection = document.querySelector('.form-section');
+            
+            form.addEventListener('submit', function(event) {
+                event.preventDefault();
+                
+                // Validate form fields
+                const seniority = document.getElementById('seniority').value;
+                const jobProfile = document.getElementById('jobProfile').value;
+                
+                if (!seniority || !jobProfile) {
+                    statusDiv.textContent = 'Please fill in all fields before submitting.';
+                    statusDiv.className = 'error';
+                    statusDiv.style.display = 'block';
+                    
+                    setTimeout(function() {
+                        statusDiv.style.display = 'none';
+                    }, 3000);
+                    
+                    return;
+                }
+                
+                // Get all values
+                const sliderValues = [];
+                for (let i = 1; i <= 5; i++) {
+                    sliderValues.push(document.getElementById(`slider${i}`).value);
+                }
+                
+                // Disable button while submitting
+                submitButton.disabled = true;
+                submitButton.textContent = 'Submitting...';
+                
+                // Prepare data for submission
+                const formData = {
+                    timestamp: new Date().toISOString(),
+                    seniority: seniority,
+                    jobProfile: jobProfile,
+                    livelihood: sliderValues[0],
+                    connection: sliderValues[2],
+                    integrity: sliderValues[1], 
+                    significant: sliderValues[3],
+                    progression: sliderValues[4]
+                };
+                
+                // Submit to Google Sheets via AppScript
+                submitToGoogleSheets(formData, function(success, message) {
+                    if (success) {
+                        // Replace form with thank you message
+                        formSection.innerHTML = `
+                            <div class="thank-you">
+                                <h3>Thank You!</h3>
+                                <p>Your results have been submitted successfully.</p>
+                                <p>Thank you for participating in our research.</p>
+                            </div>
+                        `;
+                    } else {
+                        statusDiv.textContent = 'Error submitting results: ' + message;
+                        statusDiv.className = 'error';
+                        statusDiv.style.display = 'block';
+                        submitButton.disabled = false;
+                        submitButton.textContent = 'Submit Results';
+                    }
+                });
+            });
+        }
+        
+        // Function to submit data to Google Sheets via AppScript
+        function submitToGoogleSheets(data, callback) {
+            // Log the data being sent for debugging
+            console.log('Sending data to Google Sheets:', data);
+            
+            // Real Google Apps Script Web App URL
+            const scriptURL = 'https://script.google.com/macros/s/AKfycbz8a3MnxPWZx1wHBWkbcZptlKpN4wXFzJfuzj7cyI80Dcns2ExNZwaDn-iGzHxai8uG/exec';
+            
+            fetch(scriptURL, {
+                method: 'POST',
+                body: JSON.stringify(data),
+                mode: 'no-cors'
+            })
+            .then(response => callback(true, 'Success'))
+            .catch(error => callback(false, error));
+        }
+
+        // Initialize the flower
+        window.onload = function() {
+            setupSliders();
+            setupForm();
+            drawFlower();
+            
+            // Ensure it redraws when orientation changes
+            window.addEventListener('resize', function() {
+                drawFlower();
+            });
+        };
+    </script>
+</body>
+</html>

@@ -1,8 +1,13 @@
 {
   "_comment": "Configure static project folders dropped into projects/. Each key is a folder name. 'hidden: true' means the project is served but not listed on the homepage.",
-  "example-project": {
-    "label": "Example Project",
-    "description": "An example hidden project — accessible at /projects/example-project/ but not listed on the homepage.",
-    "hidden": true
+  "worklife-needs": {
+    "label": "Five Needs For Work & Life",
+    "description": "Rate how well your current role fulfills five core work-life needs — livelihood, integrity, connection, significance, and progression — and visualize the result as a flower.",
+    "hidden": false
+  },
+  "nasa-moon-survival": {
+    "label": "NASA Moon Survival Exercise",
+    "description": "A classic team-building exercise: rank 15 survival items after an emergency moon landing and compare your choices against NASA's expert ratings.",
+    "hidden": false
   }
 }
