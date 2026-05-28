@@ -3115,23 +3115,33 @@
           );
         }
 
-        // --- DATA PROVIDER — fetches + syncs user state to server ---
+        // --- DATA PROVIDER — fetches + syncs user state to server, caches in localStorage ---
         function DataProvider({ token, onLogout, children }) {
-          const [data, setData] = useState(null);
-          const [loadError, setLoadError] = useState(false);
+          // localStorage key is per-user so multiple accounts on the same device don't mix
+          const lsKey = `poker_data_${(() => { try { return JSON.parse(atob(token.split('.')[1])).id; } catch(_) { return '0'; } })()}`;
+
+          // Seed state immediately from localStorage — app is usable while server wakes up
+          const cached = (() => { try { const c = localStorage.getItem(lsKey); return c ? JSON.parse(c) : null; } catch(_) { return null; } })();
+          const [data, setData] = useState(cached);
+          const [offlineMode, setOfflineMode] = useState(false);
           const [retryKey, setRetryKey] = useState(0);
           const syncTimer = useRef(null);
-          const latestDataRef = useRef(null); // always holds the freshest data for flush-on-close
+          const latestDataRef = useRef(cached);
 
+          // Fetch from server (source of truth); overwrites cache on success
           useEffect(() => {
-            setLoadError(false);
+            setOfflineMode(false);
             fetch('/api/poker/data', { headers: { Authorization: `Bearer ${token}` } })
               .then(r => { if (!r.ok) throw new Error(r.status); return r.json(); })
-              .then(d => { latestDataRef.current = d; setData(d); })
+              .then(d => {
+                latestDataRef.current = d;
+                setData(d);
+                try { localStorage.setItem(lsKey, JSON.stringify(d)); } catch(_) {}
+              })
               .catch(err => {
-                // Only force logout on 401 — a network/cold-start error must not wipe the session
-                if (String(err.message) === '401') onLogout();
-                else setLoadError(true);
+                // Only logout on 401 — network/cold-start errors must not wipe the session
+                if (String(err.message) === '401') { onLogout(); return; }
+                setOfflineMode(true); // cached data (if any) is still shown
               });
           }, [token, retryKey]);
 
@@ -3145,20 +3155,22 @@
             }).catch(console.error);
           }, [token]);
 
-          // Immediate flush — cancels any pending debounce and saves right now
+          // Immediate flush — cancel debounce, write localStorage + server right now
           const flush = useCallback((overrideData) => {
             clearTimeout(syncTimer.current);
             syncTimer.current = null;
             const toSave = overrideData ?? latestDataRef.current;
-            if (toSave !== null) putData(toSave);
-          }, [putData]);
+            if (toSave === null) return;
+            try { localStorage.setItem(lsKey, JSON.stringify(toSave)); } catch(_) {}
+            putData(toSave);
+          }, [putData, lsKey]);
 
           const scheduleSync = useCallback((newData) => {
             clearTimeout(syncTimer.current);
             syncTimer.current = setTimeout(() => putData(newData), 800);
           }, [putData]);
 
-          // Flush on tab close / navigation / mobile background — covers the "close too fast" case
+          // Flush pending debounce on tab close / navigation / mobile backgrounding
           useEffect(() => {
             const onHide = () => { if (syncTimer.current) flush(); };
             window.addEventListener('pagehide', onHide);
@@ -3173,27 +3185,31 @@
             setData(prev => {
               const next = { ...prev, [key]: valueOrFn instanceof Function ? valueOrFn(prev[key]) : valueOrFn };
               latestDataRef.current = next;
-              scheduleSync(next);
+              try { localStorage.setItem(lsKey, JSON.stringify(next)); } catch(_) {} // immediate local backup
+              scheduleSync(next); // debounced server sync
               return next;
             });
-          }, [scheduleSync]);
+          }, [scheduleSync, lsKey]);
 
           const ctxValue = useMemo(() => ({ data: data ?? {}, update, flush }), [data, update, flush]);
 
+          // No cache + server unreachable → show retry screen
+          if (data === null && offlineMode) {
+            return (
+              <div className="flex flex-col items-center justify-center min-h-screen bg-neutral-950 gap-4 p-8 text-center">
+                <div className="text-neutral-400 text-sm">Connection error — server may be starting up.</div>
+                <button
+                  onClick={() => setRetryKey(k => k + 1)}
+                  className="px-5 py-2 bg-neutral-800 border border-neutral-700 text-neutral-300 rounded-xl text-sm hover:bg-neutral-700 active:scale-95 transition-all"
+                >
+                  Retry
+                </button>
+              </div>
+            );
+          }
+
+          // No cache yet, waiting for server → spinner
           if (data === null) {
-            if (loadError) {
-              return (
-                <div className="flex flex-col items-center justify-center min-h-screen bg-neutral-950 gap-4 p-8 text-center">
-                  <div className="text-neutral-400 text-sm">Connection error — server may be starting up.</div>
-                  <button
-                    onClick={() => setRetryKey(k => k + 1)}
-                    className="px-5 py-2 bg-neutral-800 border border-neutral-700 text-neutral-300 rounded-xl text-sm hover:bg-neutral-700 active:scale-95 transition-all"
-                  >
-                    Retry
-                  </button>
-                </div>
-              );
-            }
             return (
               <div className="flex items-center justify-center min-h-screen bg-neutral-950 text-neutral-500 text-sm">
                 Loading…
@@ -3201,7 +3217,17 @@
             );
           }
 
-          return <DataCtx.Provider value={ctxValue}>{children}</DataCtx.Provider>;
+          return (
+            <DataCtx.Provider value={ctxValue}>
+              {offlineMode && (
+                <div className="fixed top-0 inset-x-0 z-50 bg-orange-500 text-black text-xs text-center py-1.5 font-semibold">
+                  Offline — showing cached data.{' '}
+                  <button onClick={() => setRetryKey(k => k + 1)} className="underline">Retry</button>
+                </div>
+              )}
+              {children}
+            </DataCtx.Provider>
+          );
         }
 
         // --- APP ROOT — orchestrates auth flow ---
