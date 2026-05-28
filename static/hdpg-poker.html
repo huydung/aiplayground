@@ -573,6 +573,7 @@
 
         // --- MAIN APP COMPONENT ---
         function App({ username, onLogout }) {
+          const { data: ctxData, flush: flushData } = useContext(DataCtx);
           // Global State
           const [hands, setHands] = useLocalStorage('pt2_hands', []);
           const [sessions, setSessions] = useLocalStorage('pt2_sessions', []);
@@ -620,6 +621,7 @@
             const handsSorted = [...hands].sort((a, b) => (a.ts || 0) - (b.ts || 0));
             const firstTs = handsSorted.length > 0 ? handsSorted[0].ts : startTime;
             const lastTs  = handsSorted.length > 0 ? handsSorted[handsSorted.length - 1].ts : Date.now();
+            const newStartTime = Date.now();
 
             const newSession = {
               id: startTime,
@@ -635,10 +637,19 @@
               discTokens: discTokens.length
             };
 
+            // Flush immediately — don't rely on the 800ms debounce which can be lost on tab close
+            flushData({
+              ...ctxData,
+              pt2_sessions: [newSession, ...sessions],
+              pt2_hands: [],
+              pt2_disc: [],
+              pt2_start: newStartTime,
+            });
+
             setSessions([newSession, ...sessions]);
             setHands([]);
             setDiscTokens([]);
-            setStartTime(Date.now());
+            setStartTime(newStartTime);
             setActiveTab('session');
             showToast('Session saved!');
           };
@@ -3107,37 +3118,82 @@
         // --- DATA PROVIDER — fetches + syncs user state to server ---
         function DataProvider({ token, onLogout, children }) {
           const [data, setData] = useState(null);
+          const [loadError, setLoadError] = useState(false);
+          const [retryKey, setRetryKey] = useState(0);
           const syncTimer = useRef(null);
+          const latestDataRef = useRef(null); // always holds the freshest data for flush-on-close
 
           useEffect(() => {
+            setLoadError(false);
             fetch('/api/poker/data', { headers: { Authorization: `Bearer ${token}` } })
               .then(r => { if (!r.ok) throw new Error(r.status); return r.json(); })
-              .then(d => setData(d))
-              .catch(() => onLogout());
+              .then(d => { latestDataRef.current = d; setData(d); })
+              .catch(err => {
+                // Only force logout on 401 — a network/cold-start error must not wipe the session
+                if (String(err.message) === '401') onLogout();
+                else setLoadError(true);
+              });
+          }, [token, retryKey]);
+
+          // Low-level PUT with keepalive so it survives page close
+          const putData = useCallback((d) => {
+            fetch('/api/poker/data', {
+              method: 'PUT',
+              headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
+              body: JSON.stringify(d),
+              keepalive: true,
+            }).catch(console.error);
           }, [token]);
+
+          // Immediate flush — cancels any pending debounce and saves right now
+          const flush = useCallback((overrideData) => {
+            clearTimeout(syncTimer.current);
+            syncTimer.current = null;
+            const toSave = overrideData ?? latestDataRef.current;
+            if (toSave !== null) putData(toSave);
+          }, [putData]);
 
           const scheduleSync = useCallback((newData) => {
             clearTimeout(syncTimer.current);
-            syncTimer.current = setTimeout(() => {
-              fetch('/api/poker/data', {
-                method: 'PUT',
-                headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
-                body: JSON.stringify(newData),
-              }).catch(console.error);
-            }, 800);
-          }, [token]);
+            syncTimer.current = setTimeout(() => putData(newData), 800);
+          }, [putData]);
+
+          // Flush on tab close / navigation / mobile background — covers the "close too fast" case
+          useEffect(() => {
+            const onHide = () => { if (syncTimer.current) flush(); };
+            window.addEventListener('pagehide', onHide);
+            document.addEventListener('visibilitychange', onHide);
+            return () => {
+              window.removeEventListener('pagehide', onHide);
+              document.removeEventListener('visibilitychange', onHide);
+            };
+          }, [flush]);
 
           const update = useCallback((key, valueOrFn) => {
             setData(prev => {
               const next = { ...prev, [key]: valueOrFn instanceof Function ? valueOrFn(prev[key]) : valueOrFn };
+              latestDataRef.current = next;
               scheduleSync(next);
               return next;
             });
           }, [scheduleSync]);
 
-          const ctxValue = useMemo(() => ({ data: data ?? {}, update }), [data, update]);
+          const ctxValue = useMemo(() => ({ data: data ?? {}, update, flush }), [data, update, flush]);
 
           if (data === null) {
+            if (loadError) {
+              return (
+                <div className="flex flex-col items-center justify-center min-h-screen bg-neutral-950 gap-4 p-8 text-center">
+                  <div className="text-neutral-400 text-sm">Connection error — server may be starting up.</div>
+                  <button
+                    onClick={() => setRetryKey(k => k + 1)}
+                    className="px-5 py-2 bg-neutral-800 border border-neutral-700 text-neutral-300 rounded-xl text-sm hover:bg-neutral-700 active:scale-95 transition-all"
+                  >
+                    Retry
+                  </button>
+                </div>
+              );
+            }
             return (
               <div className="flex items-center justify-center min-h-screen bg-neutral-950 text-neutral-500 text-sm">
                 Loading…
