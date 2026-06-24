@@ -5,12 +5,15 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>HD Poker God App</title>
     
-    <!-- React & ReactDOM -->
-    <script src="https://unpkg.com/react@18/umd/react.production.min.js" crossorigin></script>
-    <script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js" crossorigin></script>
-    
-    <!-- Babel for in-browser JSX compilation -->
-    <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+    <!-- React & ReactDOM — pin exact versions; an unpinned CDN major bump can break the app -->
+    <script src="https://unpkg.com/react@18.3.1/umd/react.production.min.js" crossorigin></script>
+    <script src="https://unpkg.com/react-dom@18.3.1/umd/react-dom.production.min.js" crossorigin></script>
+
+    <!-- Babel for in-browser JSX compilation. MUST stay on v7: Babel 8's preset-react
+         defaults to the automatic JSX runtime (import "react/jsx-runtime"), which has no
+         module loader in this no-bundler setup and blanks the page. v7 uses classic
+         React.createElement against the global React above. -->
+    <script src="https://unpkg.com/@babel/standalone@7.26.4/babel.min.js"></script>
     
     <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
