@@ -23,6 +23,15 @@
     <script type="text/babel">
         const { useState, useEffect, useRef, useCallback, useMemo, useContext, createContext } = React;
 
+        // Safe localStorage wrapper — iOS Safari throws (SecurityError / QuotaExceededError)
+        // when storage is unavailable (Private Browsing, blocked cookies, full quota). An
+        // unguarded access during render would throw before React mounts → black screen.
+        const safeStorage = {
+          get(k)    { try { return localStorage.getItem(k); }      catch (_) { return null; } },
+          set(k, v) { try { localStorage.setItem(k, v); }          catch (_) {} },
+          remove(k) { try { localStorage.removeItem(k); }          catch (_) {} },
+        };
+
         // Context that provides server-backed storage to all components
         const DataCtx = createContext({ data: {}, update: () => {} });
 
@@ -3121,7 +3130,7 @@
           const lsKey = `poker_data_${(() => { try { return JSON.parse(atob(token.split('.')[1])).id; } catch(_) { return '0'; } })()}`;
 
           // Seed state immediately from localStorage — app is usable while server wakes up
-          const cached = (() => { try { const c = localStorage.getItem(lsKey); return c ? JSON.parse(c) : null; } catch(_) { return null; } })();
+          const cached = (() => { try { const c = safeStorage.get(lsKey); return c ? JSON.parse(c) : null; } catch(_) { return null; } })();
           const [data, setData] = useState(cached);
           const [offlineMode, setOfflineMode] = useState(false);
           const [retryKey, setRetryKey] = useState(0);
@@ -3136,7 +3145,7 @@
               .then(d => {
                 latestDataRef.current = d;
                 setData(d);
-                try { localStorage.setItem(lsKey, JSON.stringify(d)); } catch(_) {}
+                safeStorage.set(lsKey, JSON.stringify(d));
               })
               .catch(err => {
                 // Only logout on 401 — network/cold-start errors must not wipe the session
@@ -3161,7 +3170,7 @@
             syncTimer.current = null;
             const toSave = overrideData ?? latestDataRef.current;
             if (toSave === null) return;
-            try { localStorage.setItem(lsKey, JSON.stringify(toSave)); } catch(_) {}
+            safeStorage.set(lsKey, JSON.stringify(toSave));
             putData(toSave);
           }, [putData, lsKey]);
 
@@ -3185,7 +3194,7 @@
             setData(prev => {
               const next = { ...prev, [key]: valueOrFn instanceof Function ? valueOrFn(prev[key]) : valueOrFn };
               latestDataRef.current = next;
-              try { localStorage.setItem(lsKey, JSON.stringify(next)); } catch(_) {} // immediate local backup
+              safeStorage.set(lsKey, JSON.stringify(next)); // immediate local backup
               scheduleSync(next); // debounced server sync
               return next;
             });
@@ -3232,19 +3241,19 @@
 
         // --- APP ROOT — orchestrates auth flow ---
         function AppRoot() {
-          const [token, setToken] = useState(() => localStorage.getItem('poker_token'));
-          const [username, setUsername] = useState(() => localStorage.getItem('poker_user'));
+          const [token, setToken] = useState(() => safeStorage.get('poker_token'));
+          const [username, setUsername] = useState(() => safeStorage.get('poker_user'));
 
           const handleAuth = useCallback((token, username) => {
-            localStorage.setItem('poker_token', token);
-            localStorage.setItem('poker_user', username);
+            safeStorage.set('poker_token', token);
+            safeStorage.set('poker_user', username);
             setToken(token);
             setUsername(username);
           }, []);
 
           const handleLogout = useCallback(() => {
-            localStorage.removeItem('poker_token');
-            localStorage.removeItem('poker_user');
+            safeStorage.remove('poker_token');
+            safeStorage.remove('poker_user');
             setToken(null);
             setUsername(null);
           }, []);
