@@ -15,8 +15,9 @@
          React.createElement against the global React above. -->
     <script src="https://unpkg.com/@babel/standalone@7.26.4/babel.min.js"></script>
     
-    <!-- Tailwind CSS -->
-    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Tailwind CSS (Play CDN) — pin to a v3 version. Unpinned, 'latest' can move to
+         Tailwind v4, whose Play CDN is a different package with breaking default changes. -->
+    <script src="https://cdn.tailwindcss.com/3.4.17"></script>
 </head>
 <body class="bg-neutral-950 text-neutral-200">
 
@@ -585,7 +586,7 @@
 
         // --- MAIN APP COMPONENT ---
         function App({ username, onLogout }) {
-          const { data: ctxData, flush: flushData } = useContext(DataCtx);
+          const { data: ctxData, replaceAll } = useContext(DataCtx);
           // Global State
           const [hands, setHands] = useLocalStorage('pt2_hands', []);
           const [sessions, setSessions] = useLocalStorage('pt2_sessions', []);
@@ -649,19 +650,19 @@
               discTokens: discTokens.length
             };
 
-            // Flush immediately — don't rely on the 800ms debounce which can be lost on tab close
-            flushData({
+            // Save the whole new state at once (immediate, concurrency-checked) AND keep a
+            // restorable Session-End snapshot. replaceAll updates the shared data, so the derived
+            // hands/sessions/etc. below re-render from it — no separate per-key setters needed.
+            const pnlStr = `${newSession.pnl >= 0 ? '+' : ''}${newSession.pnl}`;
+            const snapLabel = `${newSession.date} · ${total} hand${total === 1 ? '' : 's'} · ${pnlStr}`;
+            replaceAll({
               ...ctxData,
               pt2_sessions: [newSession, ...sessions],
               pt2_hands: [],
               pt2_disc: [],
               pt2_start: newStartTime,
-            });
+            }, { snapshot: snapLabel });
 
-            setSessions([newSession, ...sessions]);
-            setHands([]);
-            setDiscTokens([]);
-            setStartTime(newStartTime);
             setActiveTab('session');
             showToast('Session saved!');
           };
@@ -2095,7 +2096,59 @@
 
         // --- SCREEN: STATS & DATA MANAGEMENT ---
         function ScreenStats({ hands, sessions, discTokens, startTime, setHands, setSessions, setDiscTokens, setStartTime, clearAllData, showToast }) {
-          
+
+          // Session-End snapshots (server-side, up to 5) — view & restore
+          const { listSnapshots, getSnapshot, replaceAll } = useContext(DataCtx);
+          const [snapsOpen, setSnapsOpen] = useState(false);
+          const [snaps, setSnaps] = useState(null); // null = not loaded yet
+
+          const openSnapshots = () => {
+            setSnapsOpen(true);
+            setSnaps(null);
+            listSnapshots().then(list => setSnaps(Array.isArray(list) ? list : [])).catch(() => setSnaps([]));
+          };
+          const restoreSnapshot = (snap) => {
+            if (!window.confirm(`Restore this backup?\n\n${snap.label || 'Session backup'}\n\nYour current data will be replaced (a new backup of the current state is kept too).`)) return;
+            getSnapshot(snap.id)
+              .then(data => { replaceAll(data); setSnapsOpen(false); showToast('Backup restored'); })
+              .catch(() => showToast('Could not restore backup'));
+          };
+
+          // Session Backups card — automatic snapshots saved on each Session End (up to 5).
+          // Rendered in both the normal and empty states so data is always recoverable.
+          const renderBackups = () => (
+            <div className="bg-neutral-900 p-5 rounded-xl border border-neutral-800 mt-6">
+              <h3 className="text-[11px] font-bold uppercase tracking-widest text-neutral-500 mb-1">Session Backups</h3>
+              <p className="text-[10px] text-neutral-500 mb-4">A snapshot is saved automatically every time you End a Session. The 5 most recent are kept.</p>
+              {!snapsOpen ? (
+                <button onClick={openSnapshots} className="w-full flex items-center gap-3 p-3 bg-neutral-950 border border-neutral-800 rounded-lg hover:border-neutral-600 transition-colors text-left">
+                  <History size={18} className="text-neutral-400" />
+                  <div>
+                    <div className="text-sm font-medium text-white">View & Restore Backups</div>
+                    <div className="text-[10px] text-neutral-500 mt-0.5">Roll back to a previously saved session state</div>
+                  </div>
+                </button>
+              ) : (
+                <div className="space-y-2">
+                  {snaps === null && <div className="text-xs text-neutral-500 py-3 text-center">Loading backups…</div>}
+                  {snaps !== null && snaps.length === 0 && <div className="text-xs text-neutral-500 py-3 text-center">No backups yet — end a session to create one.</div>}
+                  {snaps !== null && snaps.map(s => (
+                    <div key={s.id} className="flex items-center gap-3 p-3 bg-neutral-950 border border-neutral-800 rounded-lg">
+                      <div className="flex-1 min-w-0">
+                        <div className="text-sm font-medium text-white truncate">{s.label || `Backup #${s.id}`}</div>
+                        <div className="text-[10px] text-neutral-500 mt-0.5">{new Date(String(s.created_at).replace(' ', 'T') + 'Z').toLocaleString()}</div>
+                      </div>
+                      <button onClick={() => restoreSnapshot(s)} className="shrink-0 px-3 py-1.5 bg-neutral-800 border border-neutral-700 text-neutral-200 rounded-lg text-xs font-medium hover:bg-neutral-700 active:scale-95 transition-all">
+                        Restore
+                      </button>
+                    </div>
+                  ))}
+                  <button onClick={() => setSnapsOpen(false)} className="w-full py-2 text-xs text-neutral-500 hover:text-neutral-300 transition-colors">Close</button>
+                </div>
+              )}
+            </div>
+          );
+
           // Calculate Lifetime Stats
           const totalHands = sessions.reduce((acc, s) => acc + s.totalHands, 0) + hands.length;
           const totalPlayed = sessions.reduce((acc, s) => acc + s.played, 0) + hands.filter(h => h.isVPIP).length;
@@ -2164,6 +2217,7 @@
                     <BarChart2 size={48} className="mb-4 opacity-20" />
                     <p>No data yet. Complete a session to see lifetime statistics.</p>
                  </div>
+                 <div className="px-5 pb-8">{renderBackups()}</div>
               </div>
             );
           }
@@ -2252,6 +2306,8 @@
                     </button>
                   </div>
                 </div>
+
+                {renderBackups()}
 
               </div>
             </div>
@@ -3128,82 +3184,162 @@
         }
 
         // --- DATA PROVIDER — fetches + syncs user state to server, caches in localStorage ---
+        // Concurrency model: the server keeps a monotonic revision (_rev). Every write carries
+        // the rev it was based on, and the server rejects (409) any write based on an older rev.
+        // This is what prevents a STALE client — an old/backgrounded Safari tab, a bfcache
+        // restore, or the load-time cache seed — from silently overwriting newer data, which was
+        // the root cause of the recurring "my saved session reverted to an old one" data loss.
         function DataProvider({ token, onLogout, children }) {
           // localStorage key is per-user so multiple accounts on the same device don't mix
           const lsKey = `poker_data_${(() => { try { return JSON.parse(atob(token.split('.')[1])).id; } catch(_) { return '0'; } })()}`;
 
-          // Seed state immediately from localStorage — app is usable while server wakes up
+          // Seed UI instantly from the local cache so the app is usable while the server wakes up.
+          // Cached data is DISPLAYED but never SYNCED until we learn the server's current rev.
           const cached = (() => { try { const c = safeStorage.get(lsKey); return c ? JSON.parse(c) : null; } catch(_) { return null; } })();
           const [data, setData] = useState(cached);
           const [offlineMode, setOfflineMode] = useState(false);
           const [retryKey, setRetryKey] = useState(0);
-          const syncTimer = useRef(null);
-          const latestDataRef = useRef(cached);
 
-          // Fetch from server (source of truth); overwrites cache on success
+          const syncTimer = useRef(null);
+          const latestDataRef = useRef(cached); // freshest data, for flush-on-close
+          const revRef = useRef(null);          // server rev this client is based on (null = not loaded)
+          const loadedRef = useRef(false);      // true once the initial server fetch has resolved
+          const dirtyRef = useRef(false);       // true while the user has unsaved local changes
+
+          const writeCache = useCallback((d) => { safeStorage.set(lsKey, JSON.stringify(d)); }, [lsKey]);
+
+          // Adopt server state as the truth (on load, on focus-refetch, or on a 409 conflict).
+          const adoptServer = useCallback((server) => {
+            const { _rev, ...clean } = server || {};
+            revRef.current = (typeof _rev === 'number') ? _rev : 0;
+            latestDataRef.current = clean;
+            dirtyRef.current = false;
+            setData(clean);
+            writeCache(clean);
+          }, [writeCache]);
+
+          // Low-level PUT with optimistic concurrency. keepalive so it survives page close.
+          // opts.snapshot (a label string) asks the server to keep a restorable Session-End snapshot.
+          const putData = useCallback((d, opts = {}) => {
+            // Never sync before we know the server rev — a pre-load write could be stale and clobber.
+            if (!loadedRef.current || revRef.current === null) return;
+            const body = { ...d, _rev: revRef.current };
+            if (opts.snapshot) body._snapshot = opts.snapshot;
+            fetch('/api/poker/data', {
+              method: 'PUT',
+              headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
+              body: JSON.stringify(body),
+              keepalive: true,
+            })
+              .then(async (r) => {
+                if (r.status === 409) {
+                  // Server has newer data than ours — do NOT clobber it. Adopt it, drop our write.
+                  const server = await r.json().catch(() => ({}));
+                  adoptServer(server);
+                  setOfflineMode(false);
+                  return;
+                }
+                if (r.status === 401) { onLogout(); return; }
+                if (!r.ok) throw new Error(r.status);
+                const body = await r.json().catch(() => ({}));
+                if (typeof body._rev === 'number') revRef.current = body._rev;
+                dirtyRef.current = false;
+                setOfflineMode(false);
+              })
+              .catch(console.error);
+          }, [token, adoptServer, onLogout]);
+
+          // Fetch from server (source of truth). Runs on mount, token change, and focus-refetch.
           useEffect(() => {
             setOfflineMode(false);
             fetch('/api/poker/data', { headers: { Authorization: `Bearer ${token}` } })
               .then(r => { if (!r.ok) throw new Error(r.status); return r.json(); })
-              .then(d => {
-                latestDataRef.current = d;
-                setData(d);
-                safeStorage.set(lsKey, JSON.stringify(d));
+              .then(server => {
+                // Always adopt the server on (re)load. Pre-load cache edits are intentionally
+                // discarded — keeping them is exactly how a stale snapshot used to win.
+                adoptServer(server);
+                loadedRef.current = true;
               })
               .catch(err => {
-                // Only logout on 401 — network/cold-start errors must not wipe the session
                 if (String(err.message) === '401') { onLogout(); return; }
-                setOfflineMode(true); // cached data (if any) is still shown
+                setOfflineMode(true); // cached data (if any) still shown; writes stay gated
               });
           }, [token, retryKey]);
 
-          // Low-level PUT with keepalive so it survives page close
-          const putData = useCallback((d) => {
-            fetch('/api/poker/data', {
-              method: 'PUT',
-              headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
-              body: JSON.stringify(d),
-              keepalive: true,
-            }).catch(console.error);
-          }, [token]);
+          const scheduleSync = useCallback((newData) => {
+            clearTimeout(syncTimer.current);
+            syncTimer.current = setTimeout(() => { syncTimer.current = null; putData(newData); }, 800);
+          }, [putData]);
 
           // Immediate flush — cancel debounce, write localStorage + server right now
           const flush = useCallback((overrideData) => {
             clearTimeout(syncTimer.current);
             syncTimer.current = null;
             const toSave = overrideData ?? latestDataRef.current;
-            if (toSave === null) return;
-            safeStorage.set(lsKey, JSON.stringify(toSave));
+            if (toSave == null) return;
+            latestDataRef.current = toSave;
+            writeCache(toSave);
             putData(toSave);
-          }, [putData, lsKey]);
-
-          const scheduleSync = useCallback((newData) => {
-            clearTimeout(syncTimer.current);
-            syncTimer.current = setTimeout(() => putData(newData), 800);
-          }, [putData]);
-
-          // Flush pending debounce on tab close / navigation / mobile backgrounding
-          useEffect(() => {
-            const onHide = () => { if (syncTimer.current) flush(); };
-            window.addEventListener('pagehide', onHide);
-            document.addEventListener('visibilitychange', onHide);
-            return () => {
-              window.removeEventListener('pagehide', onHide);
-              document.removeEventListener('visibilitychange', onHide);
-            };
-          }, [flush]);
+          }, [putData, writeCache]);
 
           const update = useCallback((key, valueOrFn) => {
             setData(prev => {
-              const next = { ...prev, [key]: valueOrFn instanceof Function ? valueOrFn(prev[key]) : valueOrFn };
+              const base = prev || {};
+              const next = { ...base, [key]: valueOrFn instanceof Function ? valueOrFn(base[key]) : valueOrFn };
               latestDataRef.current = next;
-              safeStorage.set(lsKey, JSON.stringify(next)); // immediate local backup
-              scheduleSync(next); // debounced server sync
+              dirtyRef.current = true;
+              writeCache(next);   // immediate local backup (always safe)
+              scheduleSync(next); // debounced server sync (gated inside putData until loaded)
               return next;
             });
-          }, [scheduleSync, lsKey]);
+          }, [scheduleSync, writeCache]);
 
-          const ctxValue = useMemo(() => ({ data: data ?? {}, update, flush }), [data, update, flush]);
+          // Replace the entire data blob at once (used by Session End and snapshot Restore).
+          const replaceAll = useCallback((newData, opts = {}) => {
+            const clean = { ...(newData || {}) };
+            ['_rev', '_snapshot', '_snapshotRev', '_label', '_createdAt'].forEach(k => delete clean[k]);
+            latestDataRef.current = clean;
+            dirtyRef.current = true;
+            setData(clean);
+            writeCache(clean);
+            clearTimeout(syncTimer.current);
+            syncTimer.current = null;
+            putData(clean, opts); // immediate save (carries snapshot flag when requested)
+          }, [putData, writeCache]);
+
+          // Session-End snapshot access (list + fetch one) for the in-app Restore UI
+          const listSnapshots = useCallback(() =>
+            fetch('/api/poker/snapshots', { headers: { Authorization: `Bearer ${token}` } })
+              .then(r => r.ok ? r.json() : []), [token]);
+          const getSnapshot = useCallback((id) =>
+            fetch(`/api/poker/snapshots/${id}`, { headers: { Authorization: `Bearer ${token}` } })
+              .then(r => { if (!r.ok) throw new Error('Snapshot not found'); return r.json(); }), [token]);
+
+          // Save pending changes when the page is hidden/closed; refresh when it returns to the
+          // foreground or is restored from bfcache, so a long-lived/backgrounded tab re-syncs to
+          // the latest data instead of pushing a stale snapshot.
+          useEffect(() => {
+            const onVisChange = () => {
+              if (document.visibilityState === 'hidden') {
+                if (syncTimer.current) flush();
+              } else if (!dirtyRef.current) {
+                setRetryKey(k => k + 1); // refresh (only when we have no unsaved edits)
+              }
+            };
+            const onPageHide = () => { if (syncTimer.current) flush(); };
+            const onPageShow = (e) => { if (e.persisted && !dirtyRef.current) setRetryKey(k => k + 1); };
+            window.addEventListener('pagehide', onPageHide);
+            window.addEventListener('pageshow', onPageShow);
+            document.addEventListener('visibilitychange', onVisChange);
+            return () => {
+              window.removeEventListener('pagehide', onPageHide);
+              window.removeEventListener('pageshow', onPageShow);
+              document.removeEventListener('visibilitychange', onVisChange);
+            };
+          }, [flush]);
+
+          const ctxValue = useMemo(() => ({ data: data ?? {}, update, flush, replaceAll, listSnapshots, getSnapshot }),
+            [data, update, flush, replaceAll, listSnapshots, getSnapshot]);
 
           // No cache + server unreachable → show retry screen
           if (data === null && offlineMode) {

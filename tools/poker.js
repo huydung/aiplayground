@@ -25,10 +25,28 @@ function initSchema(db) {
     CREATE TABLE IF NOT EXISTS user_data (
       user_id INTEGER PRIMARY KEY REFERENCES users(id) ON DELETE CASCADE,
       data TEXT NOT NULL DEFAULT '{}',
+      rev INTEGER NOT NULL DEFAULT 0,
       updated_at DATETIME DEFAULT CURRENT_TIMESTAMP
     );
+    CREATE TABLE IF NOT EXISTS user_snapshots (
+      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      user_id INTEGER NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+      data TEXT NOT NULL,
+      rev INTEGER NOT NULL,
+      label TEXT,
+      created_at DATETIME DEFAULT CURRENT_TIMESTAMP
+    );
+    CREATE INDEX IF NOT EXISTS idx_user_snapshots_user ON user_snapshots(user_id, id DESC);
   `);
+  // Migrate older installs that predate the rev column
+  const cols = db.prepare(`PRAGMA table_info(user_data)`).all();
+  if (!cols.some(c => c.name === 'rev')) {
+    db.exec(`ALTER TABLE user_data ADD COLUMN rev INTEGER NOT NULL DEFAULT 0`);
+  }
 }
+
+// How many Session-End snapshots to retain per user
+const MAX_SNAPSHOTS = 5;
 
 function requireAuth(req, res, next) {
   const auth = req.headers.authorization;
@@ -84,21 +102,74 @@ router.post('/login', async (req, res) => {
   res.json({ token, username: user.username });
 });
 
-// GET /api/poker/data — load user's saved state
+// GET /api/poker/data — load user's saved state. Returns the data blob with the current
+// server revision embedded as `_rev`, which the client must echo back on the next write.
 router.get('/data', requireAuth, (req, res) => {
-  const row = req.toolDb.prepare('SELECT data FROM user_data WHERE user_id = ?').get(req.user.id);
-  res.json(row ? JSON.parse(row.data) : {});
+  const row = req.toolDb.prepare('SELECT data, rev FROM user_data WHERE user_id = ?').get(req.user.id);
+  const data = row ? JSON.parse(row.data) : {};
+  res.json({ ...data, _rev: row ? row.rev : 0 });
 });
 
-// PUT /api/poker/data — persist user's full state blob
+// PUT /api/poker/data — persist user's full state blob with optimistic concurrency control.
+// The client sends the `_rev` it last loaded. If that doesn't match the stored rev, the write
+// is REJECTED with 409 and the current server state is returned. This is what stops a stale
+// client (an old/backgrounded tab, a bfcache restore, or a cache-seed race) from silently
+// overwriting newer data — the root cause of the recurring "my session reverted" data loss.
 router.put('/data', requireAuth, (req, res) => {
-  if (!req.body || typeof req.body !== 'object') return res.status(400).json({ error: 'Invalid body' });
-  const data = JSON.stringify(req.body);
-  req.toolDb.prepare(`
-    INSERT INTO user_data (user_id, data) VALUES (?, ?)
-    ON CONFLICT(user_id) DO UPDATE SET data = excluded.data, updated_at = CURRENT_TIMESTAMP
-  `).run(req.user.id, data);
-  res.json({ ok: true });
+  if (!req.body || typeof req.body !== 'object' || Array.isArray(req.body))
+    return res.status(400).json({ error: 'Invalid body' });
+
+  const { _rev: incomingRev, ...payload } = req.body;
+  const row = req.toolDb.prepare('SELECT data, rev FROM user_data WHERE user_id = ?').get(req.user.id);
+  const storedRev = row ? row.rev : 0;
+
+  if (incomingRev !== storedRev) {
+    // Stale (or legacy client without _rev): don't clobber. Hand back the authoritative state.
+    const stored = row ? JSON.parse(row.data) : {};
+    return res.status(409).json({ error: 'stale_rev', ...stored, _rev: storedRev });
+  }
+
+  // A `_snapshot` flag (sent on Session End) requests a restorable snapshot of this saved state.
+  const snapshotLabel = payload._snapshot ? String(payload._snapshot).slice(0, 200) : null;
+  delete payload._snapshot;
+
+  const newRev = storedRev + 1;
+  const dataStr = JSON.stringify(payload);
+  const save = req.toolDb.transaction(() => {
+    req.toolDb.prepare(`
+      INSERT INTO user_data (user_id, data, rev) VALUES (?, ?, ?)
+      ON CONFLICT(user_id) DO UPDATE SET data = excluded.data, rev = excluded.rev, updated_at = CURRENT_TIMESTAMP
+    `).run(req.user.id, dataStr, newRev);
+
+    if (snapshotLabel !== null) {
+      // Save a Session-End snapshot, then keep only the most recent MAX_SNAPSHOTS
+      req.toolDb.prepare('INSERT INTO user_snapshots (user_id, data, rev, label) VALUES (?, ?, ?, ?)')
+        .run(req.user.id, dataStr, newRev, snapshotLabel);
+      req.toolDb.prepare(`
+        DELETE FROM user_snapshots WHERE user_id = ? AND id NOT IN (
+          SELECT id FROM user_snapshots WHERE user_id = ? ORDER BY id DESC LIMIT ?
+        )`).run(req.user.id, req.user.id, MAX_SNAPSHOTS);
+    }
+  });
+  save();
+  res.json({ ok: true, _rev: newRev });
+});
+
+// GET /api/poker/snapshots — list saved Session-End snapshots (most recent first)
+router.get('/snapshots', requireAuth, (req, res) => {
+  const rows = req.toolDb.prepare(
+    'SELECT id, rev, label, created_at FROM user_snapshots WHERE user_id = ? ORDER BY id DESC LIMIT ?'
+  ).all(req.user.id, MAX_SNAPSHOTS);
+  res.json(rows);
+});
+
+// GET /api/poker/snapshots/:id — fetch a specific snapshot's full data (for restore)
+router.get('/snapshots/:id', requireAuth, (req, res) => {
+  const row = req.toolDb.prepare(
+    'SELECT data, rev, label, created_at FROM user_snapshots WHERE id = ? AND user_id = ?'
+  ).get(req.params.id, req.user.id);
+  if (!row) return res.status(404).json({ error: 'Not found' });
+  res.json({ ...JSON.parse(row.data), _snapshotRev: row.rev, _label: row.label, _createdAt: row.created_at });
 });
 
 module.exports = router;
