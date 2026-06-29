@@ -28,17 +28,32 @@ function renderLink(ctx, layer, l) {
   const t = nodeById(ctx.doc, l.target);
   if (!s || !t) return;
   const pathData = linkPath(ctx, s, t, l);
-  layer.append(svgEl("path", {
+  const fullLabel = linkLabel(l);
+  const label = linkDisplayLabel(ctx, l);
+  const summaryW = Math.max(36, label.length * 6.6 + 14);
+  const detailW = Math.max(54, fullLabel.length * 6.6 + 14);
+  const simplified = ctx.state.started;
+  const group = svgEl("g", { class: "link-group", "data-link": l.id });
+  group.append(svgEl("title", {}, fullLabel));
+  group.append(svgEl("path", {
     d: pathData.d,
     class: `svg-link ${l.polarity < 0 ? "negative" : ""} ${isSelected(ctx, "link", l.id) ? "selected" : ""}`,
     "marker-end": l.polarity < 0 ? "url(#arrowHeadRed)" : "url(#arrowHead)",
     "data-link": l.id
   }));
   const mid = pointOnPath(pathData, .5);
-  const label = linkLabel(l);
-  const w = Math.max(54, label.length * 6.6 + 14);
-  layer.append(svgEl("rect", { x: mid.x - w / 2, y: mid.y - 13, width: w, height: 26, rx: 6, class: "link-label-bg", "data-link": l.id }));
-  layer.append(svgEl("text", { x: mid.x, y: mid.y + 1, class: "link-label", "data-link": l.id }, label));
+  group.append(svgEl("rect", { x: mid.x - summaryW / 2, y: mid.y - 13, width: summaryW, height: 26, rx: 6, class: `link-label-bg ${simplified ? "link-summary" : ""}`, "data-link": l.id }));
+  group.append(svgEl("text", { x: mid.x, y: mid.y + 1, class: `link-label ${simplified ? "link-summary" : ""}`, "data-link": l.id }, label));
+  if (simplified) {
+    group.append(svgEl("rect", { x: mid.x - detailW / 2, y: mid.y - 13, width: detailW, height: 26, rx: 6, class: "link-label-bg link-detail", "data-link": l.id }));
+    group.append(svgEl("text", { x: mid.x, y: mid.y + 1, class: "link-label link-detail", "data-link": l.id }, fullLabel));
+  }
+  layer.append(group);
+}
+
+function linkDisplayLabel(ctx, l) {
+  if (!ctx.state.started) return linkLabel(l);
+  return l.polarity < 0 ? "(o)" : "(s)";
 }
 
 export function linkPath(ctx, s, t, l = null) {
@@ -154,10 +169,18 @@ function renderPackage(ctx, layer, p) {
   const pos = pointOnPath(linkPath(ctx, s, t, l), frac);
   const sourceDir = p.polarity < 0 ? -p.dir : p.dir;
   const visualDir = p.polarity < 0 && frac < .5 ? sourceDir : p.dir;
+  const size = 10;
   const g = svgEl("g", { class: `package ${visualDir > 0 ? "up" : "down"}`, transform: `translate(${pos.x} ${pos.y})` });
-  const points = visualDir > 0 ? "0,-12 11,10 -11,10" : "0,12 11,-10 -11,-10";
-  g.append(svgEl("polygon", { points }));
+  const points = trianglePoints(visualDir, size);
+  g.append(svgEl("polygon", { points, fill: visualDir > 0 ? "#168b5a" : "#c33131" }));
   layer.append(g);
+}
+
+function trianglePoints(dir, size) {
+  const half = size * .92;
+  return dir > 0
+    ? `0,${-size} ${half},${size * .82} ${-half},${size * .82}`
+    : `0,${size} ${half},${-size * .82} ${-half},${-size * .82}`;
 }
 
 function isSelected(ctx, type, id) {

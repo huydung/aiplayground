@@ -11,45 +11,47 @@ Static ES-module app served at `/systems-explorer/`.
   Visual system and layout. Tweak panel sizing, colors, typography, diagram styling, and table density here.
 
 - `src/config.js`  
-  Global constants: localStorage key, package timing, color palette, trigger options, and gate options.
+  Global constants: localStorage key, package timing, color palette, and label metadata used by chart/table text.
 
 - `src/model.js`  
   Data shape, stock/link constructors, archetype examples, import cleanup, and validation.  
   Add or tune example systems here.
 
 - `src/simulation.js`  
-  The simulation engine. This is where rule-link semantics live:
-  - `trigger`: which source change can fire the link (`any`, `increase`, `decrease`)
-  - `gate`: which source value situation allows firing (`always`, `above`, `below`) using `gateValue` as the threshold
-  - `mode` + `amount`: fixed payload, percent of source value, or percent of source delta
+  The simulation engine. New links default to always-on 100% source-delta propagation, but rule settings remain editable:
+  - trigger and gate decide whether a source change can fire the link
+  - payload mode and amount decide how much value the package carries
+  - polarity decides whether the target changes in the same or opposite direction
+  - delay controls logical delivery timing
+  - each link emits at most one net package per integer step
   - logical delivery and visual package travel are separated so packages remain visible.
 
 - `src/diagram.js`  
-  SVG rendering: stocks, curved links, labels, package triangles, fire buttons, and route de-overlap.
+  SVG rendering: stocks, curved links, labels, package triangles, and route de-overlap.
 
 - `src/panels.js`  
-  Editor and Behavior over time. The step table intentionally creates one column per rule link, so each step shows which links sent packages.
+  Property editor and Behavior over time. The step table intentionally creates one column per rule link, so each step shows which links sent packages.
 
 - `src/storage.js`  
   LocalStorage, JSON import/export cleanup.
 
 - `src/app.js`  
-  App orchestration: DOM binding, selection, dragging, pan/zoom, mode switching, examples modal, and ticking the simulation.
+  App orchestration: DOM binding, selection, dragging, pan/zoom, Simulator controls, Start dialog, examples modal, and ticking the simulation.
 
 ## Link Rule Semantics
 
-A connection is no longer just a strength. It is:
+A connection defaults to a simple rule:
 
-`WHEN source change matches trigger AND source value passes gate -> send package`
+`source delta -> 100% package -> target delta`
 
 Example:
 
 `Gap to Milestone -> Overtime`
 
-- Trigger: `increase`
-- Gate: `above`, threshold `0`
-- Meaning: when the gap increases and the gap is above 0, send a package to Overtime.
-- If the gap is below 0, this link does not fire.
+- If polarity is `same (s)`, a +20 source delta sends a +20 package.
+- If polarity is `opposite (o)`, a +20 source delta sends a -20 package.
+- Trigger, gate, payload mode, amount, and delay remain editable.
+- If one link receives multiple sends in the same step, they merge into a single net package icon/event.
 
 ## Data Shape
 

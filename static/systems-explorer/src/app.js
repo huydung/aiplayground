@@ -1,4 +1,5 @@
 import { NODE_COLORS } from "./config.js";
+import { assessBoundaries, currentMaxNodeIds } from "./boundaries.js";
 import { archetypes, baseDoc, clamp, cleanDoc, link, nodeById, sanitizeDoc, stock } from "./model.js";
 import { createRuntime } from "./simulation.js";
 import { exportDoc, loadStoredDoc, saveDoc as persistDoc } from "./storage.js";
@@ -14,41 +15,55 @@ const els = {
   editorBody: document.getElementById("editorBody"),
   editorSubhead: document.getElementById("editorSubhead"),
   chart: document.getElementById("historyChart"),
+  expandedChart: document.getElementById("expandedHistoryChart"),
   stepTable: document.getElementById("stepTable"),
   chartPane: document.getElementById("chartPane"),
+  chartLightbox: document.getElementById("chartLightbox"),
   tablePane: document.getElementById("tablePane"),
   chartTabBtn: document.getElementById("chartTabBtn"),
   tableTabBtn: document.getElementById("tableTabBtn"),
   time: document.getElementById("timeReadout"),
   packages: document.getElementById("packageReadout"),
+  step: document.getElementById("stepReadout"),
+  currentStepLabel: document.getElementById("currentStepLabel"),
   statusText: document.getElementById("statusText"),
   continueBtn: document.getElementById("continueBtn"),
   toast: document.getElementById("toast"),
   examplesModal: document.getElementById("examplesModal"),
   exampleGrid: document.getElementById("exampleGrid"),
   importFile: document.getElementById("importFile"),
-  chartPanel: document.getElementById("chartPanel"),
-  chartBackdrop: document.getElementById("chartBackdrop")
+  chartPanel: document.getElementById("simulatorPanel"),
+  chartBackdrop: document.getElementById("chartBackdrop"),
+  closeChartBtn: document.getElementById("closeChartBtn"),
+  startModal: document.getElementById("startModal"),
+  startNodeSelect: document.getElementById("startNodeSelect"),
+  startAmountInput: document.getElementById("startAmountInput"),
+  stepMode: document.getElementById("stepMode"),
+  speedRow: document.getElementById("speedRow"),
+  stepRow: document.getElementById("stepRow")
 };
 
 const state = {
   doc: null,
   runtime: null,
-  mode: "configure",
+  mode: "work",
   selected: null,
   linkDraft: null,
   running: false,
+  started: false,
   armed: false,
   waitingForFire: false,
   lastFrame: null,
   stepTarget: null,
   checkpoints: [],
   speed: 1.4,
+  stepByStep: false,
   behaviorView: "chart",
-  transform: { x: 80, y: 70, k: 1 },
+  transform: { x: 430, y: 70, k: 1 },
   drag: null,
   panelDrag: null,
-  linkRoutes: new Map()
+  linkRoutes: new Map(),
+  maxPausedNodes: new Set()
 };
 
 init();
@@ -77,8 +92,6 @@ function ctx() {
 }
 
 function bindUi() {
-  document.getElementById("configureMode").addEventListener("click", () => setMode("configure"));
-  document.getElementById("simulateMode").addEventListener("click", () => setMode("simulate"));
   document.getElementById("examplesBtn").addEventListener("click", () => els.examplesModal.classList.add("open"));
   document.getElementById("closeExamplesBtn").addEventListener("click", () => els.examplesModal.classList.remove("open"));
   els.examplesModal.addEventListener("click", e => { if (e.target === els.examplesModal) els.examplesModal.classList.remove("open"); });
@@ -87,24 +100,39 @@ function bindUi() {
   document.getElementById("exportBtn").addEventListener("click", () => exportDoc(state.doc));
   document.getElementById("addStockBtn").addEventListener("click", addStock);
   document.getElementById("addLinkBtn").addEventListener("click", startLinkMode);
-  document.getElementById("backBtn").addEventListener("click", stepBack);
-  document.getElementById("stepBtn").addEventListener("click", () => {
-    if (state.mode !== "simulate") setMode("simulate");
-    startStepForward();
-  });
+  document.getElementById("startRunBtn").addEventListener("click", openStartDialog);
+  document.getElementById("prevStepBtn").addEventListener("click", stepBack);
+  document.getElementById("nextStepBtn").addEventListener("click", startStepForward);
   document.getElementById("pauseBtn").addEventListener("click", togglePause);
   document.getElementById("resetBtn").addEventListener("click", () => {
     resetRuntime();
-    if (state.mode === "simulate") armSimulation(true);
     setStatus("<strong>Reset:</strong> values, packages, and history are back at t = 0.");
     renderAll();
   });
   document.getElementById("speed").addEventListener("input", e => { state.speed = Number(e.target.value); });
+  els.stepMode.addEventListener("change", () => {
+    state.stepByStep = els.stepMode.checked;
+    if (state.running && state.stepByStep && state.stepTarget == null) {
+      state.running = false;
+      setStatus("<strong>Step-by-step:</strong> paused. Use Next and Prev to inspect the run.");
+    }
+    updateRunControls();
+  });
+  document.getElementById("confirmStartBtn").addEventListener("click", startFromDialog);
+  document.getElementById("cancelStartBtn").addEventListener("click", closeStartDialog);
+  document.getElementById("cancelStartFooterBtn").addEventListener("click", closeStartDialog);
+  els.startModal.addEventListener("click", e => { if (e.target === els.startModal) closeStartDialog(); });
   els.continueBtn.addEventListener("click", continueRun);
-  document.getElementById("expandChartBtn").addEventListener("click", () => toggleChartExpanded());
-  els.chartBackdrop.addEventListener("click", () => toggleChartExpanded(false));
   els.chartTabBtn.addEventListener("click", () => setBehaviorView(ctx(), "chart"));
   els.tableTabBtn.addEventListener("click", () => setBehaviorView(ctx(), "table"));
+  els.chartPane.addEventListener("click", () => {
+    if (state.behaviorView === "chart" && !els.chartLightbox.classList.contains("open")) toggleChartExpanded(true);
+  });
+  els.closeChartBtn.addEventListener("click", () => toggleChartExpanded(false));
+  els.chartBackdrop.addEventListener("click", () => toggleChartExpanded(false));
+  window.addEventListener("keydown", e => {
+    if (e.key === "Escape" && els.chartLightbox.classList.contains("open")) toggleChartExpanded(false);
+  });
   els.importFile.addEventListener("change", importDoc);
 
   els.diagram.addEventListener("pointerdown", onPointerDown);
@@ -112,34 +140,6 @@ function bindUi() {
   window.addEventListener("pointerup", onPointerUp);
   els.diagram.addEventListener("wheel", onWheel, { passive: false });
   els.diagram.addEventListener("click", onSvgClick);
-
-  document.querySelectorAll("[data-drag-panel]").forEach(head => {
-    head.addEventListener("pointerdown", e => {
-      if (e.target.closest("button")) return;
-      if (state.mode === "simulate") return;
-      const panel = document.getElementById(head.dataset.dragPanel);
-      state.panelDrag = { panel, dx: e.clientX - panel.offsetLeft, dy: e.clientY - panel.offsetTop };
-      head.setPointerCapture(e.pointerId);
-    });
-  });
-}
-
-function setMode(mode) {
-  state.mode = mode;
-  els.body.dataset.mode = mode;
-  document.getElementById("configureMode").classList.toggle("active", mode === "configure");
-  document.getElementById("simulateMode").classList.toggle("active", mode === "simulate");
-  state.drag = null;
-  state.linkDraft = null;
-  if (mode === "configure") {
-    resetRuntime();
-    toggleChartExpanded(false);
-    setStatus("<strong>Configure:</strong> drag stocks, add links, or edit the selected rule.");
-  } else {
-    armSimulation();
-    setStatus("<strong>Simulate:</strong> fire a stock with its green or red control, or step the model forward/back.");
-  }
-  renderAll();
 }
 
 function renderAll() {
@@ -148,6 +148,8 @@ function renderAll() {
   renderBehavior(ctx());
   els.time.textContent = state.runtime.simTime.toFixed(1);
   els.packages.textContent = String(state.runtime.packages.length);
+  els.step.textContent = String(Math.floor(state.runtime.simTime));
+  els.currentStepLabel.textContent = "Step " + Math.floor(state.runtime.simTime);
   updateRunControls();
 }
 
@@ -158,21 +160,13 @@ function saveDoc() {
 function resetRuntime() {
   state.runtime = createRuntime(state.doc);
   state.running = false;
+  state.started = false;
   state.armed = false;
   state.waitingForFire = false;
   state.lastFrame = null;
   state.stepTarget = null;
   state.checkpoints = [];
-}
-
-function armSimulation(resetTimeline = false) {
-  state.selected = null;
-  state.running = false;
-  state.armed = true;
-  state.waitingForFire = true;
-  state.lastFrame = null;
-  state.stepTarget = null;
-  if (resetTimeline || !state.checkpoints.length) pushCheckpoint();
+  state.maxPausedNodes = new Set();
 }
 
 function addStock() {
@@ -279,15 +273,68 @@ function renderExamples() {
   });
 }
 
+function openStartDialog() {
+  if (state.started) return;
+  els.startNodeSelect.innerHTML = state.doc.nodes
+    .map(n => `<option value="${n.id}">${escapeHtml(n.label)}</option>`)
+    .join("");
+  if (state.doc.nodes[0]) els.startNodeSelect.value = state.doc.nodes[0].id;
+  els.startAmountInput.value = "20";
+  els.startModal.classList.add("open");
+  setTimeout(() => els.startAmountInput.focus(), 0);
+}
+
+function closeStartDialog() {
+  els.startModal.classList.remove("open");
+}
+
+function startFromDialog() {
+  const nodeId = els.startNodeSelect.value;
+  const amount = Number(els.startAmountInput.value);
+  if (!nodeById(state.doc, nodeId)) {
+    showToast("Choose a node to seed.");
+    return;
+  }
+  if (!Number.isFinite(amount) || amount === 0) {
+    showToast("Initial package size must be a non-zero number.");
+    return;
+  }
+  closeStartDialog();
+  resetRuntime();
+  state.maxPausedNodes = currentMaxNodeIds(state.doc, state.runtime);
+  state.started = true;
+  state.armed = true;
+  state.waitingForFire = false;
+  state.runtime.fireNode(nodeId, amount);
+  pushCheckpoint();
+  if (handleSimulationBoundaries()) {
+    renderAll();
+    return;
+  }
+  if (state.stepByStep) {
+    setStatus(`<strong>Started:</strong> ${escapeHtml(nodeById(state.doc, nodeId).label)} sent ${amount}. Use Next to step.`);
+    startStepForward(false);
+  } else {
+    state.running = true;
+    state.lastFrame = null;
+    setStatus(`<strong>Running:</strong> ${escapeHtml(nodeById(state.doc, nodeId).label)} sent ${amount}.`);
+    renderAll();
+  }
+}
+
 function continueRun() {
   state.runtime.pausedForBreak = false;
   state.armed = true;
   els.continueBtn.style.display = "none";
-  startStepForward();
+  if (state.stepByStep) startStepForward();
+  else {
+    state.running = true;
+    state.lastFrame = null;
+    renderAll();
+  }
 }
 
 function togglePause() {
-  if (state.mode !== "simulate") setMode("simulate");
   if (state.running) {
     state.running = false;
     setStatus(`<strong>Paused:</strong> t = ${state.runtime.simTime.toFixed(1)}. Resume or step/back manually.`);
@@ -295,6 +342,10 @@ function togglePause() {
     state.running = true;
     state.lastFrame = null;
     setStatus(`<strong>Resumed:</strong> continuing to t = ${state.stepTarget}.`);
+  } else if (state.started && !state.stepByStep) {
+    state.running = true;
+    state.lastFrame = null;
+    setStatus("<strong>Continuing:</strong> simulation is running.");
   } else {
     return;
   }
@@ -302,7 +353,7 @@ function togglePause() {
 }
 
 function startStepForward(captureCurrent = true) {
-  if (state.running) return;
+  if (state.running || !state.started) return;
   if (captureCurrent) ensureCheckpoint();
   state.runtime.pausedForBreak = false;
   state.stepTarget = Math.floor(state.runtime.simTime) + 1;
@@ -324,12 +375,11 @@ function completeStep() {
   if (state.runtime.pausedForBreak) {
     setStatus("<strong>Paused:</strong> package activity exceeded the safety cap.");
   } else {
-    setStatus(`<strong>Step complete:</strong> t = ${Math.floor(state.runtime.simTime)}. Fire a stock or step again.`);
+    setStatus(`<strong>Step complete:</strong> t = ${Math.floor(state.runtime.simTime)}. Use Next or Prev to inspect the model.`);
   }
 }
 
 function stepBack() {
-  if (state.mode !== "simulate") setMode("simulate");
   state.running = false;
   state.stepTarget = null;
   if (state.checkpoints.length > 1) state.checkpoints.pop();
@@ -375,7 +425,8 @@ function captureRuntimeSnapshot() {
     lastSample: r.lastSample,
     currentOut: Array.from(r.currentOut),
     brokenEver: Array.from(r.brokenEver),
-    pausedForBreak: r.pausedForBreak
+    pausedForBreak: r.pausedForBreak,
+    maxPausedNodes: Array.from(state.maxPausedNodes)
   };
 }
 
@@ -392,6 +443,7 @@ function restoreRuntimeSnapshot(snapshot) {
   r.currentOut = new Set(snapshot.currentOut);
   r.brokenEver = new Set(snapshot.brokenEver);
   r.pausedForBreak = snapshot.pausedForBreak;
+  state.maxPausedNodes = new Set(snapshot.maxPausedNodes || []);
 }
 
 function clone(value) {
@@ -400,9 +452,15 @@ function clone(value) {
 
 function updateRunControls() {
   const pauseBtn = document.getElementById("pauseBtn");
+  const startBtn = document.getElementById("startRunBtn");
   if (!pauseBtn) return;
-  pauseBtn.textContent = state.running ? "Pause" : state.stepTarget != null ? "Resume" : "Pause";
-  pauseBtn.disabled = state.mode !== "simulate" || (!state.running && state.stepTarget == null);
+  els.speedRow.style.display = state.stepByStep ? "none" : "block";
+  els.stepRow.style.display = state.stepByStep ? "grid" : "none";
+  if (startBtn) startBtn.disabled = state.started;
+  pauseBtn.textContent = state.running ? "Pause" : "Continue";
+  pauseBtn.disabled = !state.started || (!state.running && state.stepByStep && state.stepTarget == null);
+  document.getElementById("prevStepBtn").disabled = !state.started || state.checkpoints.length <= 1;
+  document.getElementById("nextStepBtn").disabled = !state.started || state.running;
 }
 
 function tick(now) {
@@ -412,33 +470,53 @@ function tick(now) {
     state.lastFrame = now;
     if (state.stepTarget != null) {
       state.runtime.advance(Math.min(dt, Math.max(0, state.stepTarget - state.runtime.simTime)));
+      if (handleSimulationBoundaries()) {
+        renderAll();
+        requestAnimationFrame(tick);
+        return;
+      }
       if (state.runtime.simTime >= state.stepTarget - 0.0001 || state.runtime.pausedForBreak) completeStep();
     } else {
       state.runtime.advance(dt);
+      handleSimulationBoundaries();
     }
     renderAll();
   }
   requestAnimationFrame(tick);
 }
 
-function onPointerDown(e) {
-  const fire = e.target.closest("[data-fire]");
-  if (fire) {
-    e.stopPropagation();
-    ensureCheckpoint();
-    state.armed = true;
+function handleSimulationBoundaries() {
+  if (!state.started || !state.doc.nodes.length) return false;
+  const boundary = assessBoundaries(state.doc, state.runtime, state.maxPausedNodes);
+  if (boundary.allAtBoundary) {
+    state.running = false;
+    state.started = false;
+    state.armed = false;
     state.waitingForFire = false;
-    state.runtime.pausedForBreak = false;
+    state.stepTarget = null;
     state.lastFrame = null;
-    state.runtime.fireNode(fire.dataset.fire, Number(fire.dataset.dir));
-    setStatus(`<strong>Fired ${escapeHtml(nodeById(state.doc, fire.dataset.fire).label)}:</strong> eligible rule links sent packages.`);
-    startStepForward(false);
-    renderAll();
-    return;
+    setStatus("<strong>Stopped:</strong> every node is at a min or max boundary.");
+    return true;
   }
+  const newlyMaxed = boundary.newlyMaxed;
+  if (!newlyMaxed.length) return false;
+  newlyMaxed.forEach(n => state.maxPausedNodes.add(n.id));
+  state.running = false;
+  state.lastFrame = null;
+  setStatus(`<strong>Warning:</strong> ${escapeHtml(nodeListLabel(newlyMaxed))} reached max. Simulation paused; continue when ready.`);
+  return true;
+}
+
+function nodeListLabel(nodes) {
+  if (nodes.length === 1) return nodes[0].label;
+  if (nodes.length === 2) return `${nodes[0].label} and ${nodes[1].label}`;
+  return `${nodes.slice(0, -1).map(n => n.label).join(", ")}, and ${nodes[nodes.length - 1].label}`;
+}
+
+function onPointerDown(e) {
   const nodeEl = e.target.closest("[data-node]");
   const linkEl = e.target.closest("[data-link]");
-  if (state.mode === "simulate") return;
+  if (state.running) return;
   if (nodeEl) {
     const id = nodeEl.dataset.node;
     if (state.linkDraft) {
@@ -541,10 +619,9 @@ function showToast(text) {
 }
 
 function toggleChartExpanded(force) {
-  const shouldExpand = typeof force === "boolean" ? force : !els.chartPanel.classList.contains("expanded");
-  els.chartPanel.classList.toggle("expanded", shouldExpand);
+  const shouldExpand = typeof force === "boolean" ? force : !els.chartLightbox.classList.contains("open");
+  els.chartLightbox.classList.toggle("open", shouldExpand);
   els.body.classList.toggle("chart-expanded", shouldExpand);
-  document.getElementById("expandChartBtn").textContent = shouldExpand ? "x" : "⤢";
   renderBehavior(ctx());
 }
 

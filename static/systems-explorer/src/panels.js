@@ -5,7 +5,6 @@ import { svgEl } from "./diagram.js";
 
 export function renderEditor(ctx) {
   const { els, state } = ctx;
-  if (state.mode !== "configure") return;
   if (!state.selected) {
     els.editorSubhead.textContent = "Select a stock or link";
     els.editorBody.innerHTML = `<div class="empty-state"><strong>No selection</strong><span>Choose a stock or rule link on the canvas.</span><div class="pill-row"><span class="pill">Stocks keep memory</span><span class="pill">Links have rules</span><span class="pill">Packages carry delay</span></div></div>`;
@@ -109,14 +108,15 @@ function renderLinkEditor(ctx, l) {
   if (!l) return;
   const { doc, els, saveDoc, renderAll } = ctx;
   els.editorSubhead.textContent = "rule link";
-  const nodeOptions = doc.nodes.map(n => `<option value="${n.id}">${escapeHtml(n.label)}</option>`).join("");
+  const source = nodeById(doc, l.source)?.label || "Missing source";
+  const target = nodeById(doc, l.target)?.label || "Missing target";
   els.editorBody.innerHTML = `
     <div class="field-grid">
-      <label>From <select id="linkSource">${nodeOptions}</select></label>
-      <label>To <select id="linkTarget">${nodeOptions}</select></label>
+      <div class="field-block readonly-field"><span>From</span><strong>${escapeHtml(source)}</strong></div>
+      <div class="field-block readonly-field"><span>To</span><strong>${escapeHtml(target)}</strong></div>
       <label>Polarity <select id="linkPolarity"><option value="1">same (s)</option><option value="-1">opposite (o)</option></select></label>
-      <label>When source change <select id="linkTrigger">${TRIGGER_OPTIONS.map(o => `<option value="${o.value}">${o.label}</option>`).join("")}</select></label>
-      <label>Only while source <select id="linkGate">${GATE_OPTIONS.map(o => `<option value="${o.value}">${o.label}</option>`).join("")}</select></label>
+      <label>Trigger <select id="linkTrigger">${TRIGGER_OPTIONS.map(o => `<option value="${o.value}">${o.label}</option>`).join("")}</select></label>
+      <label>Gate <select id="linkGate">${GATE_OPTIONS.map(o => `<option value="${o.value}">${o.label}</option>`).join("")}</select></label>
       <label>Threshold <input id="linkGateValue" type="number" step="1" value="${l.gateValue || 0}"></label>
       <label>Payload <select id="linkMode">${PAYLOAD_OPTIONS.map(o => `<option value="${o.value}">${o.label}</option>`).join("")}</select></label>
       <label>Amount <input id="linkAmount" type="number" min="0" step="1" value="${payloadAmount(l)}"></label>
@@ -125,15 +125,11 @@ function renderLinkEditor(ctx, l) {
     <div class="pill-row" style="margin-top:10px"><span class="pill">${escapeHtml(linkLabel(l))}</span></div>
     <div class="row-actions"><button id="deleteLink" class="btn-danger" type="button">Delete link</button></div>
   `;
-  document.getElementById("linkSource").value = l.source;
-  document.getElementById("linkTarget").value = l.target;
   document.getElementById("linkPolarity").value = String(l.polarity);
   document.getElementById("linkTrigger").value = l.trigger;
   document.getElementById("linkGate").value = l.gate;
   document.getElementById("linkMode").value = l.mode;
   const update = (redraw = false) => {
-    l.source = document.getElementById("linkSource").value;
-    l.target = document.getElementById("linkTarget").value;
     l.polarity = Number(document.getElementById("linkPolarity").value) === -1 ? -1 : 1;
     l.trigger = document.getElementById("linkTrigger").value;
     l.gate = document.getElementById("linkGate").value;
@@ -146,7 +142,7 @@ function renderLinkEditor(ctx, l) {
     saveDoc();
     if (redraw) renderAll();
   };
-  ["linkSource", "linkTarget", "linkPolarity", "linkTrigger", "linkGate", "linkMode"].forEach(id => {
+  ["linkPolarity", "linkTrigger", "linkGate", "linkMode"].forEach(id => {
     document.getElementById(id).addEventListener("change", () => update(true));
   });
   ["linkGateValue", "linkAmount", "linkDelay"].forEach(id => {
@@ -158,6 +154,7 @@ function renderLinkEditor(ctx, l) {
 function payloadAmount(l) {
   if (Number.isFinite(Number(l.amount))) return Number(l.amount);
   if (l.mode === "prop") return Math.max(0, Number(l.frac || 0) * 100);
+  if (l.mode === "delta") return 100;
   return Math.max(0, Number(l.strength || 0));
 }
 
@@ -192,21 +189,31 @@ function renderBehaviorTabs(ctx) {
 }
 
 function renderChart(ctx) {
-  const { els, doc, runtime } = ctx;
-  if (ctx.state.behaviorView !== "chart" && !els.chartPanel.classList.contains("expanded")) return;
-  const w = els.chart.clientWidth || 380;
-  const h = els.chartPanel.classList.contains("expanded") ? Math.max(240, els.chartPanel.clientHeight - 88) : 200;
-  els.chart.setAttribute("width", w);
-  els.chart.setAttribute("height", h);
-  els.chart.innerHTML = "";
-  const pad = { l: 34, r: 12, t: 18, b: 26 };
+  const { els } = ctx;
+  if (ctx.state.behaviorView === "chart") {
+    drawChart(ctx, els.chart, els.chart.clientWidth || 340, 200);
+  }
+  if (els.chartLightbox && els.chartLightbox.classList.contains("open")) {
+    const rect = els.expandedChart.getBoundingClientRect();
+    drawChart(ctx, els.expandedChart, Math.max(640, rect.width || 900), Math.max(360, rect.height || 520));
+  }
+}
+
+function drawChart(ctx, svg, w, h) {
+  const { doc, runtime } = ctx;
+  svg.setAttribute("width", w);
+  svg.setAttribute("height", h);
+  svg.innerHTML = "";
+  const legend = layoutLegend(doc.nodes, w, h);
+  const pad = { l: 34, r: 12, t: 18 + legend.height, b: 26 };
   const plotW = w - pad.l - pad.r;
   const plotH = h - pad.t - pad.b;
-  els.chart.append(svgEl("rect", { x: 0, y: 0, width: w, height: h, fill: "#fff", rx: 7 }));
-  els.chart.append(svgEl("line", { x1: pad.l, y1: h - pad.b, x2: w - pad.r, y2: h - pad.b, stroke: "#cbd3dd" }));
-  els.chart.append(svgEl("line", { x1: pad.l, y1: pad.t, x2: pad.l, y2: h - pad.b, stroke: "#cbd3dd" }));
+  svg.append(svgEl("rect", { x: 0, y: 0, width: w, height: h, fill: "#fff", rx: 7 }));
+  renderChartLegend(svg, legend);
+  svg.append(svgEl("line", { x1: pad.l, y1: h - pad.b, x2: w - pad.r, y2: h - pad.b, stroke: "#cbd3dd" }));
+  svg.append(svgEl("line", { x1: pad.l, y1: pad.t, x2: pad.l, y2: h - pad.b, stroke: "#cbd3dd" }));
   if (runtime.history.length < 2) {
-    els.chart.append(svgEl("text", { x: w / 2, y: h / 2, "text-anchor": "middle", fill: "#69717d", "font-size": 12, "font-weight": 700 }, "Start the simulation to draw behavior over time."));
+    svg.append(svgEl("text", { x: w / 2, y: h / 2, "text-anchor": "middle", fill: "#69717d", "font-size": 12, "font-weight": 700 }, "Start the simulation to draw behavior over time."));
     return;
   }
   const maxT = Math.max(1, runtime.history[runtime.history.length - 1].t);
@@ -218,13 +225,75 @@ function renderChart(ctx) {
   [minV, 0, maxV].forEach(v => {
     const y = yFor(v);
     if (y < pad.t || y > h - pad.b) return;
-    els.chart.append(svgEl("line", { x1: pad.l, y1: y, x2: w - pad.r, y2: y, stroke: "#edf0f4" }));
-    els.chart.append(svgEl("text", { x: pad.l - 8, y: y + 4, "text-anchor": "end", fill: "#69717d", "font-size": 10 }, formatNumber(v)));
+    svg.append(svgEl("line", { x1: pad.l, y1: y, x2: w - pad.r, y2: y, stroke: "#edf0f4" }));
+    svg.append(svgEl("text", { x: pad.l - 8, y: y + 4, "text-anchor": "end", fill: "#69717d", "font-size": 10 }, formatNumber(v)));
   });
   doc.nodes.forEach(n => {
     const points = runtime.history.map(row => `${xFor(row.t)},${yFor(row.values[n.id] ?? 0)}`).join(" ");
-    els.chart.append(svgEl("polyline", { points, fill: "none", stroke: n.color, "stroke-width": 2.2, "stroke-linejoin": "round", "stroke-linecap": "round" }));
+    svg.append(svgEl("polyline", { points, fill: "none", stroke: n.color, "stroke-width": 2.2, "stroke-linejoin": "round", "stroke-linecap": "round" }));
   });
+}
+
+function layoutLegend(nodes, chartWidth, chartHeight) {
+  if (!nodes.length) return { rows: [], height: 0 };
+  const rows = [[]];
+  const maxWidth = Math.max(120, chartWidth - 24);
+  const maxRows = chartHeight < 260 ? 3 : 8;
+  let hiddenCount = 0;
+  let rowWidth = 0;
+  nodes.forEach(n => {
+    if (rows.length > maxRows) {
+      hiddenCount += 1;
+      return;
+    }
+    const label = trimLegendLabel(n.label || "Stock");
+    const itemWidth = Math.min(160, 30 + label.length * 6.3);
+    if (rowWidth > 0 && rowWidth + itemWidth + 14 > maxWidth) {
+      if (rows.length >= maxRows) {
+        hiddenCount += 1;
+        return;
+      }
+      rows.push([]);
+      rowWidth = 0;
+    }
+    rows[rows.length - 1].push({ label, color: n.color, width: itemWidth, x: rowWidth });
+    rowWidth += itemWidth + 14;
+  });
+  if (hiddenCount > 0) {
+    const lastRow = rows[rows.length - 1];
+    const x = lastRow.length ? lastRow[lastRow.length - 1].x + lastRow[lastRow.length - 1].width + 14 : 0;
+    lastRow.push({ label: "+" + hiddenCount + " more", color: "#69717d", width: 70, x });
+  }
+  return { rows, height: rows.length ? rows.length * 17 + 5 : 0 };
+}
+
+function renderChartLegend(svg, legend) {
+  legend.rows.forEach((row, rowIndex) => {
+    row.forEach(item => {
+      const x = 12 + item.x;
+      const y = 13 + rowIndex * 17;
+      svg.append(svgEl("line", {
+        x1: x,
+        y1: y,
+        x2: x + 18,
+        y2: y,
+        stroke: item.color,
+        "stroke-width": 3,
+        "stroke-linecap": "round"
+      }));
+      svg.append(svgEl("text", {
+        x: x + 24,
+        y: y + 4,
+        fill: "#303744",
+        "font-size": 10,
+        "font-weight": 760
+      }, item.label));
+    });
+  });
+}
+
+function trimLegendLabel(label) {
+  return label.length > 22 ? label.slice(0, 21) + "..." : label;
 }
 
 function renderStepTable(ctx) {

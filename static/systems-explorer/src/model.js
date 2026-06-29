@@ -17,8 +17,22 @@ export function link(
   gate = "always",
   gateValue = 0
 ) {
-  const amount = mode === "prop" ? frac * 100 : strength;
-  return { id, source, target, polarity, mode, amount, strength, frac, delay, trigger, gate, gateValue };
+  const defaultMode = "delta";
+  const amount = 100;
+  return {
+    id,
+    source,
+    target,
+    polarity,
+    mode: defaultMode,
+    amount,
+    strength: amount,
+    frac: 1,
+    delay,
+    trigger: "any",
+    gate: "always",
+    gateValue: 0
+  };
 }
 
 export function baseDoc(nodes, links) {
@@ -149,15 +163,17 @@ export function sanitizeDoc(doc) {
 function cleanLink(l) {
   const triggerValues = new Set(TRIGGER_OPTIONS.map(o => o.value));
   const gateValues = new Set(GATE_OPTIONS.map(o => o.value));
+  const mode = normalizePayloadMode(l.mode);
+  const amount = normalizePayloadAmount({ ...l, mode });
   return {
     id: l.id,
     source: l.source,
     target: l.target,
     polarity: Number(l.polarity) === -1 ? -1 : 1,
-    mode: normalizePayloadMode(l.mode),
-    amount: normalizePayloadAmount(l),
-    strength: clamp(Number(l.strength ?? l.amount) || 1, 1, 999),
-    frac: Math.max(0, Number(l.frac ?? (Number(l.amount) || 25) / 100) || .25),
+    mode,
+    amount,
+    strength: clamp(Number(l.strength ?? amount) || 1, 1, 999),
+    frac: Math.max(0, Number(l.frac ?? amount / 100) || 1),
     delay: Math.max(0, Number(l.delay) || 0),
     trigger: triggerValues.has(l.trigger) ? l.trigger : "any",
     gate: normalizeGate(l.gate, gateValues),
@@ -166,12 +182,13 @@ function cleanLink(l) {
 }
 
 function normalizePayloadMode(mode) {
-  return PAYLOAD_OPTIONS.some(o => o.value === mode) ? mode : "fixed";
+  return PAYLOAD_OPTIONS.some(o => o.value === mode) ? mode : "delta";
 }
 
 function normalizePayloadAmount(l) {
   if (Number.isFinite(Number(l.amount))) return Math.max(0, Number(l.amount));
-  if (l.mode === "prop") return Math.max(0, Number(l.frac || .25) * 100);
+  if (l.mode === "prop") return Math.max(0, Number(l.frac || 1) * 100);
+  if (l.mode === "delta") return 100;
   return Math.max(0, Number(l.strength || 1));
 }
 

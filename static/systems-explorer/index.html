@@ -7,23 +7,21 @@
   <link rel="icon" href="data:,">
   <link rel="stylesheet" href="./styles.css">
 </head>
-<body data-mode="configure">
+<body>
   <div class="app">
     <header class="topbar">
-      <div class="brand">
+      <div class="brand-row">
         <h1>HDI Systems Explorer</h1>
-      </div>
-      <div class="toolbar">
-        <div class="header-actions">
-          <button id="examplesBtn" class="btn-quiet" type="button">Examples</button>
-          <button id="newBtn" class="btn-quiet" type="button">New</button>
-          <button id="importBtn" class="btn-quiet" type="button">Import</button>
-          <button id="exportBtn" class="btn-quiet" type="button">Export</button>
+        <div class="header-actions primary-actions">
+          <button id="addStockBtn" type="button">+ Node</button>
+          <button id="addLinkBtn" type="button">+ Link</button>
         </div>
       </div>
-      <div class="readouts">
-        <div class="metric">Time <strong id="timeReadout">0.0</strong></div>
-        <div class="metric">Packages <strong id="packageReadout">0</strong></div>
+      <div class="header-actions utility-actions">
+        <button id="examplesBtn" class="btn-quiet" type="button">Examples</button>
+        <button id="newBtn" class="btn-quiet" type="button">New</button>
+        <button id="importBtn" class="btn-quiet" type="button">Import</button>
+        <button id="exportBtn" class="btn-quiet" type="button">Export</button>
       </div>
     </header>
 
@@ -40,65 +38,43 @@
         <g id="viewport"></g>
       </svg>
 
-      <div class="status-banner" id="statusBanner">
-        <span id="statusText"><strong>Configure:</strong> drag stocks, add rule links, or load an archetype. Switch to Simulate, then fire one stock.</span>
-        <button id="continueBtn" type="button" style="display:none">Continue</button>
-      </div>
-      <div class="lightbox-backdrop" id="chartBackdrop"></div>
-
-      <section class="floating-panel mode-panel" id="modePanel">
-        <div class="panel-head" data-drag-panel="modePanel">
+      <section class="floating-panel simulator-panel" id="simulatorPanel">
+        <div class="panel-head">
           <div>
-            <h2>Mode</h2>
-            <span>Choose workflow</span>
+            <h2>Simulator</h2>
+            <span>Run and inspect behavior</span>
           </div>
         </div>
         <div class="panel-body">
-          <div class="mode-switch" role="group" aria-label="Mode">
-            <button id="configureMode" class="active" type="button">Configure</button>
-            <button id="simulateMode" type="button">Simulate</button>
+          <div class="sim-readouts">
+            <div class="metric">Time <strong id="timeReadout">0.0</strong></div>
+            <div class="metric">Packages <strong id="packageReadout">0</strong></div>
+            <div class="metric">Step <strong id="stepReadout">0</strong></div>
           </div>
-          <div class="mode-actions config-only">
-            <span class="mode-actions-label">Build tools</span>
-            <button id="addStockBtn" class="btn-primary" type="button">+ Stock</button>
-            <button id="addLinkBtn" type="button">+ Link</button>
-          </div>
-          <div class="mode-actions sim-only">
-            <span class="mode-actions-label">Run controls</span>
-            <button id="backBtn" type="button">Back</button>
-            <button id="stepBtn" type="button">Step</button>
+          <div class="sim-controls">
+            <button id="startRunBtn" class="btn-primary" type="button">Start</button>
             <button id="pauseBtn" type="button">Pause</button>
             <button id="resetBtn" type="button">Reset</button>
-            <label class="speed-control">Speed <input id="speed" type="range" min="0.2" max="8" step="0.2" value="1.4"></label>
+            <label class="step-toggle"><input id="stepMode" type="checkbox"> Step-by-step</label>
           </div>
-        </div>
-      </section>
-
-      <section class="floating-panel editor-panel" id="editorPanel">
-        <div class="panel-head" data-drag-panel="editorPanel">
-          <div>
-            <h2>Editor</h2>
-            <span id="editorSubhead">Select a stock or link</span>
+          <div class="speed-row" id="speedRow">
+            <label>Speed <input id="speed" type="range" min="0.2" max="8" step="0.2" value="1.4"></label>
           </div>
-        </div>
-        <div class="panel-body" id="editorBody"></div>
-      </section>
-
-      <section class="floating-panel chart-panel" id="chartPanel">
-        <div class="panel-head" data-drag-panel="chartPanel">
-          <div>
-            <h2>Behavior over time</h2>
-            <span>Values and rule-link sends</span>
+          <div class="step-row" id="stepRow">
+            <button id="prevStepBtn" type="button">Prev</button>
+            <span id="currentStepLabel">Step 0</span>
+            <button id="nextStepBtn" type="button">Next</button>
           </div>
-          <button id="expandChartBtn" class="icon-btn" type="button" title="Expand chart">⤢</button>
-        </div>
-        <div class="panel-body">
+          <div class="status-banner" id="statusBanner">
+            <span id="statusText"><strong>Ready:</strong> edit the model or press Start to seed the first package.</span>
+            <button id="continueBtn" type="button" style="display:none">Continue</button>
+          </div>
           <div class="behavior-tabs" role="group" aria-label="Behavior view">
             <button id="chartTabBtn" class="active" type="button">Chart</button>
             <button id="tableTabBtn" type="button">Step table</button>
           </div>
           <div class="chart-wrap behavior-pane active" id="chartPane">
-            <svg id="historyChart" width="380" height="200" aria-label="Behavior over time chart"></svg>
+            <svg id="historyChart" width="340" height="200" aria-label="Behavior over time chart"></svg>
           </div>
           <div class="step-table-wrap behavior-pane" id="tablePane">
             <div class="step-table-title">Step-by-step table view</div>
@@ -109,6 +85,21 @@
         </div>
       </section>
 
+      <section class="floating-panel editor-panel" id="editorPanel">
+        <div class="panel-head">
+          <div>
+            <h2>Property Editor</h2>
+            <span id="editorSubhead">Select a stock or link</span>
+          </div>
+        </div>
+        <div class="panel-body" id="editorBody"></div>
+      </section>
+
+      <div class="lightbox-backdrop" id="chartBackdrop"></div>
+      <div class="chart-lightbox" id="chartLightbox" role="dialog" aria-modal="true" aria-label="Expanded behavior chart">
+        <button id="closeChartBtn" class="icon-btn chart-close" type="button" aria-label="Close expanded chart">x</button>
+        <svg id="expandedHistoryChart" aria-label="Expanded behavior over time chart"></svg>
+      </div>
       <div class="toast" id="toast"></div>
       <input id="importFile" type="file" accept="application/json,.json" hidden>
 
@@ -119,6 +110,23 @@
             <button id="closeExamplesBtn" class="icon-btn" type="button">x</button>
           </div>
           <div class="example-grid" id="exampleGrid"></div>
+        </div>
+      </div>
+
+      <div class="modal" id="startModal" role="dialog" aria-modal="true" aria-label="Start simulation">
+        <div class="modal-card start-card">
+          <div class="modal-head">
+            <h2>Start simulation</h2>
+            <button id="cancelStartBtn" class="icon-btn" type="button">x</button>
+          </div>
+          <div class="start-form">
+            <label>Seed node <select id="startNodeSelect"></select></label>
+            <label>Initial package size <input id="startAmountInput" type="number" step="1" value="20"></label>
+            <div class="row-actions">
+              <button id="confirmStartBtn" class="btn-primary" type="button">Send package</button>
+              <button id="cancelStartFooterBtn" type="button">Cancel</button>
+            </div>
+          </div>
         </div>
       </div>
     </main>

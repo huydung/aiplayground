@@ -39,7 +39,10 @@ export class Simulation {
   }
 
   fireNode(id, dir) {
-    this.spawnOutgoing(id, dir);
+    const source = nodeById(this.doc, id);
+    if (!source) return;
+    const actualDelta = this.applyDelta(source, dir);
+    this.spawnOutgoing(id, actualDelta);
   }
 
   advance(dt) {
@@ -123,15 +126,24 @@ export class Simulation {
       const target = nodeById(this.doc, l.target);
       if (!target || !this.linkCanFire(l, sourceDelta)) return;
       const amount = this.linkAmount(l, sourceId, sourceDelta);
+      if (amount <= 0) return;
       const logicalDelay = Math.max(MIN_DELAY, l.delay);
+      const signedAmount = Math.sign(sourceDelta) * l.polarity * amount;
+      const departStep = Math.floor(this.simTime);
+      const existing = this.packages.find(p => !p.delivered && p.linkId === l.id && p.departStep === departStep);
+      if (existing) {
+        this.mergePackage(existing, signedAmount);
+        return;
+      }
       const pkg = {
         id: "p" + Math.random().toString(36).slice(2),
         linkId: l.id,
         fromId: l.source,
         toId: l.target,
         polarity: l.polarity,
-        dir: Math.sign(sourceDelta) * l.polarity,
+        dir: Math.sign(signedAmount),
         amount,
+        departStep,
         departTime: this.simTime,
         arriveTime: this.simTime + logicalDelay,
         visualArriveTime: this.simTime + Math.max(MIN_PACKAGE_TRAVEL, logicalDelay),
@@ -139,6 +151,7 @@ export class Simulation {
       };
       this.packages.push(pkg);
       this.packageEvents.push({
+        packageId: pkg.id,
         t: this.simTime,
         linkId: l.id,
         from: source.label,
@@ -149,6 +162,22 @@ export class Simulation {
         label: linkLabel(l)
       });
     });
+  }
+
+  mergePackage(pkg, signedAmount) {
+    const total = pkg.dir * pkg.amount + signedAmount;
+    const event = this.packageEvents.find(e => e.packageId === pkg.id);
+    if (Math.abs(total) < 0.0001) {
+      this.packages = this.packages.filter(p => p.id !== pkg.id);
+      this.packageEvents = this.packageEvents.filter(e => e.packageId !== pkg.id);
+      return;
+    }
+    pkg.dir = Math.sign(total);
+    pkg.amount = Math.abs(total);
+    if (event) {
+      event.dir = pkg.dir;
+      event.amount = pkg.amount;
+    }
   }
 
   linkCanFire(l, sourceDelta) {
