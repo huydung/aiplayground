@@ -1,0 +1,129 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>HDI Systems Explorer</title>
+  <link rel="icon" href="data:,">
+  <link rel="stylesheet" href="./styles.css">
+</head>
+<body data-mode="configure">
+  <div class="app">
+    <header class="topbar">
+      <div class="brand">
+        <h1>HDI Systems Explorer</h1>
+      </div>
+      <div class="toolbar">
+        <div class="header-actions">
+          <button id="examplesBtn" class="btn-quiet" type="button">Examples</button>
+          <button id="newBtn" class="btn-quiet" type="button">New</button>
+          <button id="importBtn" class="btn-quiet" type="button">Import</button>
+          <button id="exportBtn" class="btn-quiet" type="button">Export</button>
+        </div>
+      </div>
+      <div class="readouts">
+        <div class="metric">Time <strong id="timeReadout">0.0</strong></div>
+        <div class="metric">Packages <strong id="packageReadout">0</strong></div>
+      </div>
+    </header>
+
+    <main class="workspace" id="workspace">
+      <svg id="diagram" aria-label="Systems diagram canvas">
+        <defs>
+          <marker id="arrowHead" markerWidth="12" markerHeight="12" refX="10" refY="6" orient="auto" markerUnits="strokeWidth">
+            <path d="M2,2 L10,6 L2,10 Z" fill="#303744"></path>
+          </marker>
+          <marker id="arrowHeadRed" markerWidth="12" markerHeight="12" refX="10" refY="6" orient="auto" markerUnits="strokeWidth">
+            <path d="M2,2 L10,6 L2,10 Z" fill="#bd0129"></path>
+          </marker>
+        </defs>
+        <g id="viewport"></g>
+      </svg>
+
+      <div class="status-banner" id="statusBanner">
+        <span id="statusText"><strong>Configure:</strong> drag stocks, add rule links, or load an archetype. Switch to Simulate, then fire one stock.</span>
+        <button id="continueBtn" type="button" style="display:none">Continue</button>
+      </div>
+      <div class="lightbox-backdrop" id="chartBackdrop"></div>
+
+      <section class="floating-panel mode-panel" id="modePanel">
+        <div class="panel-head" data-drag-panel="modePanel">
+          <div>
+            <h2>Mode</h2>
+            <span>Choose workflow</span>
+          </div>
+        </div>
+        <div class="panel-body">
+          <div class="mode-switch" role="group" aria-label="Mode">
+            <button id="configureMode" class="active" type="button">Configure</button>
+            <button id="simulateMode" type="button">Simulate</button>
+          </div>
+          <div class="mode-actions config-only">
+            <span class="mode-actions-label">Build tools</span>
+            <button id="addStockBtn" class="btn-primary" type="button">+ Stock</button>
+            <button id="addLinkBtn" type="button">+ Link</button>
+          </div>
+          <div class="mode-actions sim-only">
+            <span class="mode-actions-label">Run controls</span>
+            <button id="backBtn" type="button">Back</button>
+            <button id="stepBtn" type="button">Step</button>
+            <button id="pauseBtn" type="button">Pause</button>
+            <button id="resetBtn" type="button">Reset</button>
+            <label class="speed-control">Speed <input id="speed" type="range" min="0.2" max="8" step="0.2" value="1.4"></label>
+          </div>
+        </div>
+      </section>
+
+      <section class="floating-panel editor-panel" id="editorPanel">
+        <div class="panel-head" data-drag-panel="editorPanel">
+          <div>
+            <h2>Editor</h2>
+            <span id="editorSubhead">Select a stock or link</span>
+          </div>
+        </div>
+        <div class="panel-body" id="editorBody"></div>
+      </section>
+
+      <section class="floating-panel chart-panel" id="chartPanel">
+        <div class="panel-head" data-drag-panel="chartPanel">
+          <div>
+            <h2>Behavior over time</h2>
+            <span>Values and rule-link sends</span>
+          </div>
+          <button id="expandChartBtn" class="icon-btn" type="button" title="Expand chart">⤢</button>
+        </div>
+        <div class="panel-body">
+          <div class="behavior-tabs" role="group" aria-label="Behavior view">
+            <button id="chartTabBtn" class="active" type="button">Chart</button>
+            <button id="tableTabBtn" type="button">Step table</button>
+          </div>
+          <div class="chart-wrap behavior-pane active" id="chartPane">
+            <svg id="historyChart" width="380" height="200" aria-label="Behavior over time chart"></svg>
+          </div>
+          <div class="step-table-wrap behavior-pane" id="tablePane">
+            <div class="step-table-title">Step-by-step table view</div>
+            <div class="step-table-scroll">
+              <table class="step-table" id="stepTable"></table>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <div class="toast" id="toast"></div>
+      <input id="importFile" type="file" accept="application/json,.json" hidden>
+
+      <div class="modal" id="examplesModal" role="dialog" aria-modal="true" aria-label="Example archetypes">
+        <div class="modal-card">
+          <div class="modal-head">
+            <h2>System archetypes</h2>
+            <button id="closeExamplesBtn" class="icon-btn" type="button">x</button>
+          </div>
+          <div class="example-grid" id="exampleGrid"></div>
+        </div>
+      </div>
+    </main>
+  </div>
+
+  <script type="module" src="./src/app.js"></script>
+</body>
+</html>
