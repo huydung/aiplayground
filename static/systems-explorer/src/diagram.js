@@ -116,7 +116,7 @@ function shouldShowFireControls(ctx) {
 function renderStock(ctx, g, n, value, selected, out) {
   const w = 138, h = 88, x = n.x - w / 2, y = n.y - h / 2;
   const range = Math.max(1, n.max - n.min);
-  g.append(svgEl("rect", { x, y, width: w, height: h, rx: 14, fill: "#fff", stroke: n.color, class: `node-outline ${selected ? "selected" : ""}` }));
+  g.append(svgEl("rect", { x, y, width: w, height: h, rx: 14, fill: "var(--paper)", stroke: n.color, class: `node-outline ${selected ? "selected" : ""}` }));
   const frac = value >= 0 && n.max !== 0 ? clamp(value / n.max, 0, 1) : 0;
   const fillH = h * frac;
   g.append(svgEl("rect", { x: x + 3, y: y + h - fillH - 3, width: w - 6, height: Math.max(0, fillH), rx: 10, fill: n.color, opacity: .22 }));

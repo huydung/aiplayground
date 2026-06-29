@@ -10,18 +10,17 @@
 <body>
   <div class="app">
     <header class="topbar">
-      <div class="brand-row">
-        <h1>HDI Systems Explorer</h1>
-        <div class="header-actions primary-actions">
-          <button id="addStockBtn" type="button">+ Node</button>
-          <button id="addLinkBtn" type="button">+ Link</button>
-        </div>
+      <div class="header-actions primary-actions">
+        <button id="addStockBtn" type="button">+ Node</button>
+        <button id="addLinkBtn" type="button">+ Link</button>
       </div>
+      <h1 class="app-title">HDI Systems Explorer</h1>
       <div class="header-actions utility-actions">
         <button id="examplesBtn" class="btn-quiet" type="button">Examples</button>
         <button id="newBtn" class="btn-quiet" type="button">New</button>
         <button id="importBtn" class="btn-quiet" type="button">Import</button>
         <button id="exportBtn" class="btn-quiet" type="button">Export</button>
+        <button id="themeToggle" class="theme-toggle" type="button" aria-label="Switch to dark mode">Dark</button>
       </div>
     </header>
 
@@ -46,6 +45,7 @@
           </div>
         </div>
         <div class="panel-body">
+          <div class="run-state" id="runStateBadge">Ready</div>
           <div class="sim-readouts">
             <div class="metric">Time <strong id="timeReadout">0.0</strong></div>
             <div class="metric">Packages <strong id="packageReadout">0</strong></div>
@@ -69,17 +69,19 @@
             <span id="statusText"><strong>Ready:</strong> edit the model or press Start to seed the first package.</span>
             <button id="continueBtn" type="button" style="display:none">Continue</button>
           </div>
-          <div class="behavior-tabs" role="group" aria-label="Behavior view">
-            <button id="chartTabBtn" class="active" type="button">Chart</button>
-            <button id="tableTabBtn" type="button">Step table</button>
-          </div>
-          <div class="chart-wrap behavior-pane active" id="chartPane">
-            <svg id="historyChart" width="340" height="200" aria-label="Behavior over time chart"></svg>
-          </div>
-          <div class="step-table-wrap behavior-pane" id="tablePane">
-            <div class="step-table-title">Step-by-step table view</div>
-            <div class="step-table-scroll">
-              <table class="step-table" id="stepTable"></table>
+          <div class="behavior-section" id="behaviorSection">
+            <div class="behavior-tabs" role="group" aria-label="Behavior view">
+              <button id="chartTabBtn" class="active" type="button">Chart</button>
+              <button id="tableTabBtn" type="button">Step table</button>
+            </div>
+            <div class="chart-wrap behavior-pane active" id="chartPane">
+              <svg id="historyChart" width="340" height="200" aria-label="Behavior over time chart"></svg>
+            </div>
+            <div class="step-table-wrap behavior-pane" id="tablePane">
+              <div class="step-table-title">Step-by-step table view</div>
+              <div class="step-table-scroll">
+                <table class="step-table" id="stepTable"></table>
+              </div>
             </div>
           </div>
         </div>

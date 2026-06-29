@@ -7,13 +7,17 @@ import { renderSvg } from "./diagram.js";
 import { renderBehavior, renderEditor, setBehaviorView } from "./panels.js";
 import { escapeHtml } from "./text.js";
 
+const THEME_KEY = "hdi-systems-explorer-theme";
+
 const els = {
   body: document.body,
   workspace: document.getElementById("workspace"),
   diagram: document.getElementById("diagram"),
   viewport: document.getElementById("viewport"),
+  editorPanel: document.getElementById("editorPanel"),
   editorBody: document.getElementById("editorBody"),
   editorSubhead: document.getElementById("editorSubhead"),
+  behaviorSection: document.getElementById("behaviorSection"),
   chart: document.getElementById("historyChart"),
   expandedChart: document.getElementById("expandedHistoryChart"),
   stepTable: document.getElementById("stepTable"),
@@ -26,9 +30,11 @@ const els = {
   packages: document.getElementById("packageReadout"),
   step: document.getElementById("stepReadout"),
   currentStepLabel: document.getElementById("currentStepLabel"),
+  runStateBadge: document.getElementById("runStateBadge"),
   statusText: document.getElementById("statusText"),
   continueBtn: document.getElementById("continueBtn"),
   toast: document.getElementById("toast"),
+  themeToggle: document.getElementById("themeToggle"),
   examplesModal: document.getElementById("examplesModal"),
   exampleGrid: document.getElementById("exampleGrid"),
   importFile: document.getElementById("importFile"),
@@ -63,12 +69,15 @@ const state = {
   drag: null,
   panelDrag: null,
   linkRoutes: new Map(),
-  maxPausedNodes: new Set()
+  maxPausedNodes: new Set(),
+  theme: "light"
 };
 
 init();
 
 function init() {
+  state.theme = loadTheme();
+  applyTheme();
   state.doc = loadStoredDoc() || archetypes[0].doc();
   sanitizeDoc(state.doc);
   state.runtime = createRuntime(state.doc);
@@ -98,6 +107,7 @@ function bindUi() {
   document.getElementById("newBtn").addEventListener("click", newDiagram);
   document.getElementById("importBtn").addEventListener("click", () => els.importFile.click());
   document.getElementById("exportBtn").addEventListener("click", () => exportDoc(state.doc));
+  els.themeToggle.addEventListener("click", toggleTheme);
   document.getElementById("addStockBtn").addEventListener("click", addStock);
   document.getElementById("addLinkBtn").addEventListener("click", startLinkMode);
   document.getElementById("startRunBtn").addEventListener("click", openStartDialog);
@@ -143,6 +153,11 @@ function bindUi() {
 }
 
 function renderAll() {
+  if (state.running) {
+    state.selected = null;
+    state.linkDraft = null;
+  }
+  syncPanelVisibility();
   renderSvg(ctx());
   renderEditor(ctx());
   renderBehavior(ctx());
@@ -155,6 +170,33 @@ function renderAll() {
 
 function saveDoc() {
   persistDoc(state.doc);
+}
+
+function loadTheme() {
+  try {
+    const stored = localStorage.getItem(THEME_KEY);
+    if (stored === "light" || stored === "dark") return stored;
+  } catch (_) {
+    // Ignore storage failures and fall back to the user's system setting.
+  }
+  return window.matchMedia && window.matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light";
+}
+
+function toggleTheme() {
+  state.theme = state.theme === "dark" ? "light" : "dark";
+  try {
+    localStorage.setItem(THEME_KEY, state.theme);
+  } catch (_) {
+    // Theme still applies for the current session if storage is unavailable.
+  }
+  applyTheme();
+}
+
+function applyTheme() {
+  els.body.dataset.theme = state.theme;
+  const isDark = state.theme === "dark";
+  els.themeToggle.textContent = isDark ? "Light" : "Dark";
+  els.themeToggle.setAttribute("aria-label", isDark ? "Switch to light mode" : "Switch to dark mode");
 }
 
 function resetRuntime() {
@@ -305,6 +347,8 @@ function startFromDialog() {
   state.started = true;
   state.armed = true;
   state.waitingForFire = false;
+  state.selected = null;
+  state.linkDraft = null;
   state.runtime.fireNode(nodeId, amount);
   pushCheckpoint();
   if (handleSimulationBoundaries()) {
@@ -329,6 +373,8 @@ function continueRun() {
   if (state.stepByStep) startStepForward();
   else {
     state.running = true;
+    state.selected = null;
+    state.linkDraft = null;
     state.lastFrame = null;
     renderAll();
   }
@@ -340,10 +386,14 @@ function togglePause() {
     setStatus(`<strong>Paused:</strong> t = ${state.runtime.simTime.toFixed(1)}. Resume or step/back manually.`);
   } else if (state.stepTarget != null) {
     state.running = true;
+    state.selected = null;
+    state.linkDraft = null;
     state.lastFrame = null;
     setStatus(`<strong>Resumed:</strong> continuing to t = ${state.stepTarget}.`);
   } else if (state.started && !state.stepByStep) {
     state.running = true;
+    state.selected = null;
+    state.linkDraft = null;
     state.lastFrame = null;
     setStatus("<strong>Continuing:</strong> simulation is running.");
   } else {
@@ -360,6 +410,8 @@ function startStepForward(captureCurrent = true) {
   state.running = true;
   state.armed = true;
   state.waitingForFire = false;
+  state.selected = null;
+  state.linkDraft = null;
   state.lastFrame = null;
   setStatus(`<strong>Step:</strong> advancing to t = ${state.stepTarget}.`);
   renderAll();
@@ -461,6 +513,27 @@ function updateRunControls() {
   pauseBtn.disabled = !state.started || (!state.running && state.stepByStep && state.stepTarget == null);
   document.getElementById("prevStepBtn").disabled = !state.started || state.checkpoints.length <= 1;
   document.getElementById("nextStepBtn").disabled = !state.started || state.running;
+  updateRunStateBadge();
+}
+
+function syncPanelVisibility() {
+  els.editorPanel.classList.toggle("hidden", !state.selected);
+  els.behaviorSection.classList.toggle("hidden", !state.running);
+  if (!state.running && els.chartLightbox.classList.contains("open")) toggleChartExpanded(false);
+}
+
+function updateRunStateBadge() {
+  const stateName = runStateName();
+  els.runStateBadge.textContent = stateName.label;
+  els.runStateBadge.dataset.state = stateName.key;
+  document.getElementById("statusBanner").dataset.state = stateName.key;
+}
+
+function runStateName() {
+  if (state.running) return { key: "running", label: "Simulation Running" };
+  if (state.started) return { key: "paused", label: "Simulation Paused" };
+  if (state.runtime.simTime > 0 || state.runtime.history.length > 1) return { key: "stopped", label: "Simulation Stopped" };
+  return { key: "ready", label: "Ready" };
 }
 
 function tick(now) {

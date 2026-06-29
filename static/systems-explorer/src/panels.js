@@ -204,16 +204,17 @@ function drawChart(ctx, svg, w, h) {
   svg.setAttribute("width", w);
   svg.setAttribute("height", h);
   svg.innerHTML = "";
+  const colors = chartColors();
   const legend = layoutLegend(doc.nodes, w, h);
   const pad = { l: 34, r: 12, t: 18 + legend.height, b: 26 };
   const plotW = w - pad.l - pad.r;
   const plotH = h - pad.t - pad.b;
-  svg.append(svgEl("rect", { x: 0, y: 0, width: w, height: h, fill: "#fff", rx: 7 }));
-  renderChartLegend(svg, legend);
-  svg.append(svgEl("line", { x1: pad.l, y1: h - pad.b, x2: w - pad.r, y2: h - pad.b, stroke: "#cbd3dd" }));
-  svg.append(svgEl("line", { x1: pad.l, y1: pad.t, x2: pad.l, y2: h - pad.b, stroke: "#cbd3dd" }));
+  svg.append(svgEl("rect", { x: 0, y: 0, width: w, height: h, fill: colors.bg, rx: 7 }));
+  renderChartLegend(svg, legend, colors);
+  svg.append(svgEl("line", { x1: pad.l, y1: h - pad.b, x2: w - pad.r, y2: h - pad.b, stroke: colors.axis }));
+  svg.append(svgEl("line", { x1: pad.l, y1: pad.t, x2: pad.l, y2: h - pad.b, stroke: colors.axis }));
   if (runtime.history.length < 2) {
-    svg.append(svgEl("text", { x: w / 2, y: h / 2, "text-anchor": "middle", fill: "#69717d", "font-size": 12, "font-weight": 700 }, "Start the simulation to draw behavior over time."));
+    svg.append(svgEl("text", { x: w / 2, y: h / 2, "text-anchor": "middle", fill: colors.text, "font-size": 12, "font-weight": 700 }, "Start the simulation to draw behavior over time."));
     return;
   }
   const maxT = Math.max(1, runtime.history[runtime.history.length - 1].t);
@@ -225,8 +226,8 @@ function drawChart(ctx, svg, w, h) {
   [minV, 0, maxV].forEach(v => {
     const y = yFor(v);
     if (y < pad.t || y > h - pad.b) return;
-    svg.append(svgEl("line", { x1: pad.l, y1: y, x2: w - pad.r, y2: y, stroke: "#edf0f4" }));
-    svg.append(svgEl("text", { x: pad.l - 8, y: y + 4, "text-anchor": "end", fill: "#69717d", "font-size": 10 }, formatNumber(v)));
+    svg.append(svgEl("line", { x1: pad.l, y1: y, x2: w - pad.r, y2: y, stroke: colors.grid }));
+    svg.append(svgEl("text", { x: pad.l - 8, y: y + 4, "text-anchor": "end", fill: colors.text, "font-size": 10 }, formatNumber(v)));
   });
   doc.nodes.forEach(n => {
     const points = runtime.history.map(row => `${xFor(row.t)},${yFor(row.values[n.id] ?? 0)}`).join(" ");
@@ -262,12 +263,12 @@ function layoutLegend(nodes, chartWidth, chartHeight) {
   if (hiddenCount > 0) {
     const lastRow = rows[rows.length - 1];
     const x = lastRow.length ? lastRow[lastRow.length - 1].x + lastRow[lastRow.length - 1].width + 14 : 0;
-    lastRow.push({ label: "+" + hiddenCount + " more", color: "#69717d", width: 70, x });
+    lastRow.push({ label: "+" + hiddenCount + " more", color: "var(--chart-text)", width: 70, x });
   }
   return { rows, height: rows.length ? rows.length * 17 + 5 : 0 };
 }
 
-function renderChartLegend(svg, legend) {
+function renderChartLegend(svg, legend, colors) {
   legend.rows.forEach((row, rowIndex) => {
     row.forEach(item => {
       const x = 12 + item.x;
@@ -284,7 +285,7 @@ function renderChartLegend(svg, legend) {
       svg.append(svgEl("text", {
         x: x + 24,
         y: y + 4,
-        fill: "#303744",
+        fill: colors.label,
         "font-size": 10,
         "font-weight": 760
       }, item.label));
@@ -294,6 +295,17 @@ function renderChartLegend(svg, legend) {
 
 function trimLegendLabel(label) {
   return label.length > 22 ? label.slice(0, 21) + "..." : label;
+}
+
+function chartColors() {
+  const styles = getComputedStyle(document.body);
+  return {
+    bg: styles.getPropertyValue("--chart-bg").trim() || "#fff",
+    grid: styles.getPropertyValue("--chart-grid").trim() || "#edf0f4",
+    axis: styles.getPropertyValue("--chart-axis").trim() || "#cbd3dd",
+    text: styles.getPropertyValue("--chart-text").trim() || "#69717d",
+    label: styles.getPropertyValue("--chart-label").trim() || "#303744"
+  };
 }
 
 function renderStepTable(ctx) {
