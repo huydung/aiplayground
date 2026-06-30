@@ -1,0 +1,22 @@
+{
+  "key": "limits",
+  "title": "Limits to Success",
+  "desc": "A winning production pattern grows until capacity constraints push back.",
+  "doc": {
+    "version": 5,
+    "nextId": 20,
+    "nodes": [
+      { "id": "quality", "label": "Feature Quality", "kind": "stock", "min": 0, "max": 100, "value": 34, "x": 210, "y": 240, "color": "#168b5a", "minStrict": true, "maxStrict": true, "flow": { "in": null, "out": null } },
+      { "id": "scope", "label": "Player Excitement", "kind": "stock", "min": 0, "max": 100, "value": 42, "x": 500, "y": 185, "color": "#2366d1", "minStrict": true, "maxStrict": true, "flow": { "in": null, "out": null } },
+      { "id": "capacity", "label": "Team Capacity", "kind": "stock", "min": 0, "max": 100, "value": 72, "x": 520, "y": 445, "color": "#f59e0b", "minStrict": true, "maxStrict": true, "flow": { "in": null, "out": null } },
+      { "id": "load", "label": "Coordination Load", "kind": "stock", "min": -50, "max": 100, "value": 0, "x": 780, "y": 320, "color": "#bd0129", "minStrict": true, "maxStrict": true, "flow": { "in": null, "out": null } }
+    ],
+    "links": [
+      { "id": "c1", "source": "quality", "target": "scope", "polarity": 1, "mode": "delta", "amount": 100, "strength": 100, "frac": 1, "delay": 1, "trigger": "any", "gate": "always", "gateValue": 0 },
+      { "id": "c2", "source": "scope", "target": "quality", "polarity": 1, "mode": "delta", "amount": 100, "strength": 100, "frac": 1, "delay": 1, "trigger": "any", "gate": "always", "gateValue": 0 },
+      { "id": "c3", "source": "scope", "target": "load", "polarity": 1, "mode": "delta", "amount": 100, "strength": 100, "frac": 1, "delay": 0, "trigger": "any", "gate": "always", "gateValue": 0 },
+      { "id": "c4", "source": "load", "target": "capacity", "polarity": -1, "mode": "delta", "amount": 100, "strength": 100, "frac": 1, "delay": 2, "trigger": "any", "gate": "always", "gateValue": 0 },
+      { "id": "c5", "source": "capacity", "target": "quality", "polarity": 1, "mode": "delta", "amount": 100, "strength": 100, "frac": 1, "delay": 1, "trigger": "any", "gate": "always", "gateValue": 0 }
+    ]
+  }
+}

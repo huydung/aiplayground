@@ -1,8 +1,19 @@
 import { NODE_COLORS } from "./config.js";
 import { assessBoundaries, currentMaxNodeIds } from "./boundaries.js";
-import { archetypes, baseDoc, clamp, cleanDoc, link, nodeById, sanitizeDoc, stock } from "./model.js";
+import { fallbackExample, loadExamples } from "./examples.js";
+import { baseDoc, clamp, cleanDoc, link, nodeById, sanitizeDoc, stock } from "./model.js";
 import { createRuntime } from "./simulation.js";
-import { exportDoc, loadStoredDoc, saveDoc as persistDoc } from "./storage.js";
+import {
+  activateDiagram,
+  activeDiagram,
+  createDiagram,
+  deleteDiagram as deleteStoredDiagram,
+  diagramName,
+  exportDiagramLibrary,
+  importDiagrams,
+  loadDiagramLibrary,
+  saveActiveDiagram
+} from "./storage.js";
 import { renderSvg } from "./diagram.js";
 import { renderBehavior, renderEditor, setBehaviorView } from "./panels.js";
 import { escapeHtml } from "./text.js";
@@ -35,6 +46,9 @@ const els = {
   continueBtn: document.getElementById("continueBtn"),
   toast: document.getElementById("toast"),
   themeToggle: document.getElementById("themeToggle"),
+  diagramsModal: document.getElementById("diagramsModal"),
+  diagramNameInput: document.getElementById("diagramNameInput"),
+  diagramList: document.getElementById("diagramList"),
   examplesModal: document.getElementById("examplesModal"),
   exampleGrid: document.getElementById("exampleGrid"),
   importFile: document.getElementById("importFile"),
@@ -70,15 +84,19 @@ const state = {
   panelDrag: null,
   linkRoutes: new Map(),
   maxPausedNodes: new Set(),
-  theme: "light"
+  theme: "light",
+  library: null,
+  examples: [fallbackExample]
 };
 
 init();
 
-function init() {
+async function init() {
   state.theme = loadTheme();
   applyTheme();
-  state.doc = loadStoredDoc() || archetypes[0].doc();
+  state.examples = await loadExamples();
+  state.library = loadDiagramLibrary(state.examples[0].doc(), state.examples[0].title);
+  state.doc = activeDiagram(state.library).doc;
   sanitizeDoc(state.doc);
   state.runtime = createRuntime(state.doc);
   bindUi();
@@ -101,12 +119,19 @@ function ctx() {
 }
 
 function bindUi() {
+  document.getElementById("diagramsBtn").addEventListener("click", openDiagramsModal);
+  document.getElementById("closeDiagramsBtn").addEventListener("click", closeDiagramsModal);
+  els.diagramsModal.addEventListener("click", e => { if (e.target === els.diagramsModal) closeDiagramsModal(); });
+  document.getElementById("saveDiagramBtn").addEventListener("click", saveNamedDiagram);
+  document.getElementById("saveAsDiagramBtn").addEventListener("click", saveAsNewDiagram);
+  document.getElementById("importLibraryBtn").addEventListener("click", () => els.importFile.click());
+  document.getElementById("exportLibraryBtn").addEventListener("click", exportLibrary);
   document.getElementById("examplesBtn").addEventListener("click", () => els.examplesModal.classList.add("open"));
   document.getElementById("closeExamplesBtn").addEventListener("click", () => els.examplesModal.classList.remove("open"));
   els.examplesModal.addEventListener("click", e => { if (e.target === els.examplesModal) els.examplesModal.classList.remove("open"); });
   document.getElementById("newBtn").addEventListener("click", newDiagram);
   document.getElementById("importBtn").addEventListener("click", () => els.importFile.click());
-  document.getElementById("exportBtn").addEventListener("click", () => exportDoc(state.doc));
+  document.getElementById("exportBtn").addEventListener("click", exportLibrary);
   els.themeToggle.addEventListener("click", toggleTheme);
   document.getElementById("addStockBtn").addEventListener("click", addStock);
   document.getElementById("addLinkBtn").addEventListener("click", startLinkMode);
@@ -169,7 +194,123 @@ function renderAll() {
 }
 
 function saveDoc() {
-  persistDoc(state.doc);
+  saveActiveDiagram(state.library, state.doc);
+  renderDiagramLibrary();
+}
+
+function openDiagramsModal() {
+  els.diagramsModal.classList.add("open");
+  renderDiagramLibrary();
+  setTimeout(() => els.diagramNameInput.focus(), 0);
+}
+
+function closeDiagramsModal() {
+  els.diagramsModal.classList.remove("open");
+}
+
+function saveNamedDiagram() {
+  const name = els.diagramNameInput.value;
+  saveActiveDiagram(state.library, state.doc, name);
+  setStatus(`<strong>Saved:</strong> ${escapeHtml(diagramName(state.library))}.`);
+  renderDiagramLibrary();
+}
+
+function saveAsNewDiagram() {
+  const record = createDiagram(state.library, copyName(els.diagramNameInput.value || diagramName(state.library)), state.doc);
+  state.doc = record.doc;
+  state.selected = null;
+  resetRuntime();
+  setStatus(`<strong>Saved as new:</strong> ${escapeHtml(record.name)}.`);
+  renderAll();
+  renderDiagramLibrary();
+}
+
+function loadDiagramRecord(id) {
+  saveActiveDiagram(state.library, state.doc);
+  const record = activateDiagram(state.library, id);
+  if (!record) return;
+  state.doc = record.doc;
+  sanitizeDoc(state.doc);
+  state.selected = null;
+  resetRuntime();
+  setStatus(`<strong>Loaded:</strong> ${escapeHtml(record.name)}.`);
+  renderAll();
+  renderDiagramLibrary();
+}
+
+function removeDiagramRecord(id) {
+  const record = state.library.diagrams.find(d => d.id === id);
+  if (!record || !confirm(`Delete "${record.name}"?`)) return;
+  const active = deleteStoredDiagram(state.library, id, baseDoc([
+    stock("seed", "Starting Stock", 0, 100, 50, 320, 280, "#bd0129")
+  ], []));
+  state.doc = active.doc;
+  sanitizeDoc(state.doc);
+  state.selected = null;
+  resetRuntime();
+  setStatus(`<strong>Deleted:</strong> ${escapeHtml(record.name)}.`);
+  renderAll();
+  renderDiagramLibrary();
+}
+
+function exportLibrary() {
+  saveActiveDiagram(state.library, state.doc);
+  exportDiagramLibrary(state.library);
+}
+
+function renderDiagramLibrary() {
+  if (!els.diagramNameInput || !state.library) return;
+  const active = activeDiagram(state.library);
+  els.diagramNameInput.value = active ? active.name : "";
+  if (!els.diagramsModal.classList.contains("open")) return;
+  els.diagramList.innerHTML = state.library.diagrams.map(d => `
+    <div class="diagram-list-item ${d.id === state.library.activeId ? "active" : ""}">
+      <div>
+        <strong>${escapeHtml(d.name)}</strong>
+        <span>${escapeHtml(formatDate(d.updatedAt))}</span>
+      </div>
+      <div class="diagram-item-actions">
+        <button type="button" data-load-diagram="${escapeHtml(d.id)}" ${d.id === state.library.activeId ? "disabled" : ""}>Load</button>
+        <button type="button" class="btn-danger" data-delete-diagram="${escapeHtml(d.id)}">Delete</button>
+      </div>
+    </div>
+  `).join("");
+  els.diagramList.querySelectorAll("[data-load-diagram]").forEach(btn => {
+    btn.addEventListener("click", () => loadDiagramRecord(btn.dataset.loadDiagram));
+  });
+  els.diagramList.querySelectorAll("[data-delete-diagram]").forEach(btn => {
+    btn.addEventListener("click", () => removeDiagramRecord(btn.dataset.deleteDiagram));
+  });
+}
+
+function nextUntitledName() {
+  const names = new Set(state.library.diagrams.map(d => d.name));
+  let index = state.library.diagrams.length + 1;
+  let name = "Untitled Diagram " + index;
+  while (names.has(name)) {
+    index += 1;
+    name = "Untitled Diagram " + index;
+  }
+  return name;
+}
+
+function copyName(name) {
+  const base = String(name || "Untitled Diagram").trim() || "Untitled Diagram";
+  const names = new Set(state.library.diagrams.map(d => d.name));
+  if (!names.has(base)) return base;
+  let index = 2;
+  let candidate = `${base} Copy`;
+  while (names.has(candidate)) {
+    candidate = `${base} Copy ${index}`;
+    index += 1;
+  }
+  return candidate;
+}
+
+function formatDate(value) {
+  const date = new Date(value);
+  if (Number.isNaN(date.getTime())) return "Saved locally";
+  return "Updated " + date.toLocaleString([], { month: "short", day: "numeric", hour: "2-digit", minute: "2-digit" });
 }
 
 function loadTheme() {
@@ -262,14 +403,16 @@ function deleteLink(id) {
 }
 
 function newDiagram() {
-  state.doc = baseDoc([
+  const doc = baseDoc([
     stock("seed", "Starting Stock", 0, 100, 50, 320, 280, "#bd0129")
   ], []);
+  const record = createDiagram(state.library, nextUntitledName(), doc);
+  state.doc = record.doc;
   resetRuntime();
   state.selected = { type: "node", id: "seed" };
-  saveDoc();
-  setStatus("<strong>New diagram:</strong> add stocks and rule links from the Configure toolbar.");
+  setStatus(`<strong>New diagram:</strong> ${escapeHtml(record.name)} is ready.`);
   renderAll();
+  renderDiagramLibrary();
 }
 
 function importDoc(e) {
@@ -278,16 +421,17 @@ function importDoc(e) {
   const reader = new FileReader();
   reader.onload = () => {
     try {
-      const doc = JSON.parse(reader.result);
-      sanitizeDoc(doc);
-      state.doc = doc;
+      const payload = JSON.parse(reader.result);
+      const imported = importDiagrams(state.library, payload);
+      state.doc = activeDiagram(state.library).doc;
+      sanitizeDoc(state.doc);
       state.selected = null;
       resetRuntime();
-      saveDoc();
-      setStatus("<strong>Imported:</strong> diagram loaded.");
+      setStatus(`<strong>Imported:</strong> ${imported.length} diagram${imported.length === 1 ? "" : "s"} added.`);
       renderAll();
+      renderDiagramLibrary();
     } catch (err) {
-      showToast("Could not import JSON: " + err.message);
+      showToast("Could not import diagrams: " + err.message);
     }
   };
   reader.readAsText(file);
@@ -296,7 +440,7 @@ function importDoc(e) {
 
 function renderExamples() {
   els.exampleGrid.innerHTML = "";
-  archetypes.forEach(ex => {
+  state.examples.forEach(ex => {
     const btn = document.createElement("button");
     btn.className = "example-card";
     btn.type = "button";
@@ -304,12 +448,13 @@ function renderExamples() {
     btn.addEventListener("click", () => {
       state.doc = ex.doc();
       sanitizeDoc(state.doc);
+      saveActiveDiagram(state.library, state.doc, ex.title);
       state.selected = null;
       resetRuntime();
-      saveDoc();
       els.examplesModal.classList.remove("open");
       setStatus(`<strong>${escapeHtml(ex.title)}:</strong> loaded as a tunable starting point.`);
       renderAll();
+      renderDiagramLibrary();
     });
     els.exampleGrid.append(btn);
   });

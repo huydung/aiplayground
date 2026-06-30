@@ -16,6 +16,7 @@
       </div>
       <h1 class="app-title">HDI Systems Explorer</h1>
       <div class="header-actions utility-actions">
+        <button id="diagramsBtn" class="btn-quiet" type="button">Diagrams</button>
         <button id="examplesBtn" class="btn-quiet" type="button">Examples</button>
         <button id="newBtn" class="btn-quiet" type="button">New</button>
         <button id="importBtn" class="btn-quiet" type="button">Import</button>
@@ -112,6 +113,27 @@
             <button id="closeExamplesBtn" class="icon-btn" type="button">x</button>
           </div>
           <div class="example-grid" id="exampleGrid"></div>
+        </div>
+      </div>
+
+      <div class="modal" id="diagramsModal" role="dialog" aria-modal="true" aria-label="Saved diagrams">
+        <div class="modal-card diagrams-card">
+          <div class="modal-head">
+            <h2>Diagrams</h2>
+            <button id="closeDiagramsBtn" class="icon-btn" type="button">x</button>
+          </div>
+          <div class="diagrams-body">
+            <div class="diagram-save-row">
+              <label>Current name <input id="diagramNameInput" value=""></label>
+              <button id="saveDiagramBtn" class="btn-primary" type="button">Save</button>
+              <button id="saveAsDiagramBtn" type="button">Save as new</button>
+            </div>
+            <div class="diagram-library-actions">
+              <button id="importLibraryBtn" type="button">Import diagrams</button>
+              <button id="exportLibraryBtn" type="button">Export diagrams</button>
+            </div>
+            <div class="diagram-list" id="diagramList"></div>
+          </div>
         </div>
       </div>
 

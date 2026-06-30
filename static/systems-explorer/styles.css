@@ -526,9 +526,46 @@ body.chart-expanded .lightbox-backdrop { display: block; }
 .modal.open { display: flex; }
 .modal-card { width: min(980px, 94vw); max-height: 86vh; overflow: hidden; border-radius: 8px; background: var(--paper); box-shadow: 0 24px 80px rgba(0,0,0,.28); }
 .start-card { width: min(460px, 94vw); }
+.diagrams-card { width: min(760px, 94vw); }
 .modal-head { display: flex; justify-content: space-between; align-items: center; padding: 18px 20px; border-bottom: 1px solid var(--line); }
 .modal-head h2 { margin: 0; color: var(--red-600); font-family: var(--serif); font-size: 24px; }
 .start-form { display: grid; gap: 12px; padding: 18px; }
+.diagrams-body { display: grid; gap: 12px; padding: 16px; overflow: auto; max-height: calc(86vh - 74px); }
+.diagram-save-row {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto auto;
+  gap: 8px;
+  align-items: end;
+}
+.diagram-save-row button { min-width: 108px; }
+.diagram-library-actions { display: flex; justify-content: flex-end; gap: 8px; flex-wrap: wrap; }
+.diagram-list { display: grid; gap: 8px; }
+.diagram-list-item {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  gap: 12px;
+  align-items: center;
+  min-height: 62px;
+  padding: 10px 11px;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: var(--soft-bg);
+}
+.diagram-list-item.active {
+  border-color: rgba(189, 1, 41, .42);
+  box-shadow: inset 3px 0 0 var(--red-600);
+}
+.diagram-list-item strong {
+  display: block;
+  overflow: hidden;
+  color: var(--ink);
+  font-size: 13px;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.diagram-list-item span { display: block; margin-top: 3px; color: var(--muted); font-size: 11px; }
+.diagram-item-actions { display: flex; gap: 7px; }
+.diagram-item-actions button { min-width: 72px; }
 .example-grid { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 12px; padding: 18px; overflow: auto; max-height: calc(86vh - 74px); }
 .example-card { min-height: 172px; padding: 13px; border: 1px solid var(--line); border-radius: 8px; background: var(--panel-head-bg); text-align: left; }
 .example-card h3 { margin: 0 0 8px; font-family: var(--serif); color: var(--ink); font-size: 17px; line-height: 1.1; }
@@ -568,6 +605,10 @@ body.chart-expanded .lightbox-backdrop { display: block; }
   .topbar { grid-template-columns: 1fr; height: auto; align-items: stretch; }
   .app-title { order: -1; text-align: left; }
   .primary-actions, .utility-actions { justify-content: flex-start; flex-wrap: wrap; }
+  .diagram-save-row { grid-template-columns: 1fr; }
+  .diagram-list-item { grid-template-columns: 1fr; }
+  .diagram-item-actions { justify-content: stretch; }
+  .diagram-item-actions button { flex: 1; }
   .floating-panel { width: min(330px, calc(100vw - 24px)); right: 12px; left: auto; }
   .simulator-panel { top: 18px; bottom: auto; max-height: 48vh; }
   .editor-panel { top: calc(48vh + 30px); bottom: 12px; }

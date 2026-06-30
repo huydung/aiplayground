@@ -1,0 +1,20 @@
+{
+  "key": "escalation",
+  "title": "Escalation",
+  "desc": "Two teams answer each other's intensity until both burn attention.",
+  "doc": {
+    "version": 5,
+    "nextId": 20,
+    "nodes": [
+      { "id": "a", "label": "Team A Urgency", "kind": "stock", "min": 0, "max": 100, "value": 32, "x": 245, "y": 250, "color": "#bd0129", "minStrict": true, "maxStrict": true, "flow": { "in": null, "out": null } },
+      { "id": "b", "label": "Team B Urgency", "kind": "stock", "min": 0, "max": 100, "value": 32, "x": 650, "y": 250, "color": "#2366d1", "minStrict": true, "maxStrict": true, "flow": { "in": null, "out": null } },
+      { "id": "cost", "label": "Coordination Cost", "kind": "stock", "min": 0, "max": 100, "value": 12, "x": 450, "y": 470, "color": "#f59e0b", "minStrict": true, "maxStrict": true, "flow": { "in": null, "out": null } }
+    ],
+    "links": [
+      { "id": "e1", "source": "a", "target": "b", "polarity": 1, "mode": "delta", "amount": 100, "strength": 100, "frac": 1, "delay": 1, "trigger": "any", "gate": "always", "gateValue": 0 },
+      { "id": "e2", "source": "b", "target": "a", "polarity": 1, "mode": "delta", "amount": 100, "strength": 100, "frac": 1, "delay": 1, "trigger": "any", "gate": "always", "gateValue": 0 },
+      { "id": "e3", "source": "a", "target": "cost", "polarity": 1, "mode": "delta", "amount": 100, "strength": 100, "frac": 1, "delay": 1.5, "trigger": "any", "gate": "always", "gateValue": 0 },
+      { "id": "e4", "source": "b", "target": "cost", "polarity": 1, "mode": "delta", "amount": 100, "strength": 100, "frac": 1, "delay": 1.5, "trigger": "any", "gate": "always", "gateValue": 0 }
+    ]
+  }
+}
