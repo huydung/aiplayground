@@ -19,12 +19,12 @@ export const TRIGGER_OPTIONS = [
 
 export const GATE_OPTIONS = [
   { value: "always", label: "Always", short: "always" },
-  { value: "above", label: "Source > threshold", short: ">" },
-  { value: "below", label: "Source < threshold", short: "<" }
+  { value: "above", label: "Source >", short: ">" },
+  { value: "below", label: "Source <", short: "<" }
 ];
 
 export const PAYLOAD_OPTIONS = [
   { value: "fixed", label: "Fixed amount", suffix: "abs" },
-  { value: "prop", label: "Percent of source", suffix: "%" },
-  { value: "delta", label: "Percent of source delta", suffix: "% delta" }
+  { value: "prop", label: "% of source", suffix: "%" },
+  { value: "delta", label: "% of source delta", suffix: "% delta" }
 ];

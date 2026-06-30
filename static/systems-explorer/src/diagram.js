@@ -20,7 +20,7 @@ export function renderSvg(ctx) {
   state.linkRoutes = buildLinkRoutes(doc);
   doc.links.forEach(l => renderLink(ctx, linkLayer, l));
   doc.nodes.forEach(n => renderNode(ctx, nodeLayer, n));
-  runtime.packages.forEach(p => renderPackage(ctx, packageLayer, p));
+  if (state.started) runtime.packages.forEach(p => renderPackage(ctx, packageLayer, p));
 }
 
 function renderLink(ctx, layer, l) {

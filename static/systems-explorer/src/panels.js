@@ -19,41 +19,41 @@ function renderNodeEditor(ctx, n) {
   const { els, runtime, saveDoc, renderAll } = ctx;
   els.editorSubhead.textContent = "stock";
   els.editorBody.innerHTML = `
-    <div class="field-grid">
-      <label>Name <input id="nodeLabel" value="${escapeHtml(n.label)}"></label>
-      <label>Color
-        <div class="color-picker" id="nodeColorPicker">
-          <button class="color-current" id="nodeColorToggle" type="button" aria-expanded="false">
-            <span class="color-current-chip" style="background:${escapeHtml(n.color)}"></span>
-            <span>Choose color</span>
-          </button>
-          <div class="color-swatches" id="nodeColorSwatches">${renderColorSwatches(n.color)}</div>
-        </div>
-      </label>
-      <label>Start value <input id="nodeValue" type="number" value="${n.value}" step="1"></label>
-      <div class="field-block bound-field">
-        <div class="field-title-row">
-          <label for="nodeMin">Min</label>
-          <label class="strict-toggle"><input id="minStrict" type="checkbox" ${n.minStrict !== false ? "checked" : ""}> Strict enforce</label>
-        </div>
-        <input id="nodeMin" type="number" value="${n.min}" step="1">
+    <div class="editor-sections">
+      <div class="editor-section-title">Identity</div>
+      <div class="field-grid node-identity-grid">
+        <label>Name <input id="nodeLabel" value="${escapeHtml(n.label)}"></label>
+        <label>Start <input id="nodeValue" type="number" value="${n.value}" step="1"></label>
+        <label>Color
+          <div class="color-picker" id="nodeColorPicker">
+            <button class="color-current" id="nodeColorToggle" type="button" aria-expanded="false">
+              <span class="color-current-chip" style="background:${escapeHtml(n.color)}"></span>
+              <span>Choose color</span>
+            </button>
+            <div class="color-swatches" id="nodeColorSwatches">${renderColorSwatches(n.color)}</div>
+          </div>
+        </label>
       </div>
-      <div class="field-block bound-field">
-        <div class="field-title-row">
-          <label for="nodeMax">Max</label>
-          <label class="strict-toggle"><input id="maxStrict" type="checkbox" ${n.maxStrict !== false ? "checked" : ""}> Strict enforce</label>
-        </div>
-        <input id="nodeMax" type="number" value="${n.max}" step="1">
+
+      <div class="editor-section-title">Bounds</div>
+      <div class="bounds-grid">
+        <label class="bound-control">Minimum <input id="nodeMin" type="number" value="${n.min}" step="1"></label>
+        <label class="bound-control">Maximum <input id="nodeMax" type="number" value="${n.max}" step="1"></label>
+        <label class="bound-check"><input id="minStrict" type="checkbox" ${n.minStrict !== false ? "checked" : ""}> Enforce min</label>
+        <label class="bound-check"><input id="maxStrict" type="checkbox" ${n.maxStrict !== false ? "checked" : ""}> Enforce max</label>
       </div>
-      <div class="flow-row field-full">
-        <span class="flow-row-title">Flow in</span>
-        <label>Strength <input id="flowInStrength" type="number" min="0" step="1" value="${n.flow && n.flow.in ? n.flow.in.strength : 0}"></label>
-        <label>Delay <input id="flowInDelay" type="number" min="0" step="0.5" value="${n.flow && n.flow.in ? n.flow.in.delay : 1}"></label>
-      </div>
-      <div class="flow-row field-full">
-        <span class="flow-row-title">Flow out</span>
-        <label>Strength <input id="flowOutStrength" type="number" min="0" step="1" value="${n.flow && n.flow.out ? n.flow.out.strength : 0}"></label>
-        <label>Delay <input id="flowOutDelay" type="number" min="0" step="0.5" value="${n.flow && n.flow.out ? n.flow.out.delay : 1}"></label>
+
+      <div class="editor-section-title">Natural flow</div>
+      <div class="flow-matrix">
+        <span></span>
+        <span class="flow-heading">Strength</span>
+        <span class="flow-heading">Delay</span>
+        <span class="flow-label">Flow in</span>
+        <input id="flowInStrength" type="number" min="0" step="1" value="${n.flow && n.flow.in ? n.flow.in.strength : 0}">
+        <input id="flowInDelay" type="number" min="0" step="0.5" value="${n.flow && n.flow.in ? n.flow.in.delay : 1}">
+        <span class="flow-label">Flow out</span>
+        <input id="flowOutStrength" type="number" min="0" step="1" value="${n.flow && n.flow.out ? n.flow.out.strength : 0}">
+        <input id="flowOutDelay" type="number" min="0" step="0.5" value="${n.flow && n.flow.out ? n.flow.out.delay : 1}">
       </div>
     </div>
     <div class="row-actions"><button id="deleteNode" class="btn-danger" type="button">Delete stock</button></div>
@@ -72,7 +72,7 @@ function renderNodeEditor(ctx, n) {
       in: inStrength > 0 ? { strength: inStrength, delay: Math.max(MIN_DELAY, readNumber("flowInDelay", n.flow?.in?.delay || 1)) } : null,
       out: outStrength > 0 ? { strength: outStrength, delay: Math.max(MIN_DELAY, readNumber("flowOutDelay", n.flow?.out?.delay || 1)) } : null
     };
-    if (!ctx.state.running) runtime.setValue(n.id, n.value);
+    if (!ctx.state.started) runtime.setValue(n.id, n.value);
     saveDoc();
     if (redraw) renderAll();
   };

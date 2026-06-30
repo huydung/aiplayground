@@ -71,6 +71,7 @@ const state = {
   linkDraft: null,
   running: false,
   started: false,
+  ended: false,
   armed: false,
   waitingForFire: false,
   lastFrame: null,
@@ -124,18 +125,28 @@ function bindUi() {
   els.diagramsModal.addEventListener("click", e => { if (e.target === els.diagramsModal) closeDiagramsModal(); });
   document.getElementById("saveDiagramBtn").addEventListener("click", saveNamedDiagram);
   document.getElementById("saveAsDiagramBtn").addEventListener("click", saveAsNewDiagram);
-  document.getElementById("importLibraryBtn").addEventListener("click", () => els.importFile.click());
+  document.getElementById("importLibraryBtn").addEventListener("click", () => {
+    if (blockSimulationEdit()) return;
+    els.importFile.click();
+  });
   document.getElementById("exportLibraryBtn").addEventListener("click", exportLibrary);
-  document.getElementById("examplesBtn").addEventListener("click", () => els.examplesModal.classList.add("open"));
+  document.getElementById("examplesBtn").addEventListener("click", () => {
+    if (blockSimulationEdit()) return;
+    els.examplesModal.classList.add("open");
+  });
   document.getElementById("closeExamplesBtn").addEventListener("click", () => els.examplesModal.classList.remove("open"));
   els.examplesModal.addEventListener("click", e => { if (e.target === els.examplesModal) els.examplesModal.classList.remove("open"); });
   document.getElementById("newBtn").addEventListener("click", newDiagram);
-  document.getElementById("importBtn").addEventListener("click", () => els.importFile.click());
+  document.getElementById("importBtn").addEventListener("click", () => {
+    if (blockSimulationEdit()) return;
+    els.importFile.click();
+  });
   document.getElementById("exportBtn").addEventListener("click", exportLibrary);
   els.themeToggle.addEventListener("click", toggleTheme);
   document.getElementById("addStockBtn").addEventListener("click", addStock);
   document.getElementById("addLinkBtn").addEventListener("click", startLinkMode);
   document.getElementById("startRunBtn").addEventListener("click", openStartDialog);
+  document.getElementById("stopBtn").addEventListener("click", stopSimulation);
   document.getElementById("prevStepBtn").addEventListener("click", stepBack);
   document.getElementById("nextStepBtn").addEventListener("click", startStepForward);
   document.getElementById("pauseBtn").addEventListener("click", togglePause);
@@ -167,6 +178,7 @@ function bindUi() {
   els.chartBackdrop.addEventListener("click", () => toggleChartExpanded(false));
   window.addEventListener("keydown", e => {
     if (e.key === "Escape" && els.chartLightbox.classList.contains("open")) toggleChartExpanded(false);
+    if (handleSimulationShortcut(e)) return;
   });
   els.importFile.addEventListener("change", importDoc);
 
@@ -178,9 +190,10 @@ function bindUi() {
 }
 
 function renderAll() {
-  if (state.running) {
+  if (state.started) {
     state.selected = null;
     state.linkDraft = null;
+    state.drag = null;
   }
   syncPanelVisibility();
   renderSvg(ctx());
@@ -199,6 +212,7 @@ function saveDoc() {
 }
 
 function openDiagramsModal() {
+  if (blockSimulationEdit()) return;
   els.diagramsModal.classList.add("open");
   renderDiagramLibrary();
   setTimeout(() => els.diagramNameInput.focus(), 0);
@@ -216,6 +230,7 @@ function saveNamedDiagram() {
 }
 
 function saveAsNewDiagram() {
+  if (blockSimulationEdit()) return;
   const record = createDiagram(state.library, copyName(els.diagramNameInput.value || diagramName(state.library)), state.doc);
   state.doc = record.doc;
   state.selected = null;
@@ -226,6 +241,7 @@ function saveAsNewDiagram() {
 }
 
 function loadDiagramRecord(id) {
+  if (blockSimulationEdit()) return;
   saveActiveDiagram(state.library, state.doc);
   const record = activateDiagram(state.library, id);
   if (!record) return;
@@ -239,6 +255,7 @@ function loadDiagramRecord(id) {
 }
 
 function removeDiagramRecord(id) {
+  if (blockSimulationEdit()) return;
   const record = state.library.diagrams.find(d => d.id === id);
   if (!record || !confirm(`Delete "${record.name}"?`)) return;
   const active = deleteStoredDiagram(state.library, id, baseDoc([
@@ -270,8 +287,8 @@ function renderDiagramLibrary() {
         <span>${escapeHtml(formatDate(d.updatedAt))}</span>
       </div>
       <div class="diagram-item-actions">
-        <button type="button" data-load-diagram="${escapeHtml(d.id)}" ${d.id === state.library.activeId ? "disabled" : ""}>Load</button>
-        <button type="button" class="btn-danger" data-delete-diagram="${escapeHtml(d.id)}">Delete</button>
+        <button type="button" data-load-diagram="${escapeHtml(d.id)}" ${d.id === state.library.activeId || state.started ? "disabled" : ""}>Load</button>
+        <button type="button" class="btn-danger" data-delete-diagram="${escapeHtml(d.id)}" ${state.started ? "disabled" : ""}>Delete</button>
       </div>
     </div>
   `).join("");
@@ -344,6 +361,8 @@ function resetRuntime() {
   state.runtime = createRuntime(state.doc);
   state.running = false;
   state.started = false;
+  state.ended = false;
+  state.mode = "work";
   state.armed = false;
   state.waitingForFire = false;
   state.lastFrame = null;
@@ -352,7 +371,31 @@ function resetRuntime() {
   state.maxPausedNodes = new Set();
 }
 
+function stopSimulation() {
+  if (!state.started) return;
+  state.running = false;
+  state.started = false;
+  state.ended = false;
+  state.mode = "work";
+  state.armed = false;
+  state.waitingForFire = false;
+  state.stepTarget = null;
+  state.lastFrame = null;
+  state.runtime.packages = [];
+  state.selected = null;
+  state.linkDraft = null;
+  setStatus("<strong>Stopped:</strong> simulation ended. Press Start to seed a new run.");
+  renderAll();
+}
+
+function blockSimulationEdit() {
+  if (!state.started) return false;
+  showToast("Stop or Reset the simulation before editing the diagram.");
+  return true;
+}
+
 function addStock() {
+  if (blockSimulationEdit()) return;
   const next = state.doc.nextId++;
   const id = "n" + next;
   const center = screenCenterInCanvas();
@@ -365,6 +408,7 @@ function addStock() {
 }
 
 function startLinkMode() {
+  if (blockSimulationEdit()) return;
   state.linkDraft = { source: null };
   setStatus("<strong>Link mode:</strong> click a source stock, then a target stock. The link editor controls when that rule can fire.");
 }
@@ -403,6 +447,7 @@ function deleteLink(id) {
 }
 
 function newDiagram() {
+  if (blockSimulationEdit()) return;
   const doc = baseDoc([
     stock("seed", "Starting Stock", 0, 100, 50, 320, 280, "#bd0129")
   ], []);
@@ -416,6 +461,11 @@ function newDiagram() {
 }
 
 function importDoc(e) {
+  if (state.started) {
+    e.target.value = "";
+    blockSimulationEdit();
+    return;
+  }
   const file = e.target.files && e.target.files[0];
   if (!file) return;
   const reader = new FileReader();
@@ -446,6 +496,7 @@ function renderExamples() {
     btn.type = "button";
     btn.innerHTML = `<h3>${escapeHtml(ex.title)}</h3><p>${escapeHtml(ex.desc)}</p>`;
     btn.addEventListener("click", () => {
+      if (blockSimulationEdit()) return;
       state.doc = ex.doc();
       sanitizeDoc(state.doc);
       saveActiveDiagram(state.library, state.doc, ex.title);
@@ -490,6 +541,8 @@ function startFromDialog() {
   resetRuntime();
   state.maxPausedNodes = currentMaxNodeIds(state.doc, state.runtime);
   state.started = true;
+  state.ended = false;
+  state.mode = "simulate";
   state.armed = true;
   state.waitingForFire = false;
   state.selected = null;
@@ -512,6 +565,7 @@ function startFromDialog() {
 }
 
 function continueRun() {
+  if (!state.started || state.ended) return;
   state.runtime.pausedForBreak = false;
   state.armed = true;
   els.continueBtn.style.display = "none";
@@ -526,6 +580,7 @@ function continueRun() {
 }
 
 function togglePause() {
+  if (!state.started || state.ended) return;
   if (state.running) {
     state.running = false;
     setStatus(`<strong>Paused:</strong> t = ${state.runtime.simTime.toFixed(1)}. Resume or step/back manually.`);
@@ -547,8 +602,34 @@ function togglePause() {
   renderAll();
 }
 
+function handleSimulationShortcut(e) {
+  if (!state.started || isTypingTarget(e.target) || els.startModal.classList.contains("open")) return false;
+  if (e.code === "Space") {
+    e.preventDefault();
+    togglePause();
+    return true;
+  }
+  if (e.key === "ArrowLeft") {
+    e.preventDefault();
+    stepBack();
+    return true;
+  }
+  if (e.key === "ArrowRight") {
+    e.preventDefault();
+    startStepForward();
+    return true;
+  }
+  return false;
+}
+
+function isTypingTarget(target) {
+  if (!target) return false;
+  const tag = target.tagName ? target.tagName.toLowerCase() : "";
+  return target.isContentEditable || tag === "input" || tag === "textarea" || tag === "select";
+}
+
 function startStepForward(captureCurrent = true) {
-  if (state.running || !state.started) return;
+  if (state.running || !state.started || state.ended) return;
   if (captureCurrent) ensureCheckpoint();
   state.runtime.pausedForBreak = false;
   state.stepTarget = Math.floor(state.runtime.simTime) + 1;
@@ -577,7 +658,9 @@ function completeStep() {
 }
 
 function stepBack() {
+  if (!state.started) return;
   state.running = false;
+  state.ended = false;
   state.stepTarget = null;
   if (state.checkpoints.length > 1) state.checkpoints.pop();
   if (state.checkpoints.length) restoreRuntimeSnapshot(state.checkpoints[state.checkpoints.length - 1]);
@@ -623,6 +706,7 @@ function captureRuntimeSnapshot() {
     currentOut: Array.from(r.currentOut),
     brokenEver: Array.from(r.brokenEver),
     pausedForBreak: r.pausedForBreak,
+    ended: state.ended,
     maxPausedNodes: Array.from(state.maxPausedNodes)
   };
 }
@@ -640,6 +724,7 @@ function restoreRuntimeSnapshot(snapshot) {
   r.currentOut = new Set(snapshot.currentOut);
   r.brokenEver = new Set(snapshot.brokenEver);
   r.pausedForBreak = snapshot.pausedForBreak;
+  state.ended = Boolean(snapshot.ended);
   state.maxPausedNodes = new Set(snapshot.maxPausedNodes || []);
 }
 
@@ -650,21 +735,27 @@ function clone(value) {
 function updateRunControls() {
   const pauseBtn = document.getElementById("pauseBtn");
   const startBtn = document.getElementById("startRunBtn");
+  const stopBtn = document.getElementById("stopBtn");
   if (!pauseBtn) return;
   els.speedRow.style.display = state.stepByStep ? "none" : "block";
   els.stepRow.style.display = state.stepByStep ? "grid" : "none";
   if (startBtn) startBtn.disabled = state.started;
+  if (stopBtn) stopBtn.disabled = !state.started;
   pauseBtn.textContent = state.running ? "Pause" : "Continue";
-  pauseBtn.disabled = !state.started || (!state.running && state.stepByStep && state.stepTarget == null);
+  pauseBtn.disabled = !state.started || state.ended || (!state.running && state.stepByStep && state.stepTarget == null);
   document.getElementById("prevStepBtn").disabled = !state.started || state.checkpoints.length <= 1;
-  document.getElementById("nextStepBtn").disabled = !state.started || state.running;
+  document.getElementById("nextStepBtn").disabled = !state.started || state.running || state.ended;
+  ["addStockBtn", "addLinkBtn", "diagramsBtn", "examplesBtn", "newBtn", "importBtn"].forEach(id => {
+    const button = document.getElementById(id);
+    if (button) button.disabled = state.started;
+  });
   updateRunStateBadge();
 }
 
 function syncPanelVisibility() {
-  els.editorPanel.classList.toggle("hidden", !state.selected);
-  els.behaviorSection.classList.toggle("hidden", !state.running);
-  if (!state.running && els.chartLightbox.classList.contains("open")) toggleChartExpanded(false);
+  els.editorPanel.classList.toggle("hidden", !state.selected || state.started);
+  els.behaviorSection.classList.toggle("hidden", !state.started);
+  if (!state.started && els.chartLightbox.classList.contains("open")) toggleChartExpanded(false);
 }
 
 function updateRunStateBadge() {
@@ -676,6 +767,7 @@ function updateRunStateBadge() {
 
 function runStateName() {
   if (state.running) return { key: "running", label: "Simulation Running" };
+  if (state.ended) return { key: "stopped", label: "Simulation Stopped" };
   if (state.started) return { key: "paused", label: "Simulation Paused" };
   if (state.runtime.simTime > 0 || state.runtime.history.length > 1) return { key: "stopped", label: "Simulation Stopped" };
   return { key: "ready", label: "Ready" };
@@ -708,12 +800,12 @@ function handleSimulationBoundaries() {
   const boundary = assessBoundaries(state.doc, state.runtime, state.maxPausedNodes);
   if (boundary.allAtBoundary) {
     state.running = false;
-    state.started = false;
+    state.ended = true;
     state.armed = false;
     state.waitingForFire = false;
     state.stepTarget = null;
     state.lastFrame = null;
-    setStatus("<strong>Stopped:</strong> every node is at a min or max boundary.");
+    setStatus("<strong>Stopped:</strong> every node is at a min or max boundary. Press Stop or Reset to leave simulation.");
     return true;
   }
   const newlyMaxed = boundary.newlyMaxed;
@@ -734,7 +826,7 @@ function nodeListLabel(nodes) {
 function onPointerDown(e) {
   const nodeEl = e.target.closest("[data-node]");
   const linkEl = e.target.closest("[data-link]");
-  if (state.running) return;
+  if (state.started) return;
   if (nodeEl) {
     const id = nodeEl.dataset.node;
     if (state.linkDraft) {
