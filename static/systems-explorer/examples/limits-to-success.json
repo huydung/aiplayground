@@ -1,22 +1,22 @@
 {
   "key": "limits",
   "title": "Limits to Success",
-  "desc": "A winning production pattern grows until capacity constraints push back.",
+  "desc": "Referral growth accelerates until content capacity becomes the real limit.",
   "doc": {
     "version": 5,
-    "nextId": 20,
+    "nextId": 30,
     "nodes": [
-      { "id": "quality", "label": "Feature Quality", "kind": "stock", "min": 0, "max": 100, "value": 34, "x": 210, "y": 240, "color": "#168b5a", "minStrict": true, "maxStrict": true, "flow": { "in": null, "out": null } },
-      { "id": "scope", "label": "Player Excitement", "kind": "stock", "min": 0, "max": 100, "value": 42, "x": 500, "y": 185, "color": "#2366d1", "minStrict": true, "maxStrict": true, "flow": { "in": null, "out": null } },
-      { "id": "capacity", "label": "Team Capacity", "kind": "stock", "min": 0, "max": 100, "value": 72, "x": 520, "y": 445, "color": "#f59e0b", "minStrict": true, "maxStrict": true, "flow": { "in": null, "out": null } },
-      { "id": "load", "label": "Coordination Load", "kind": "stock", "min": -50, "max": 100, "value": 0, "x": 780, "y": 320, "color": "#bd0129", "minStrict": true, "maxStrict": true, "flow": { "in": null, "out": null } }
+      { "id": "players", "label": "Active Players", "kind": "stock", "min": 0, "max": 100, "value": 0, "x": 190, "y": 245, "color": "#2366d1", "minStrict": true, "maxStrict": true, "flow": { "in": null, "out": null } },
+      { "id": "buzz", "label": "Word of Mouth", "kind": "stock", "min": 0, "max": 100, "value": 0, "x": 475, "y": 160, "color": "#16a34a", "minStrict": true, "maxStrict": true, "flow": { "in": null, "out": { "strength": 5, "delay": 2 } } },
+      { "id": "content", "label": "Content Capacity", "kind": "stock", "min": 0, "max": 100, "value": 65, "x": 480, "y": 440, "color": "#f59e0b", "minStrict": true, "maxStrict": true, "flow": { "in": { "strength": 2, "delay": 3 }, "out": null } },
+      { "id": "churn", "label": "Churn Pressure", "kind": "stock", "min": 0, "max": 100, "value": 0, "x": 760, "y": 305, "color": "#bd0129", "minStrict": true, "maxStrict": true, "flow": { "in": null, "out": { "strength": 4, "delay": 2 } } }
     ],
     "links": [
-      { "id": "c1", "source": "quality", "target": "scope", "polarity": 1, "mode": "delta", "amount": 100, "strength": 100, "frac": 1, "delay": 1, "trigger": "any", "gate": "always", "gateValue": 0 },
-      { "id": "c2", "source": "scope", "target": "quality", "polarity": 1, "mode": "delta", "amount": 100, "strength": 100, "frac": 1, "delay": 1, "trigger": "any", "gate": "always", "gateValue": 0 },
-      { "id": "c3", "source": "scope", "target": "load", "polarity": 1, "mode": "delta", "amount": 100, "strength": 100, "frac": 1, "delay": 0, "trigger": "any", "gate": "always", "gateValue": 0 },
-      { "id": "c4", "source": "load", "target": "capacity", "polarity": -1, "mode": "delta", "amount": 100, "strength": 100, "frac": 1, "delay": 2, "trigger": "any", "gate": "always", "gateValue": 0 },
-      { "id": "c5", "source": "capacity", "target": "quality", "polarity": 1, "mode": "delta", "amount": 100, "strength": 100, "frac": 1, "delay": 1, "trigger": "any", "gate": "always", "gateValue": 0 }
+      { "id": "l1", "source": "players", "target": "buzz", "polarity": 1, "mode": "delta", "amount": 70, "strength": 70, "frac": 0.7, "delay": 1, "trigger": "increase", "gate": "always", "gateValue": 0 },
+      { "id": "l2", "source": "buzz", "target": "players", "polarity": 1, "mode": "delta", "amount": 85, "strength": 85, "frac": 0.85, "delay": 1, "trigger": "increase", "gate": "always", "gateValue": 0 },
+      { "id": "l3", "source": "players", "target": "churn", "polarity": 1, "mode": "delta", "amount": 65, "strength": 65, "frac": 0.65, "delay": 2, "trigger": "increase", "gate": "above", "gateValue": 30 },
+      { "id": "l4", "source": "churn", "target": "content", "polarity": -1, "mode": "delta", "amount": 80, "strength": 80, "frac": 0.8, "delay": 1, "trigger": "increase", "gate": "always", "gateValue": 0 },
+      { "id": "l5", "source": "content", "target": "players", "polarity": 1, "mode": "delta", "amount": 80, "strength": 80, "frac": 0.8, "delay": 1, "trigger": "decrease", "gate": "always", "gateValue": 0 }
     ]
   }
 }

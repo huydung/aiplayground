@@ -1,59 +1,20 @@
 {
   "key": "fixes",
   "title": "Fixes That Fail",
-  "desc": "Overtime closes a milestone gap only while the gap is positive; delayed burnout reopens it later.",
+  "desc": "Overtime closes the gap fast, then delayed burnout reopens the same problem.",
   "doc": {
     "version": 5,
     "nextId": 20,
     "nodes": [
-      {
-        "id": "gap",
-        "label": "Gap to Milestone",
-        "kind": "stock",
-        "min": -50,
-        "max": 100,
-        "value": 80,
-        "x": 210,
-        "y": 250,
-        "color": "#bd0129",
-        "minStrict": true,
-        "maxStrict": true,
-        "flow": { "in": null, "out": null }
-      },
-      {
-        "id": "ot",
-        "label": "Overtime",
-        "kind": "stock",
-        "min": 0,
-        "max": 100,
-        "value": 20,
-        "x": 520,
-        "y": 210,
-        "color": "#f59e0b",
-        "minStrict": true,
-        "maxStrict": true,
-        "flow": { "in": null, "out": null }
-      },
-      {
-        "id": "bo",
-        "label": "Burnout",
-        "kind": "stock",
-        "min": 0,
-        "max": 100,
-        "value": 20,
-        "x": 520,
-        "y": 470,
-        "color": "#7c3aed",
-        "minStrict": true,
-        "maxStrict": true,
-        "flow": { "in": null, "out": { "strength": 2, "delay": 2 } }
-      }
+      { "id": "gap", "label": "Gap to Milestone", "kind": "stock", "min": -20, "max": 100, "value": 0, "x": 210, "y": 250, "color": "#bd0129", "minStrict": true, "maxStrict": true, "flow": { "in": null, "out": null } },
+      { "id": "ot", "label": "Overtime", "kind": "stock", "min": 0, "max": 100, "value": 0, "x": 520, "y": 210, "color": "#f59e0b", "minStrict": true, "maxStrict": true, "flow": { "in": null, "out": null } },
+      { "id": "bo", "label": "Burnout", "kind": "stock", "min": 0, "max": 100, "value": 0, "x": 520, "y": 470, "color": "#7c3aed", "minStrict": true, "maxStrict": true, "flow": { "in": null, "out": { "strength": 5, "delay": 2 } } }
     ],
     "links": [
       { "id": "l1", "source": "gap", "target": "ot", "polarity": 1, "mode": "delta", "amount": 100, "strength": 100, "frac": 1, "delay": 1, "trigger": "any", "gate": "always", "gateValue": 0 },
-      { "id": "l2", "source": "ot", "target": "gap", "polarity": -1, "mode": "delta", "amount": 100, "strength": 100, "frac": 1, "delay": 1, "trigger": "any", "gate": "always", "gateValue": 0 },
-      { "id": "l3", "source": "ot", "target": "bo", "polarity": 1, "mode": "delta", "amount": 100, "strength": 100, "frac": 1, "delay": 1, "trigger": "any", "gate": "always", "gateValue": 0 },
-      { "id": "l4", "source": "bo", "target": "gap", "polarity": 1, "mode": "delta", "amount": 100, "strength": 100, "frac": 1, "delay": 3, "trigger": "any", "gate": "always", "gateValue": 0 }
+      { "id": "l2", "source": "ot", "target": "gap", "polarity": -1, "mode": "delta", "amount": 100, "strength": 100, "frac": 1, "delay": 1, "trigger": "increase", "gate": "always", "gateValue": 0 },
+      { "id": "l3", "source": "ot", "target": "bo", "polarity": 1, "mode": "delta", "amount": 100, "strength": 100, "frac": 1, "delay": 1, "trigger": "increase", "gate": "always", "gateValue": 0 },
+      { "id": "l4", "source": "bo", "target": "gap", "polarity": 1, "mode": "delta", "amount": 150, "strength": 150, "frac": 1.5, "delay": 3, "trigger": "any", "gate": "always", "gateValue": 0 }
     ]
   }
 }

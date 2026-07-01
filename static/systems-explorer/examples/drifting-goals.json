@@ -1,0 +1,22 @@
+{
+  "key": "drift",
+  "title": "Drifting Goals",
+  "desc": "Deadline pressure lowers the standard instead of closing the performance gap.",
+  "doc": {
+    "version": 5,
+    "nextId": 30,
+    "nodes": [
+      { "id": "pressure", "label": "Deadline Pressure", "kind": "stock", "min": 0, "max": 100, "value": 0, "x": 185, "y": 290, "color": "#bd0129", "minStrict": true, "maxStrict": true, "flow": { "in": null, "out": { "strength": 3, "delay": 3 } } },
+      { "id": "standard", "label": "Quality Standard", "kind": "stock", "min": 0, "max": 100, "value": 80, "x": 500, "y": 165, "color": "#2563eb", "minStrict": true, "maxStrict": true, "flow": { "in": null, "out": null } },
+      { "id": "perf", "label": "Actual Quality", "kind": "stock", "min": 0, "max": 100, "value": 55, "x": 500, "y": 430, "color": "#168b5a", "minStrict": true, "maxStrict": true, "flow": { "in": null, "out": null } },
+      { "id": "risk", "label": "Reputation Risk", "kind": "stock", "min": 0, "max": 100, "value": 0, "x": 785, "y": 300, "color": "#f59e0b", "minStrict": true, "maxStrict": true, "flow": { "in": null, "out": null } }
+    ],
+    "links": [
+      { "id": "d1", "source": "pressure", "target": "standard", "polarity": -1, "mode": "delta", "amount": 80, "strength": 80, "frac": 0.8, "delay": 1, "trigger": "increase", "gate": "always", "gateValue": 0 },
+      { "id": "d2", "source": "standard", "target": "pressure", "polarity": 1, "mode": "delta", "amount": 70, "strength": 70, "frac": 0.7, "delay": 1, "trigger": "decrease", "gate": "always", "gateValue": 0 },
+      { "id": "d3", "source": "pressure", "target": "perf", "polarity": -1, "mode": "delta", "amount": 45, "strength": 45, "frac": 0.45, "delay": 1, "trigger": "increase", "gate": "always", "gateValue": 0 },
+      { "id": "d4", "source": "perf", "target": "pressure", "polarity": -1, "mode": "delta", "amount": 60, "strength": 60, "frac": 0.6, "delay": 1, "trigger": "decrease", "gate": "always", "gateValue": 0 },
+      { "id": "d5", "source": "standard", "target": "risk", "polarity": -1, "mode": "delta", "amount": 80, "strength": 80, "frac": 0.8, "delay": 2, "trigger": "decrease", "gate": "always", "gateValue": 0 }
+    ]
+  }
+}
