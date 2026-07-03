@@ -25,13 +25,13 @@ function renderNodeEditor(ctx, n) {
       <div class="field-grid node-identity-grid">
         <label>Name <input id="nodeLabel" value="${escapeHtml(n.label)}"></label>
         <label>Start <input id="nodeValue" type="number" value="${n.value}" step="1"></label>
-        <label>Color
+        <label class="field-full">Color
           <div class="color-picker" id="nodeColorPicker">
-            <button class="color-current" id="nodeColorToggle" type="button" aria-expanded="false">
+            <div class="color-current">
               <span class="color-current-chip" style="background:${escapeHtml(n.color)}"></span>
-              <span>Choose color</span>
-            </button>
-            <div class="color-swatches" id="nodeColorSwatches">${renderColorSwatches(n.color)}</div>
+              <span>${escapeHtml(String(n.color || "").toUpperCase())}</span>
+            </div>
+            <div class="color-swatches" id="nodeColorSwatches" role="group" aria-label="Node color">${renderColorSwatches(n.color)}</div>
           </div>
         </label>
       </div>
@@ -81,12 +81,6 @@ function renderNodeEditor(ctx, n) {
     bindDraftInput(id, () => update(false), () => update(true));
   });
   ["minStrict", "maxStrict"].forEach(id => document.getElementById(id).addEventListener("change", () => update(true)));
-  document.getElementById("nodeColorToggle").addEventListener("click", () => {
-    const picker = document.getElementById("nodeColorPicker");
-    const open = !picker.classList.contains("open");
-    picker.classList.toggle("open", open);
-    document.getElementById("nodeColorToggle").setAttribute("aria-expanded", String(open));
-  });
   document.querySelectorAll("#nodeColorSwatches .color-swatch").forEach(btn => {
     btn.addEventListener("click", () => {
       n.color = btn.dataset.color;
@@ -101,8 +95,13 @@ function renderColorSwatches(selectedColor) {
   const current = String(selectedColor || "").toLowerCase();
   return NODE_COLORS.map(color => {
     const selected = color.toLowerCase() === current ? " selected" : "";
-    return `<button class="color-swatch${selected}" type="button" data-color="${color}" style="background:${color}" aria-label="Use ${color}"></button>`;
+    const light = isLightSwatch(color) ? " light" : "";
+    return `<button class="color-swatch${selected}${light}" type="button" data-color="${color}" style="background:${color}" aria-label="Use ${color}" title="${color}"></button>`;
   }).join("");
+}
+
+function isLightSwatch(color) {
+  return ["#ffffff", "#f8f7d0", "#f7f7f7", "#eaeaea", "#dedede"].includes(String(color).toLowerCase());
 }
 
 function renderLinkEditor(ctx, l) {

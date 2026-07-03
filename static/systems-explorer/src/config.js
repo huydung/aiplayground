@@ -4,8 +4,10 @@ export const MIN_DELAY = 0.04;
 export const MIN_PACKAGE_TRAVEL = 0.85;
 
 export const NODE_COLORS = [
-  "#BD0129", "#FF9200", "#69A257", "#35512C",
-  "#A02B93", "#6151A1", "#FEB6C6", "#1D1D1D"
+  "#BD0129", "#8E011F", "#51000C", "#FF9200",
+  "#FBAE40", "#F8F7D0", "#69A257", "#35512C",
+  "#A02B93", "#6151A1", "#FEB6C6", "#1D1D1D",
+  "#FFFFFF", "#F7F7F7", "#EAEAEA", "#DEDEDE"
 ];
 
 export const TRIGGER_OPTIONS = [
