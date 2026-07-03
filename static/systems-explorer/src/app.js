@@ -186,6 +186,7 @@ function bindUi() {
   els.closeChartBtn.addEventListener("click", () => toggleChartExpanded(false));
   els.chartBackdrop.addEventListener("click", () => toggleChartExpanded(false));
   window.addEventListener("keydown", e => {
+    if (handleSaveShortcut(e)) return;
     if (e.key === "Escape" && els.chartLightbox.classList.contains("open")) toggleChartExpanded(false);
     if (handleSimulationShortcut(e)) return;
   });
@@ -219,6 +220,22 @@ function renderAll() {
 function saveDoc() {
   saveActiveDiagram(state.library, state.doc);
   renderDiagramLibrary();
+}
+
+function handleSaveShortcut(e) {
+  const isPlainSave = (e.ctrlKey || e.metaKey) && !e.altKey && !e.shiftKey && String(e.key).toLowerCase() === "s";
+  if (!isPlainSave || e.isComposing) return false;
+  e.preventDefault();
+  e.stopPropagation();
+
+  if (els.diagramsModal.classList.contains("open")) {
+    saveNamedDiagram();
+  } else {
+    saveDoc();
+    setStatus(`<strong>Saved:</strong> ${escapeHtml(diagramName(state.library))} · ${escapeHtml(tabName(state.library))} saved locally.`);
+  }
+  showToast("Diagram saved locally.");
+  return true;
 }
 
 function openDiagramsModal() {
