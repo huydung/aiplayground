@@ -5,7 +5,7 @@ export const fallbackExample = {
   title: "Starter Diagram",
   desc: "A blank starting point for a local systems model.",
   doc: () => baseDoc([
-    stock("seed", "Starting Stock", 0, 100, 50, 320, 280, "#bd0129")
+    stock("seed", "Starting Node", 0, 100, 50, 320, 280, "#bd0129")
   ], [])
 };
 

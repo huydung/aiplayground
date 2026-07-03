@@ -19,33 +19,11 @@
   --chart-text: #69717d;
   --chart-label: #303744;
   --cream: #fff3c6;
-  --green: #168b5a;
+  --green: #69A257;
   --danger: #c33131;
-  --blue: #2366d1;
   --shadow: 0 18px 50px rgba(18, 24, 33, 0.16);
-  --sans: Inter, "Be Vietnam Pro", "Segoe UI", system-ui, -apple-system, sans-serif;
-  --serif: Georgia, "Times New Roman", serif;
-}
-
-body[data-theme="dark"] {
-  --ink: #f4f7fb;
-  --muted: #a9b4c4;
-  --line: #303846;
-  --line-strong: #4b5567;
-  --paper: #111827;
-  --canvas: #0d1117;
-  --topbar-bg: rgba(17, 24, 39, .96);
-  --panel-bg: rgba(17, 24, 39, .96);
-  --panel-head-bg: #151e2d;
-  --soft-bg: #182232;
-  --grid-line: rgba(148, 163, 184, .11);
-  --chart-bg: #101827;
-  --chart-grid: rgba(148, 163, 184, .16);
-  --chart-axis: #475569;
-  --chart-text: #a9b4c4;
-  --chart-label: #dbe5f2;
-  --cream: #3b2d12;
-  --shadow: 0 18px 50px rgba(0, 0, 0, .38);
+  --sans: "Be Vietnam Pro", "Segoe UI", system-ui, -apple-system, sans-serif;
+  --serif: Merriweather, Georgia, "Times New Roman", serif;
 }
 
 * { box-sizing: border-box; }
@@ -89,7 +67,7 @@ label {
 
 .app {
   display: grid;
-  grid-template-rows: auto minmax(0, 1fr);
+  grid-template-rows: auto auto minmax(0, 1fr);
   width: 100vw;
   height: 100vh;
   min-width: 1060px;
@@ -104,6 +82,18 @@ label {
   border-bottom: 1px solid var(--line);
   background: var(--topbar-bg);
   z-index: 20;
+}
+.brand-title {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  min-width: 0;
+}
+.brand-title img {
+  width: auto;
+  height: 28px;
+  flex: none;
 }
 .app-title {
   margin: 0;
@@ -128,18 +118,48 @@ label {
 .btn-primary { background: var(--red-600); border-color: var(--red-600); color: white; }
 .btn-danger { color: var(--danger); border-color: rgba(195,49,49,.38); }
 .btn-quiet { background: var(--soft-bg); }
-.theme-toggle {
-  min-width: 62px;
-  background: var(--ink);
-  border-color: var(--ink);
-  color: var(--paper);
-}
-body[data-theme="dark"] .theme-toggle {
-  background: #f8fafc;
-  border-color: #f8fafc;
-  color: #111827;
-}
 .icon-btn { width: 36px; padding: 0; }
+
+.tabbar {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 10px;
+  min-height: 44px;
+  padding: 6px 14px;
+  border-bottom: 1px solid var(--line);
+  background: var(--panel-head-bg);
+  z-index: 19;
+}
+.tab-list,
+.tab-actions {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  min-width: 0;
+}
+.tab-list {
+  overflow-x: auto;
+  scrollbar-width: thin;
+}
+.diagram-tab {
+  max-width: 220px;
+  min-height: 30px;
+  padding: 0 12px;
+  overflow: hidden;
+  border-color: transparent;
+  background: transparent;
+  color: var(--muted);
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.diagram-tab.active {
+  border-color: rgba(189, 1, 41, .36);
+  background: var(--paper);
+  color: var(--red-600);
+  box-shadow: 0 1px 7px rgba(16,24,40,.10);
+}
+.tab-actions button { min-height: 30px; }
 .readouts, .sim-readouts { display: flex; align-items: center; gap: 8px; justify-content: flex-end; }
 .sim-readouts { justify-content: stretch; margin-bottom: 12px; }
 .sim-readouts .metric { flex: 1; min-width: 0; }
@@ -193,12 +213,12 @@ body[data-theme="dark"] .theme-toggle {
 }
 .status-banner[data-state="running"] strong { color: #047857; }
 .status-banner[data-state="paused"] {
-  border-left-color: #f59e0b;
+  border-left-color: #FF9200;
   background: #fff3c6;
   color: #3d3010;
 }
 .status-banner[data-state="stopped"] {
-  border-left-color: #64748b;
+  border-left-color: #1D1D1D;
   background: #f1f5f9;
   color: #334155;
 }
@@ -651,6 +671,28 @@ body.chart-expanded .lightbox-backdrop { display: block; }
 .fire-button text { fill: white; font-size: 15px; font-weight: 900; text-anchor: middle; dominant-baseline: middle; }
 .package { filter: drop-shadow(0 1px 3px rgba(15, 23, 42, .18)); }
 .package polygon { stroke: none; }
+.loop-label { cursor: grab; filter: drop-shadow(0 5px 10px rgba(20, 24, 30, .14)); }
+.loop-label:active { cursor: grabbing; }
+.loop-label circle {
+  fill: var(--paper);
+  stroke: var(--red-600);
+  stroke-width: 2.5;
+}
+.loop-label.balancing circle { stroke: var(--green); }
+.loop-label.selected circle {
+  stroke-width: 4;
+  filter: drop-shadow(0 0 7px rgba(189,1,41,.28));
+}
+.loop-label text {
+  fill: var(--red-600);
+  font-family: var(--serif);
+  font-size: 20px;
+  font-weight: 900;
+  text-anchor: middle;
+  dominant-baseline: middle;
+  pointer-events: none;
+}
+.loop-label.balancing text { fill: var(--green); }
 .pulse { animation: pulseNode .8s ease-in-out infinite alternate; }
 @keyframes pulseNode {
   from { filter: drop-shadow(0 0 2px rgba(189,1,41,.38)); }

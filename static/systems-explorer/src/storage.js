@@ -1,4 +1,3 @@
-import { STORE_KEY } from "./config.js";
 import { cleanDoc } from "./model.js";
 
 const LIBRARY_KEY = "hdi-systems-explorer-library-v1";
@@ -9,12 +8,9 @@ export function loadDiagramLibrary(fallbackDoc, fallbackName = "Untitled Diagram
   const library = normalizeLibrary(stored);
   if (library.diagrams.length) return library;
 
-  const legacyDoc = readJson(STORE_KEY);
-  const doc = legacyDoc && legacyDoc.nodes && legacyDoc.links ? legacyDoc : fallbackDoc;
-  const name = legacyDoc ? "Saved Diagram" : fallbackName;
-  const migrated = createLibrary([createDiagramRecord(name, doc)]);
-  saveDiagramLibrary(migrated);
-  return migrated;
+  const created = createLibrary([createDiagramRecord(fallbackName, fallbackDoc)]);
+  saveDiagramLibrary(created);
+  return created;
 }
 
 export function saveDiagramLibrary(library) {
@@ -25,10 +21,26 @@ export function activeDiagram(library) {
   return library.diagrams.find(d => d.id === library.activeId) || library.diagrams[0] || null;
 }
 
+export function activeTab(recordOrLibrary) {
+  const record = recordOrLibrary && Array.isArray(recordOrLibrary.diagrams)
+    ? activeDiagram(recordOrLibrary)
+    : recordOrLibrary;
+  if (!record) return null;
+  return record.tabs.find(t => t.id === record.activeTabId) || record.tabs[0] || null;
+}
+
+export function activeDoc(library) {
+  return activeTab(library)?.doc || null;
+}
+
 export function saveActiveDiagram(library, doc, name = null) {
   const active = activeDiagram(library);
   if (!active) return library;
-  active.doc = cleanDoc(doc);
+  const tab = activeTab(active);
+  if (tab) {
+    tab.doc = cleanDoc(doc);
+    tab.updatedAt = new Date().toISOString();
+  }
   if (name !== null) active.name = cleanName(name);
   active.updatedAt = new Date().toISOString();
   saveDiagramLibrary(library);
@@ -51,6 +63,49 @@ export function activateDiagram(library, id) {
   return activeDiagram(library);
 }
 
+export function createTab(library, name, doc) {
+  const active = activeDiagram(library);
+  if (!active) return null;
+  const tab = createTabRecord(name, doc);
+  active.tabs.push(tab);
+  active.activeTabId = tab.id;
+  active.updatedAt = new Date().toISOString();
+  saveDiagramLibrary(library);
+  return tab;
+}
+
+export function activateTab(library, id) {
+  const active = activeDiagram(library);
+  if (!active || !active.tabs.some(t => t.id === id)) return activeTab(active);
+  active.activeTabId = id;
+  active.updatedAt = new Date().toISOString();
+  saveDiagramLibrary(library);
+  return activeTab(active);
+}
+
+export function renameActiveTab(library, name) {
+  const tab = activeTab(library);
+  if (!tab) return null;
+  tab.name = cleanName(name, "View");
+  tab.updatedAt = new Date().toISOString();
+  const active = activeDiagram(library);
+  if (active) active.updatedAt = tab.updatedAt;
+  saveDiagramLibrary(library);
+  return tab;
+}
+
+export function deleteActiveTab(library, fallbackDoc) {
+  const active = activeDiagram(library);
+  if (!active) return null;
+  if (active.tabs.length <= 1) return activeTab(active);
+  active.tabs = active.tabs.filter(t => t.id !== active.activeTabId);
+  if (!active.tabs.length) active.tabs.push(createTabRecord("Base", fallbackDoc));
+  active.activeTabId = active.tabs[0].id;
+  active.updatedAt = new Date().toISOString();
+  saveDiagramLibrary(library);
+  return activeTab(active);
+}
+
 export function deleteDiagram(library, id, fallbackDoc) {
   library.diagrams = library.diagrams.filter(d => d.id !== id);
   if (!library.diagrams.length) library.diagrams.push(createDiagramRecord("Untitled Diagram", fallbackDoc));
@@ -64,7 +119,7 @@ export function importDiagrams(library, payload) {
   const existingIds = new Set(library.diagrams.map(d => d.id));
   const now = new Date().toISOString();
   const records = incoming.map((d, index) => {
-    const record = createDiagramRecord(d.name || `Imported Diagram ${index + 1}`, d.doc);
+    const record = normalizeDiagramRecord({ ...d, name: d.name || `Imported Diagram ${index + 1}` });
     while (existingIds.has(record.id)) record.id = generateId();
     existingIds.add(record.id);
     record.createdAt = d.createdAt || now;
@@ -92,6 +147,10 @@ export function diagramName(library) {
   return activeDiagram(library)?.name || "Untitled Diagram";
 }
 
+export function tabName(library) {
+  return activeTab(library)?.name || "Base";
+}
+
 function createLibrary(diagrams) {
   return {
     version: 1,
@@ -102,10 +161,12 @@ function createLibrary(diagrams) {
 
 function createDiagramRecord(name, doc) {
   const now = new Date().toISOString();
+  const tab = createTabRecord("Base", doc, now);
   return {
     id: generateId(),
     name: cleanName(name),
-    doc: cleanDoc(doc),
+    activeTabId: tab.id,
+    tabs: [tab],
     createdAt: now,
     updatedAt: now
   };
@@ -114,14 +175,8 @@ function createDiagramRecord(name, doc) {
 function normalizeLibrary(value) {
   const rawDiagrams = value && Array.isArray(value.diagrams) ? value.diagrams : [];
   const diagrams = rawDiagrams
-    .filter(d => d && d.doc && d.doc.nodes && d.doc.links)
-    .map(d => ({
-      id: String(d.id || generateId()),
-      name: cleanName(d.name),
-      doc: cleanDoc(d.doc),
-      createdAt: d.createdAt || new Date().toISOString(),
-      updatedAt: d.updatedAt || d.createdAt || new Date().toISOString()
-    }));
+    .filter(d => d && (Array.isArray(d.tabs) || (d.doc && d.doc.nodes && d.doc.links)))
+    .map(normalizeDiagramRecord);
   return {
     version: 1,
     activeId: diagrams.some(d => d.id === value?.activeId) ? value.activeId : diagrams[0]?.id || null,
@@ -129,19 +184,59 @@ function normalizeLibrary(value) {
   };
 }
 
+function normalizeDiagramRecord(d) {
+  const now = new Date().toISOString();
+  const rawTabs = Array.isArray(d.tabs) && d.tabs.length
+    ? d.tabs
+    : [{ id: d.activeTabId || generateId(), name: "Base", doc: d.doc, createdAt: d.createdAt, updatedAt: d.updatedAt }];
+  const tabs = rawTabs
+    .filter(t => t && t.doc && t.doc.nodes && t.doc.links)
+    .map((t, index) => normalizeTabRecord(t, index));
+  if (!tabs.length && d.doc) tabs.push(createTabRecord("Base", d.doc));
+  return {
+    id: String(d.id || generateId()),
+    name: cleanName(d.name),
+    activeTabId: tabs.some(t => t.id === d.activeTabId) ? d.activeTabId : tabs[0]?.id || null,
+    tabs,
+    createdAt: d.createdAt || now,
+    updatedAt: d.updatedAt || d.createdAt || now
+  };
+}
+
+function createTabRecord(name, doc, timestamp = new Date().toISOString()) {
+  return {
+    id: generateId(),
+    name: cleanName(name, "View"),
+    doc: cleanDoc(doc),
+    createdAt: timestamp,
+    updatedAt: timestamp
+  };
+}
+
+function normalizeTabRecord(tab, index) {
+  const now = new Date().toISOString();
+  return {
+    id: String(tab.id || generateId()),
+    name: cleanName(tab.name || `View ${index + 1}`, "View"),
+    doc: cleanDoc(tab.doc),
+    createdAt: tab.createdAt || now,
+    updatedAt: tab.updatedAt || tab.createdAt || now
+  };
+}
+
 function diagramsFromPayload(payload) {
   if (payload && Array.isArray(payload.diagrams)) {
     return payload.diagrams
-      .filter(d => d && d.doc && d.doc.nodes && d.doc.links)
-      .map(d => ({ name: d.name, doc: d.doc, createdAt: d.createdAt, updatedAt: d.updatedAt }));
+      .filter(d => d && (Array.isArray(d.tabs) || (d.doc && d.doc.nodes && d.doc.links)))
+      .map(d => normalizeDiagramRecord(d));
   }
   if (payload && payload.nodes && payload.links) return [{ name: "Imported Diagram", doc: payload }];
   throw new Error("JSON must contain a diagram or a Systems Explorer diagram library.");
 }
 
-function cleanName(name) {
+function cleanName(name, fallback = "Untitled Diagram") {
   const text = String(name || "").trim();
-  return text || "Untitled Diagram";
+  return text || fallback;
 }
 
 function readJson(key) {

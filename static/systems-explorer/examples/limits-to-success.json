@@ -6,9 +6,9 @@
     "version": 5,
     "nextId": 30,
     "nodes": [
-      { "id": "players", "label": "Active Players", "kind": "stock", "min": 0, "max": 100, "value": 0, "x": 190, "y": 245, "color": "#2366d1", "minStrict": true, "maxStrict": true, "flow": { "in": null, "out": null } },
-      { "id": "buzz", "label": "Word of Mouth", "kind": "stock", "min": 0, "max": 100, "value": 0, "x": 475, "y": 160, "color": "#16a34a", "minStrict": true, "maxStrict": true, "flow": { "in": null, "out": { "strength": 5, "delay": 2 } } },
-      { "id": "content", "label": "Content Capacity", "kind": "stock", "min": 0, "max": 100, "value": 65, "x": 480, "y": 440, "color": "#f59e0b", "minStrict": true, "maxStrict": true, "flow": { "in": { "strength": 2, "delay": 3 }, "out": null } },
+      { "id": "players", "label": "Active Players", "kind": "stock", "min": 0, "max": 100, "value": 0, "x": 190, "y": 245, "color": "#6151A1", "minStrict": true, "maxStrict": true, "flow": { "in": null, "out": null } },
+      { "id": "buzz", "label": "Word of Mouth", "kind": "stock", "min": 0, "max": 100, "value": 0, "x": 475, "y": 160, "color": "#69A257", "minStrict": true, "maxStrict": true, "flow": { "in": null, "out": { "strength": 5, "delay": 2 } } },
+      { "id": "content", "label": "Content Capacity", "kind": "stock", "min": 0, "max": 100, "value": 65, "x": 480, "y": 440, "color": "#FF9200", "minStrict": true, "maxStrict": true, "flow": { "in": { "strength": 2, "delay": 3 }, "out": null } },
       { "id": "churn", "label": "Churn Pressure", "kind": "stock", "min": 0, "max": 100, "value": 0, "x": 760, "y": 305, "color": "#bd0129", "minStrict": true, "maxStrict": true, "flow": { "in": null, "out": { "strength": 4, "delay": 2 } } }
     ],
     "links": [
@@ -17,6 +17,10 @@
       { "id": "l3", "source": "players", "target": "churn", "polarity": 1, "mode": "delta", "amount": 65, "strength": 65, "frac": 0.65, "delay": 2, "trigger": "increase", "gate": "above", "gateValue": 30 },
       { "id": "l4", "source": "churn", "target": "content", "polarity": -1, "mode": "delta", "amount": 80, "strength": 80, "frac": 0.8, "delay": 1, "trigger": "increase", "gate": "always", "gateValue": 0 },
       { "id": "l5", "source": "content", "target": "players", "polarity": 1, "mode": "delta", "amount": 80, "strength": 80, "frac": 0.8, "delay": 1, "trigger": "decrease", "gate": "always", "gateValue": 0 }
+    ],
+    "loops": [
+      { "id": "loop_r1", "type": "R", "title": "Player buzz drives more player growth", "x": 335, "y": 180 },
+      { "id": "loop_b1", "type": "B", "title": "Content capacity limits growth", "x": 570, "y": 340 }
     ]
   }
 }

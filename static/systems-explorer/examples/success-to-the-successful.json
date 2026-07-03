@@ -7,10 +7,10 @@
     "nextId": 30,
     "nodes": [
       { "id": "aResult", "label": "Project A Results", "kind": "stock", "min": 0, "max": 100, "value": 40, "x": 195, "y": 210, "color": "#bd0129", "minStrict": true, "maxStrict": true, "flow": { "in": null, "out": null } },
-      { "id": "aRes", "label": "Project A Resources", "kind": "stock", "min": 0, "max": 100, "value": 40, "x": 460, "y": 145, "color": "#f59e0b", "minStrict": true, "maxStrict": true, "flow": { "in": null, "out": null } },
-      { "id": "bResult", "label": "Project B Results", "kind": "stock", "min": 0, "max": 100, "value": 40, "x": 195, "y": 455, "color": "#2563eb", "minStrict": true, "maxStrict": true, "flow": { "in": null, "out": null } },
-      { "id": "bRes", "label": "Project B Resources", "kind": "stock", "min": 0, "max": 100, "value": 40, "x": 460, "y": 520, "color": "#7c3aed", "minStrict": true, "maxStrict": true, "flow": { "in": null, "out": null } },
-      { "id": "risk", "label": "Portfolio Imbalance", "kind": "stock", "min": 0, "max": 100, "value": 0, "x": 760, "y": 330, "color": "#64748b", "minStrict": true, "maxStrict": true, "flow": { "in": null, "out": null } }
+      { "id": "aRes", "label": "Project A Resources", "kind": "stock", "min": 0, "max": 100, "value": 40, "x": 460, "y": 145, "color": "#FF9200", "minStrict": true, "maxStrict": true, "flow": { "in": null, "out": null } },
+      { "id": "bResult", "label": "Project B Results", "kind": "stock", "min": 0, "max": 100, "value": 40, "x": 195, "y": 455, "color": "#6151A1", "minStrict": true, "maxStrict": true, "flow": { "in": null, "out": null } },
+      { "id": "bRes", "label": "Project B Resources", "kind": "stock", "min": 0, "max": 100, "value": 40, "x": 460, "y": 520, "color": "#A02B93", "minStrict": true, "maxStrict": true, "flow": { "in": null, "out": null } },
+      { "id": "risk", "label": "Portfolio Imbalance", "kind": "stock", "min": 0, "max": 100, "value": 0, "x": 760, "y": 330, "color": "#1D1D1D", "minStrict": true, "maxStrict": true, "flow": { "in": null, "out": null } }
     ],
     "links": [
       { "id": "s1", "source": "aResult", "target": "aRes", "polarity": 1, "mode": "delta", "amount": 80, "strength": 80, "frac": 0.8, "delay": 1, "trigger": "increase", "gate": "always", "gateValue": 0 },
@@ -19,6 +19,10 @@
       { "id": "s4", "source": "bRes", "target": "bResult", "polarity": 1, "mode": "delta", "amount": 90, "strength": 90, "frac": 0.9, "delay": 1, "trigger": "decrease", "gate": "always", "gateValue": 0 },
       { "id": "s5", "source": "bResult", "target": "bRes", "polarity": 1, "mode": "delta", "amount": 80, "strength": 80, "frac": 0.8, "delay": 1, "trigger": "decrease", "gate": "always", "gateValue": 0 },
       { "id": "s6", "source": "aRes", "target": "risk", "polarity": 1, "mode": "delta", "amount": 35, "strength": 35, "frac": 0.35, "delay": 2, "trigger": "increase", "gate": "always", "gateValue": 0 }
+    ],
+    "loops": [
+      { "id": "loop_r1", "type": "R", "title": "Project A success attracts more resources", "x": 340, "y": 175 },
+      { "id": "loop_b1", "type": "B", "title": "Resources shift away from Project B", "x": 575, "y": 385 }
     ]
   }
 }

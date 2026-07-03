@@ -1,79 +1,78 @@
 # HDI Systems Explorer
 
-Static ES-module app served at `/systems-explorer/`.
+HDI Systems Explorer is a client-side systems-thinking tool served at `/systems-explorer/`. It lets a facilitator build casual feedback diagrams, run animated package-based simulations, compare multiple tabs of the same diagram, and annotate loops with movable `R` and `B` labels.
+
+The legacy `/systems-explorer.html` path redirects here, so Fly serves the app at both:
+
+- `https://hdi.fly.dev/systems-explorer/`
+- `https://hdi.fly.dev/systems-explorer.html`
+
+## Current Design
+
+- Pure static ES modules; no server API or database is used by the tool.
+- One shared SVG coordinate system renders nodes, links, loop labels, packages, and controls.
+- Diagram state is local-only and saved in `localStorage`.
+- Export/import uses JSON for the full local diagram library.
+- A saved diagram can contain multiple tabs. Each tab is a complete editable view of the system, useful for variants, tweaks, and workshop scenarios.
+- Loop labels are manual teaching annotations: `R` for reinforcing and `B` for balancing. Their SVG tooltip is the label title.
+- The visual system is a single fixed HDI light brand theme with no alternate color theme.
 
 ## File Map
 
-- `index.html`  
-  App shell only. Keep markup for panels, modal, canvas, and readouts here.
+- `index.html`
+  App shell for the header, tab bar, SVG canvas, simulator panel, editor panel, chart lightbox, and modals.
 
-- `styles.css`  
-  Visual system and layout. Tweak panel sizing, colors, typography, diagram styling, and table density here.
+- `styles.css`
+  Fixed light-mode HDI visual system, layout, diagram styling, tabs, loop labels, charts, tables, and modals.
 
-- `src/config.js`  
-  Global constants: localStorage key, package timing, color palette, and label metadata used by chart/table text.
+- `src/config.js`
+  Simulation constants, SVG namespace, HDI palette, and link rule option metadata.
 
-- `src/model.js`  
-  Data shape, stock/link constructors, import cleanup, and validation.
+- `src/model.js`
+  Data constructors and sanitizers for documents, nodes, links, natural flows, and loop labels.
 
-- `examples/`  
-  Editable example models. `manifest.json` lists the JSON files loaded into the Examples modal.
+- `src/storage.js`
+  Local diagram library, diagram tabs, import/export, and JSON download.
 
-- `src/simulation.js`  
-  The simulation engine. New links default to always-on 100% source-delta propagation, but rule settings remain editable:
-  - trigger and gate decide whether a source change can fire the link
-  - payload mode and amount decide how much value the package carries
-  - polarity decides whether the target changes in the same or opposite direction
-  - delay controls logical delivery timing
-  - each link emits at most one net package per integer step
-  - logical delivery and visual package travel are separated so packages remain visible.
+- `src/simulation.js`
+  Package simulation engine. It owns values, package delivery, natural flow timing, history samples, and safety caps.
 
-- `src/diagram.js`  
-  SVG rendering: stocks, curved links, labels, package triangles, and route de-overlap.
+- `src/diagram.js`
+  SVG rendering for links, nodes, packages, loop labels, route de-overlap, pan/zoom alignment, and hit targets.
 
-- `src/panels.js`  
-  Property editor and Behavior over time. The step table intentionally creates one column per rule link, so each step shows which links sent packages.
+- `src/panels.js`
+  Property editor, behavior-over-time chart, and step table.
 
-- `src/storage.js`  
-  LocalStorage diagram library, migration from the old single-diagram save slot, and JSON import/export.
+- `src/app.js`
+  App orchestration: UI binding, diagram tabs, selection, dragging, pan/zoom, simulation controls, examples, diagrams, and import/export.
 
-- `src/app.js`  
-  App orchestration: DOM binding, selection, dragging, pan/zoom, Simulator controls, Start dialog, examples modal, and ticking the simulation.
+- `examples/`
+  Editable system archetype examples. `manifest.json` controls which JSON files appear in the Examples modal.
 
-## Link Rule Semantics
+## Simulation Semantics
 
-A connection defaults to a simple rule:
+The simulator is illustrative, not predictive. It is built for workshop explanation:
 
-`source delta -> 100% package -> target delta`
+- Pressing Start opens a seed dialog. The seed sends packages from the chosen node but does not change that source node's value.
+- A package travels along a link for the link's delay, then changes the target value.
+- The target's actual value change can fire outgoing links.
+- Link polarity controls direction: same `(s)` preserves direction; opposite `(o)` reverses it.
+- Trigger and gate settings decide whether a changed source can fire a link.
+- Payload mode and amount decide how much value a package carries.
+- Natural flow changes only its own node, clamps to the node bounds, and never fires outgoing links.
+- If package volume exceeds the configured safety cap, the simulation pauses.
 
-Example:
+## Editing Model
 
-`Gap to Milestone -> Overtime`
+- Nodes have a label, min, max, start value, color, strict-bound toggles, and optional natural flow in/out.
+- Links connect source to target nodes and support polarity, trigger, gate, payload, amount, and delay.
+- Loop labels are movable canvas objects with type `R` or `B` and an editable title.
+- Tabs duplicate the active tab by default so a facilitator can branch the model quickly.
 
-- If polarity is `same (s)`, a +20 source delta sends a +20 package.
-- If polarity is `opposite (o)`, a +20 source delta sends a -20 package.
-- Trigger, gate, payload mode, amount, and delay remain editable.
-- If one link receives multiple sends in the same step, they merge into a single net package icon/event.
+## Saved Library
 
-## Data Shape
+The app stores the diagram library in `localStorage` under `hdi-systems-explorer-library-v1`. A library contains diagrams; each diagram contains tabs; each tab contains a complete document.
 
-```js
-{
-  nodes: [
-    { id, label, kind: "stock", min, max, value, x, y, color, minStrict, maxStrict, flow }
-  ],
-  links: [
-    { id, source, target, polarity, mode, amount, delay, trigger, gate, gateValue }
-  ]
-}
-```
+Export downloads the full library as `systems-explorer-diagrams.json`. Import accepts a full library or a single document and adds it to the local library.
 
-Bounds are strict per side: `minStrict` clamps values below `min`, and `maxStrict` clamps values above `max`. If a side is unchecked, flows and received packages may push the value beyond that boundary and the node pulses.
-
-Variables are intentionally removed. Model semantics now belong on links.
-
-## Saved Diagrams
-
-The app stores a local diagram library in `localStorage` under `hdi-systems-explorer-library-v1`. Export creates a portable JSON file containing all saved diagrams, their names, timestamps, and docs.
-
-See [FORMAT.md](./FORMAT.md) for the exact single-diagram, example, and exported-library JSON formats.
+See [FORMAT.md](./FORMAT.md) for the exact JSON shape.

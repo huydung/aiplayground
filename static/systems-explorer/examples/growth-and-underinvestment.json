@@ -6,10 +6,10 @@
     "version": 5,
     "nextId": 30,
     "nodes": [
-      { "id": "demand", "label": "Player Demand", "kind": "stock", "min": 0, "max": 100, "value": 0, "x": 185, "y": 235, "color": "#2366d1", "minStrict": true, "maxStrict": true, "flow": { "in": null, "out": null } },
-      { "id": "quality", "label": "Service Quality", "kind": "stock", "min": 0, "max": 100, "value": 70, "x": 500, "y": 150, "color": "#168b5a", "minStrict": true, "maxStrict": true, "flow": { "in": { "strength": 1, "delay": 3 }, "out": null } },
-      { "id": "capacity", "label": "Support Capacity", "kind": "stock", "min": 0, "max": 100, "value": 35, "x": 500, "y": 445, "color": "#f59e0b", "minStrict": true, "maxStrict": true, "flow": { "in": null, "out": null } },
-      { "id": "invest", "label": "Capacity Investment", "kind": "stock", "min": 0, "max": 100, "value": 0, "x": 785, "y": 305, "color": "#7c3aed", "minStrict": true, "maxStrict": true, "flow": { "in": null, "out": { "strength": 4, "delay": 3 } } }
+      { "id": "demand", "label": "Player Demand", "kind": "stock", "min": 0, "max": 100, "value": 0, "x": 185, "y": 235, "color": "#6151A1", "minStrict": true, "maxStrict": true, "flow": { "in": null, "out": null } },
+      { "id": "quality", "label": "Service Quality", "kind": "stock", "min": 0, "max": 100, "value": 70, "x": 500, "y": 150, "color": "#69A257", "minStrict": true, "maxStrict": true, "flow": { "in": { "strength": 1, "delay": 3 }, "out": null } },
+      { "id": "capacity", "label": "Support Capacity", "kind": "stock", "min": 0, "max": 100, "value": 35, "x": 500, "y": 445, "color": "#FF9200", "minStrict": true, "maxStrict": true, "flow": { "in": null, "out": null } },
+      { "id": "invest", "label": "Capacity Investment", "kind": "stock", "min": 0, "max": 100, "value": 0, "x": 785, "y": 305, "color": "#A02B93", "minStrict": true, "maxStrict": true, "flow": { "in": null, "out": { "strength": 4, "delay": 3 } } }
     ],
     "links": [
       { "id": "g1", "source": "demand", "target": "demand", "polarity": 1, "mode": "delta", "amount": 75, "strength": 75, "frac": 0.75, "delay": 1, "trigger": "increase", "gate": "always", "gateValue": 0 },
@@ -18,6 +18,10 @@
       { "id": "g4", "source": "demand", "target": "invest", "polarity": 1, "mode": "delta", "amount": 50, "strength": 50, "frac": 0.5, "delay": 2, "trigger": "increase", "gate": "above", "gateValue": 25 },
       { "id": "g5", "source": "invest", "target": "capacity", "polarity": 1, "mode": "delta", "amount": 100, "strength": 100, "frac": 1, "delay": 4, "trigger": "increase", "gate": "always", "gateValue": 0 },
       { "id": "g6", "source": "capacity", "target": "quality", "polarity": 1, "mode": "delta", "amount": 65, "strength": 65, "frac": 0.65, "delay": 1, "trigger": "increase", "gate": "always", "gateValue": 0 }
+    ],
+    "loops": [
+      { "id": "loop_r1", "type": "R", "title": "Demand proves and grows the opportunity", "x": 315, "y": 190 },
+      { "id": "loop_b1", "type": "B", "title": "Underinvestment limits quality", "x": 590, "y": 320 }
     ]
   }
 }

@@ -1,24 +1,29 @@
 import { NODE_COLORS } from "./config.js";
 import { assessBoundaries, currentMaxNodeIds } from "./boundaries.js";
 import { fallbackExample, loadExamples } from "./examples.js";
-import { baseDoc, clamp, cleanDoc, link, nodeById, sanitizeDoc, stock } from "./model.js";
+import { baseDoc, clamp, cleanDoc, link, loopLabel, nodeById, sanitizeDoc, stock } from "./model.js";
 import { createRuntime } from "./simulation.js";
 import {
   activateDiagram,
+  activateTab,
   activeDiagram,
+  activeDoc,
+  activeTab,
+  createTab,
   createDiagram,
+  deleteActiveTab,
   deleteDiagram as deleteStoredDiagram,
   diagramName,
   exportDiagramLibrary,
   importDiagrams,
   loadDiagramLibrary,
-  saveActiveDiagram
+  renameActiveTab,
+  saveActiveDiagram,
+  tabName
 } from "./storage.js";
 import { renderSvg } from "./diagram.js";
 import { renderBehavior, renderEditor, setBehaviorView } from "./panels.js";
 import { escapeHtml } from "./text.js";
-
-const THEME_KEY = "hdi-systems-explorer-theme";
 
 const els = {
   body: document.body,
@@ -45,7 +50,10 @@ const els = {
   statusText: document.getElementById("statusText"),
   continueBtn: document.getElementById("continueBtn"),
   toast: document.getElementById("toast"),
-  themeToggle: document.getElementById("themeToggle"),
+  tabList: document.getElementById("tabList"),
+  addTabBtn: document.getElementById("addTabBtn"),
+  renameTabBtn: document.getElementById("renameTabBtn"),
+  deleteTabBtn: document.getElementById("deleteTabBtn"),
   diagramsModal: document.getElementById("diagramsModal"),
   diagramNameInput: document.getElementById("diagramNameInput"),
   diagramList: document.getElementById("diagramList"),
@@ -85,7 +93,6 @@ const state = {
   panelDrag: null,
   linkRoutes: new Map(),
   maxPausedNodes: new Set(),
-  theme: "light",
   library: null,
   examples: [fallbackExample]
 };
@@ -93,11 +100,9 @@ const state = {
 init();
 
 async function init() {
-  state.theme = loadTheme();
-  applyTheme();
   state.examples = await loadExamples();
   state.library = loadDiagramLibrary(state.examples[0].doc(), state.examples[0].title);
-  state.doc = activeDiagram(state.library).doc;
+  state.doc = activeDoc(state.library);
   sanitizeDoc(state.doc);
   state.runtime = createRuntime(state.doc);
   bindUi();
@@ -115,7 +120,8 @@ function ctx() {
     saveDoc,
     renderAll,
     deleteNode,
-    deleteLink
+    deleteLink,
+    deleteLoop
   };
 }
 
@@ -142,9 +148,12 @@ function bindUi() {
     els.importFile.click();
   });
   document.getElementById("exportBtn").addEventListener("click", exportLibrary);
-  els.themeToggle.addEventListener("click", toggleTheme);
   document.getElementById("addStockBtn").addEventListener("click", addStock);
   document.getElementById("addLinkBtn").addEventListener("click", startLinkMode);
+  document.getElementById("addLoopBtn").addEventListener("click", addLoop);
+  els.addTabBtn.addEventListener("click", addTab);
+  els.renameTabBtn.addEventListener("click", renameTab);
+  els.deleteTabBtn.addEventListener("click", deleteTab);
   document.getElementById("startRunBtn").addEventListener("click", openStartDialog);
   document.getElementById("stopBtn").addEventListener("click", stopSimulation);
   document.getElementById("prevStepBtn").addEventListener("click", stepBack);
@@ -199,6 +208,7 @@ function renderAll() {
   renderSvg(ctx());
   renderEditor(ctx());
   renderBehavior(ctx());
+  renderTabs();
   els.time.textContent = state.runtime.simTime.toFixed(1);
   els.packages.textContent = String(state.runtime.packages.length);
   els.step.textContent = String(Math.floor(state.runtime.simTime));
@@ -232,7 +242,7 @@ function saveNamedDiagram() {
 function saveAsNewDiagram() {
   if (blockSimulationEdit()) return;
   const record = createDiagram(state.library, copyName(els.diagramNameInput.value || diagramName(state.library)), state.doc);
-  state.doc = record.doc;
+  state.doc = activeTab(record).doc;
   state.selected = null;
   resetRuntime();
   setStatus(`<strong>Saved as new:</strong> ${escapeHtml(record.name)}.`);
@@ -245,7 +255,7 @@ function loadDiagramRecord(id) {
   saveActiveDiagram(state.library, state.doc);
   const record = activateDiagram(state.library, id);
   if (!record) return;
-  state.doc = record.doc;
+  state.doc = activeDoc(state.library);
   sanitizeDoc(state.doc);
   state.selected = null;
   resetRuntime();
@@ -259,9 +269,9 @@ function removeDiagramRecord(id) {
   const record = state.library.diagrams.find(d => d.id === id);
   if (!record || !confirm(`Delete "${record.name}"?`)) return;
   const active = deleteStoredDiagram(state.library, id, baseDoc([
-    stock("seed", "Starting Stock", 0, 100, 50, 320, 280, "#bd0129")
+    stock("seed", "Starting Node", 0, 100, 50, 320, 280, "#bd0129")
   ], []));
-  state.doc = active.doc;
+  state.doc = activeTab(active).doc;
   sanitizeDoc(state.doc);
   state.selected = null;
   resetRuntime();
@@ -284,7 +294,7 @@ function renderDiagramLibrary() {
     <div class="diagram-list-item ${d.id === state.library.activeId ? "active" : ""}">
       <div>
         <strong>${escapeHtml(d.name)}</strong>
-        <span>${escapeHtml(formatDate(d.updatedAt))}</span>
+        <span>${escapeHtml(formatDate(d.updatedAt))} · ${d.tabs.length} tab${d.tabs.length === 1 ? "" : "s"}</span>
       </div>
       <div class="diagram-item-actions">
         <button type="button" data-load-diagram="${escapeHtml(d.id)}" ${d.id === state.library.activeId || state.started ? "disabled" : ""}>Load</button>
@@ -298,6 +308,87 @@ function renderDiagramLibrary() {
   els.diagramList.querySelectorAll("[data-delete-diagram]").forEach(btn => {
     btn.addEventListener("click", () => removeDiagramRecord(btn.dataset.deleteDiagram));
   });
+}
+
+function renderTabs() {
+  const record = activeDiagram(state.library);
+  if (!record) return;
+  const current = activeTab(record);
+  els.tabList.innerHTML = record.tabs.map(tab => `
+    <button class="diagram-tab ${tab.id === record.activeTabId ? "active" : ""}" type="button" data-tab="${escapeHtml(tab.id)}" ${state.started ? "disabled" : ""}>${escapeHtml(tab.name)}</button>
+  `).join("");
+  els.tabList.querySelectorAll("[data-tab]").forEach(button => {
+    button.addEventListener("click", () => loadTab(button.dataset.tab));
+  });
+  els.addTabBtn.disabled = state.started;
+  els.renameTabBtn.disabled = state.started || !current;
+  els.deleteTabBtn.disabled = state.started || !record || record.tabs.length <= 1;
+}
+
+function loadTab(id) {
+  if (blockSimulationEdit()) return;
+  saveActiveDiagram(state.library, state.doc);
+  const tab = activateTab(state.library, id);
+  if (!tab) return;
+  state.doc = tab.doc;
+  sanitizeDoc(state.doc);
+  state.selected = null;
+  resetRuntime();
+  setStatus(`<strong>Loaded tab:</strong> ${escapeHtml(tab.name)}.`);
+  renderAll();
+}
+
+function addTab() {
+  if (blockSimulationEdit()) return;
+  saveActiveDiagram(state.library, state.doc);
+  const name = nextTabName();
+  const tab = createTab(state.library, name, state.doc);
+  if (!tab) return;
+  state.doc = tab.doc;
+  sanitizeDoc(state.doc);
+  state.selected = null;
+  resetRuntime();
+  setStatus(`<strong>New tab:</strong> ${escapeHtml(tab.name)} is a copy of the current view.`);
+  renderAll();
+  renderDiagramLibrary();
+}
+
+function renameTab() {
+  if (blockSimulationEdit()) return;
+  const current = tabName(state.library);
+  const next = prompt("Rename current tab", current);
+  if (next === null) return;
+  const tab = renameActiveTab(state.library, next);
+  if (!tab) return;
+  setStatus(`<strong>Renamed tab:</strong> ${escapeHtml(tab.name)}.`);
+  renderAll();
+}
+
+function deleteTab() {
+  if (blockSimulationEdit()) return;
+  const current = tabName(state.library);
+  if (!confirm(`Delete tab "${current}"?`)) return;
+  const tab = deleteActiveTab(state.library, state.doc);
+  if (!tab) return;
+  state.doc = tab.doc;
+  sanitizeDoc(state.doc);
+  state.selected = null;
+  resetRuntime();
+  setStatus(`<strong>Deleted tab:</strong> showing ${escapeHtml(tab.name)}.`);
+  renderAll();
+  renderDiagramLibrary();
+}
+
+function nextTabName() {
+  const record = activeDiagram(state.library);
+  const names = new Set((record?.tabs || []).map(tab => tab.name));
+  let index = (record?.tabs.length || 0) + 1;
+  let name = "View " + index;
+  while (names.has(name)) {
+    index += 1;
+    name = "View " + index;
+  }
+  return name;
 }
 
 function nextUntitledName() {
@@ -328,33 +419,6 @@ function formatDate(value) {
   const date = new Date(value);
   if (Number.isNaN(date.getTime())) return "Saved locally";
   return "Updated " + date.toLocaleString([], { month: "short", day: "numeric", hour: "2-digit", minute: "2-digit" });
-}
-
-function loadTheme() {
-  try {
-    const stored = localStorage.getItem(THEME_KEY);
-    if (stored === "light" || stored === "dark") return stored;
-  } catch (_) {
-    // Ignore storage failures and fall back to the user's system setting.
-  }
-  return window.matchMedia && window.matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light";
-}
-
-function toggleTheme() {
-  state.theme = state.theme === "dark" ? "light" : "dark";
-  try {
-    localStorage.setItem(THEME_KEY, state.theme);
-  } catch (_) {
-    // Theme still applies for the current session if storage is unavailable.
-  }
-  applyTheme();
-}
-
-function applyTheme() {
-  els.body.dataset.theme = state.theme;
-  const isDark = state.theme === "dark";
-  els.themeToggle.textContent = isDark ? "Light" : "Dark";
-  els.themeToggle.setAttribute("aria-label", isDark ? "Switch to light mode" : "Switch to dark mode");
 }
 
 function resetRuntime() {
@@ -399,24 +463,37 @@ function addStock() {
   const next = state.doc.nextId++;
   const id = "n" + next;
   const center = screenCenterInCanvas();
-  state.doc.nodes.push(stock(id, "Stock " + next, 0, 100, 50, center.x, center.y, NODE_COLORS[next % NODE_COLORS.length]));
+  state.doc.nodes.push(stock(id, "Node " + next, 0, 100, 50, center.x, center.y, NODE_COLORS[next % NODE_COLORS.length]));
   state.selected = { type: "node", id };
   resetRuntime();
   saveDoc();
-  setStatus("<strong>Stock added:</strong> edit its range, color, and natural flow in the Editor.");
+  setStatus("<strong>Node added:</strong> edit its range, color, and natural flow in the Editor.");
+  renderAll();
+}
+
+function addLoop() {
+  if (blockSimulationEdit()) return;
+  const next = state.doc.nextId++;
+  const id = "loop" + next;
+  const center = screenCenterInCanvas();
+  state.doc.loops.push(loopLabel(id, "R", "Reinforcing loop", center.x, center.y));
+  state.selected = { type: "loop", id };
+  resetRuntime();
+  saveDoc();
+  setStatus("<strong>Loop label added:</strong> choose R or B and give the loop a teaching title.");
   renderAll();
 }
 
 function startLinkMode() {
   if (blockSimulationEdit()) return;
   state.linkDraft = { source: null };
-  setStatus("<strong>Link mode:</strong> click a source stock, then a target stock. The link editor controls when that rule can fire.");
+  setStatus("<strong>Link mode:</strong> click a source node, then a target node. The link editor controls when that rule can fire.");
 }
 
 function handleLinkNodeClick(id) {
   if (!state.linkDraft.source) {
     state.linkDraft.source = id;
-    setStatus(`<strong>Link mode:</strong> source is ${escapeHtml(nodeById(state.doc, id).label)}. Now click the target stock.`);
+    setStatus(`<strong>Link mode:</strong> source is ${escapeHtml(nodeById(state.doc, id).label)}. Now click the target node.`);
     return;
   }
   const linkId = "l" + (state.doc.nextId++);
@@ -446,13 +523,20 @@ function deleteLink(id) {
   renderAll();
 }
 
+function deleteLoop(id) {
+  state.doc.loops = state.doc.loops.filter(loop => loop.id !== id);
+  state.selected = null;
+  saveDoc();
+  renderAll();
+}
+
 function newDiagram() {
   if (blockSimulationEdit()) return;
   const doc = baseDoc([
-    stock("seed", "Starting Stock", 0, 100, 50, 320, 280, "#bd0129")
+    stock("seed", "Starting Node", 0, 100, 50, 320, 280, "#bd0129")
   ], []);
   const record = createDiagram(state.library, nextUntitledName(), doc);
-  state.doc = record.doc;
+  state.doc = activeTab(record).doc;
   resetRuntime();
   state.selected = { type: "node", id: "seed" };
   setStatus(`<strong>New diagram:</strong> ${escapeHtml(record.name)} is ready.`);
@@ -473,7 +557,7 @@ function importDoc(e) {
     try {
       const payload = JSON.parse(reader.result);
       const imported = importDiagrams(state.library, payload);
-      state.doc = activeDiagram(state.library).doc;
+      state.doc = activeDoc(state.library);
       sanitizeDoc(state.doc);
       state.selected = null;
       resetRuntime();
@@ -745,7 +829,7 @@ function updateRunControls() {
   pauseBtn.disabled = !state.started || state.ended || (!state.running && state.stepByStep && state.stepTarget == null);
   document.getElementById("prevStepBtn").disabled = !state.started || state.checkpoints.length <= 1;
   document.getElementById("nextStepBtn").disabled = !state.started || state.running || state.ended;
-  ["addStockBtn", "addLinkBtn", "diagramsBtn", "examplesBtn", "newBtn", "importBtn"].forEach(id => {
+  ["addStockBtn", "addLinkBtn", "addLoopBtn", "diagramsBtn", "examplesBtn", "newBtn", "importBtn", "addTabBtn", "renameTabBtn", "deleteTabBtn"].forEach(id => {
     const button = document.getElementById(id);
     if (button) button.disabled = state.started;
   });
@@ -826,6 +910,7 @@ function nodeListLabel(nodes) {
 function onPointerDown(e) {
   const nodeEl = e.target.closest("[data-node]");
   const linkEl = e.target.closest("[data-link]");
+  const loopEl = e.target.closest("[data-loop]");
   if (state.started) return;
   if (nodeEl) {
     const id = nodeEl.dataset.node;
@@ -841,6 +926,15 @@ function onPointerDown(e) {
     renderAll();
   } else if (linkEl) {
     state.selected = { type: "link", id: linkEl.dataset.link };
+    renderAll();
+  } else if (loopEl) {
+    const id = loopEl.dataset.loop;
+    const loop = state.doc.loops.find(item => item.id === id);
+    if (!loop) return;
+    state.selected = { type: "loop", id };
+    const p = canvasPoint(e);
+    state.drag = { type: "loop", id, dx: p.x - loop.x, dy: p.y - loop.y };
+    els.diagram.setPointerCapture(e.pointerId);
     renderAll();
   } else {
     const p = canvasPoint(e, false);
@@ -866,6 +960,14 @@ function onPointerMove(e) {
     const n = nodeById(state.doc, state.drag.id);
     n.x = p.x - state.drag.dx;
     n.y = p.y - state.drag.dy;
+    saveDoc();
+    renderAll();
+  } else if (state.drag.type === "loop") {
+    const p = canvasPoint(e);
+    const loop = state.doc.loops.find(item => item.id === state.drag.id);
+    if (!loop) return;
+    loop.x = p.x - state.drag.dx;
+    loop.y = p.y - state.drag.dy;
     saveDoc();
     renderAll();
   } else if (state.drag.type === "pan") {

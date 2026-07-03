@@ -14,11 +14,13 @@ export function renderSvg(ctx) {
   els.viewport.innerHTML = "";
   els.viewport.setAttribute("transform", `translate(${state.transform.x} ${state.transform.y}) scale(${state.transform.k})`);
   const linkLayer = svgEl("g");
+  const loopLayer = svgEl("g");
   const nodeLayer = svgEl("g");
   const packageLayer = svgEl("g");
-  els.viewport.append(linkLayer, nodeLayer, packageLayer);
+  els.viewport.append(linkLayer, loopLayer, nodeLayer, packageLayer);
   state.linkRoutes = buildLinkRoutes(doc);
   doc.links.forEach(l => renderLink(ctx, linkLayer, l));
+  doc.loops.forEach(loop => renderLoopLabel(ctx, loopLayer, loop));
   doc.nodes.forEach(n => renderNode(ctx, nodeLayer, n));
   if (state.started) runtime.packages.forEach(p => renderPackage(ctx, packageLayer, p));
 }
@@ -54,6 +56,19 @@ function renderLink(ctx, layer, l) {
 function linkDisplayLabel(ctx, l) {
   if (!ctx.state.started) return linkLabel(l);
   return l.polarity < 0 ? "(o)" : "(s)";
+}
+
+function renderLoopLabel(ctx, layer, loop) {
+  const isBalancing = loop.type === "B";
+  const group = svgEl("g", {
+    class: `loop-label ${isBalancing ? "balancing" : "reinforcing"} ${isSelected(ctx, "loop", loop.id) ? "selected" : ""}`,
+    transform: `translate(${loop.x} ${loop.y})`,
+    "data-loop": loop.id
+  });
+  group.append(svgEl("title", {}, loop.title));
+  group.append(svgEl("circle", { r: 22, "data-loop": loop.id }));
+  group.append(svgEl("text", { y: 1, "data-loop": loop.id }, loop.type));
+  layer.append(group);
 }
 
 export function linkPath(ctx, s, t, l = null) {
@@ -172,7 +187,7 @@ function renderPackage(ctx, layer, p) {
   const size = 10;
   const g = svgEl("g", { class: `package ${visualDir > 0 ? "up" : "down"}`, transform: `translate(${pos.x} ${pos.y})` });
   const points = trianglePoints(visualDir, size);
-  g.append(svgEl("polygon", { points, fill: visualDir > 0 ? "#168b5a" : "#c33131" }));
+  g.append(svgEl("polygon", { points, fill: visualDir > 0 ? "#69A257" : "#c33131" }));
   layer.append(g);
 }
 

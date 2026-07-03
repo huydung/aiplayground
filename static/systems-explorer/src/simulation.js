@@ -41,8 +41,7 @@ export class Simulation {
   fireNode(id, dir) {
     const source = nodeById(this.doc, id);
     if (!source) return;
-    const actualDelta = this.applyDelta(source, dir);
-    this.spawnOutgoing(id, actualDelta);
+    this.spawnOutgoing(id, dir);
   }
 
   advance(dt) {
@@ -73,15 +72,13 @@ export class Simulation {
       const next = this.nextFlow.get(n.id) || { in: Infinity, out: Infinity };
       if (n.flow.in) {
         while (this.simTime >= next.in) {
-          const actualDelta = this.applyFlow(n, n.flow.in.strength);
-          this.spawnOutgoing(n.id, actualDelta);
+          this.applyFlow(n, n.flow.in.strength);
           next.in += Math.max(MIN_DELAY, n.flow.in.delay);
         }
       }
       if (n.flow.out) {
         while (this.simTime >= next.out) {
-          const actualDelta = this.applyFlow(n, -n.flow.out.strength);
-          this.spawnOutgoing(n.id, actualDelta);
+          this.applyFlow(n, -n.flow.out.strength);
           next.out += Math.max(MIN_DELAY, n.flow.out.delay);
         }
       }
@@ -90,7 +87,10 @@ export class Simulation {
   }
 
   applyFlow(n, delta) {
-    return this.applyDelta(n, delta);
+    const before = this.getValue(n.id);
+    const next = Math.min(n.max, Math.max(n.min, before + delta));
+    this.setValue(n.id, next);
+    return next - before;
   }
 
   deliverPackages() {

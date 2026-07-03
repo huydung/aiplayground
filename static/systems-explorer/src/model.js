@@ -4,6 +4,10 @@ export function stock(id, label, min, max, value, x, y, color, flow = { in: null
   return { id, label, kind: "stock", min, max, value, x, y, color, minStrict: true, maxStrict: true, flow };
 }
 
+export function loopLabel(id, type, title, x, y) {
+  return { id, type: type === "B" ? "B" : "R", title: String(title || "Loop"), x, y };
+}
+
 export function link(
   id,
   source,
@@ -35,8 +39,8 @@ export function link(
   };
 }
 
-export function baseDoc(nodes, links) {
-  return { version: 5, nextId: 20, nodes, links };
+export function baseDoc(nodes, links, loops = []) {
+  return { version: 5, nextId: 20, nodes, links, loops };
 }
 
 export function cleanDoc(doc) {
@@ -60,7 +64,8 @@ export function cleanDoc(doc) {
         out: n.flow && n.flow.out ? { strength: Number(n.flow.out.strength) || 0, delay: Number(n.flow.out.delay) || 1 } : null
       }
     })),
-    links: doc.links.map(cleanLink)
+    links: doc.links.map(cleanLink),
+    loops: Array.isArray(doc.loops) ? doc.loops.map(cleanLoop) : []
   };
 }
 
@@ -70,7 +75,7 @@ export function sanitizeDoc(doc) {
   doc.nodes.forEach((n, i) => {
     n.id ||= "n" + (i + 1);
     n.kind = "stock";
-    n.label ||= "Stock " + (i + 1);
+    n.label ||= "Node " + (i + 1);
     n.min = Number.isFinite(Number(n.min)) ? Number(n.min) : 0;
     n.max = Number.isFinite(Number(n.max)) ? Number(n.max) : 100;
     if (n.max === n.min) n.max = n.min + 100;
@@ -91,6 +96,7 @@ export function sanitizeDoc(doc) {
   });
   doc.links = doc.links.filter(l => doc.nodes.some(n => n.id === l.source) && doc.nodes.some(n => n.id === l.target));
   doc.links.forEach((l, i) => Object.assign(l, cleanLink({ ...l, id: l.id || "l" + (i + 1) })));
+  doc.loops = Array.isArray(doc.loops) ? doc.loops.map((loop, i) => cleanLoop({ ...loop, id: loop.id || "loop" + (i + 1) })) : [];
 }
 
 function cleanLink(l) {
@@ -111,6 +117,16 @@ function cleanLink(l) {
     trigger: triggerValues.has(l.trigger) ? l.trigger : "any",
     gate: normalizeGate(l.gate, gateValues),
     gateValue: normalizeGateValue(l)
+  };
+}
+
+function cleanLoop(loop) {
+  return {
+    id: String(loop.id || "loop"),
+    type: loop.type === "B" ? "B" : "R",
+    title: String(loop.title || (loop.type === "B" ? "Balancing loop" : "Reinforcing loop")).slice(0, 80),
+    x: Number.isFinite(Number(loop.x)) ? Number(loop.x) : 360,
+    y: Number.isFinite(Number(loop.y)) ? Number(loop.y) : 220
   };
 }
 

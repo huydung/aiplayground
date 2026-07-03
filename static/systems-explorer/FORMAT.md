@@ -1,16 +1,55 @@
 # Systems Explorer JSON Format
 
-Systems Explorer uses JSON for three related things:
+Systems Explorer stores and exchanges JSON for:
 
-1. Single diagram documents
-2. Editable example files in `examples/`
-3. Exported multi-diagram libraries
+1. Complete local libraries
+2. Diagram records inside a library
+3. Tabs inside a diagram
+4. Single tab documents
+5. Example files
 
 All formats are local-only and static-app friendly. No server database is involved.
 
-## Single Diagram
+## Library Export
 
-A diagram document is the core model shape. It can be imported directly, and it is also nested inside examples and library exports.
+The exported file contains every saved local diagram and every tab in each diagram.
+
+```json
+{
+  "type": "hdi-systems-explorer-library",
+  "version": 1,
+  "exportedAt": "2026-07-03T00:00:00.000Z",
+  "activeId": "diagram-1",
+  "diagrams": [
+    {
+      "id": "diagram-1",
+      "name": "Fixes That Fail",
+      "activeTabId": "tab-base",
+      "createdAt": "2026-07-03T00:00:00.000Z",
+      "updatedAt": "2026-07-03T00:00:00.000Z",
+      "tabs": [
+        {
+          "id": "tab-base",
+          "name": "Base",
+          "createdAt": "2026-07-03T00:00:00.000Z",
+          "updatedAt": "2026-07-03T00:00:00.000Z",
+          "doc": {
+            "version": 5,
+            "nextId": 20,
+            "nodes": [],
+            "links": [],
+            "loops": []
+          }
+        }
+      ]
+    }
+  ]
+}
+```
+
+## Document
+
+A document is the editable content of one tab.
 
 ```json
 {
@@ -21,17 +60,17 @@ A diagram document is the core model shape. It can be imported directly, and it 
       "id": "gap",
       "label": "Gap to Milestone",
       "kind": "stock",
-      "min": -50,
+      "min": -20,
       "max": 100,
-      "value": 80,
+      "value": 0,
       "x": 210,
       "y": 250,
-      "color": "#bd0129",
+      "color": "#BD0129",
       "minStrict": true,
       "maxStrict": true,
       "flow": {
         "in": null,
-        "out": { "strength": 2, "delay": 2 }
+        "out": { "strength": 5, "delay": 2 }
       }
     }
   ],
@@ -50,6 +89,15 @@ A diagram document is the core model shape. It can be imported directly, and it 
       "gate": "always",
       "gateValue": 0
     }
+  ],
+  "loops": [
+    {
+      "id": "loop1",
+      "type": "B",
+      "title": "Quick fix closes the gap",
+      "x": 350,
+      "y": 180
+    }
   ]
 }
 ```
@@ -58,13 +106,13 @@ A diagram document is the core model shape. It can be imported directly, and it 
 
 - `id`: Stable unique string. Links refer to this.
 - `label`: Visible node name.
-- `kind`: Always `"stock"` in the current app.
+- `kind`: Always `"stock"` in the current data model.
 - `min`, `max`: Boundary values.
-- `value`: Starting value.
+- `value`: Starting value for reset and simulation start.
 - `x`, `y`: Canvas position.
-- `color`: Hex color used for node border, title, chart line, and fill.
-- `minStrict`, `maxStrict`: When true, values clamp at that side.
-- `flow.in`, `flow.out`: Optional natural flow. Use `null` when absent.
+- `color`: Hex color used for the node, chart line, and fill.
+- `minStrict`, `maxStrict`: When true, link effects clamp at that side. When false, values may pass the side and the node pulses.
+- `flow.in`, `flow.out`: Optional natural flow. Natural flow changes only this node, clamps within `[min, max]`, and does not fire links.
 
 ## Link Fields
 
@@ -72,48 +120,37 @@ A diagram document is the core model shape. It can be imported directly, and it 
 - `source`, `target`: Node IDs.
 - `polarity`: `1` for same `(s)`, `-1` for opposite `(o)`.
 - `mode`: `"fixed"`, `"prop"`, or `"delta"`.
-- `amount`: Numeric amount. For `"delta"`, this is percent of source delta.
-- `strength`, `frac`: Compatibility fields retained by cleanup/import.
+- `amount`: Numeric payload amount. For `"delta"`, this is percent of source delta. For `"prop"`, this is percent of source value.
+- `strength`, `frac`: Derived compatibility fields used by cleanup/import.
 - `delay`: Delivery delay in simulation time.
 - `trigger`: `"any"`, `"increase"`, or `"decrease"`.
 - `gate`: `"always"`, `"above"`, or `"below"`.
 - `gateValue`: Threshold used by `above`/`below`.
 
+## Loop Label Fields
+
+- `id`: Stable unique string.
+- `type`: `"R"` for reinforcing or `"B"` for balancing.
+- `title`: Tooltip and editor title for the loop.
+- `x`, `y`: Canvas position.
+
 ## Example File
 
-Each file in `examples/` wraps a single diagram with metadata:
+Each file in `examples/` wraps one document with metadata:
 
 ```json
 {
   "key": "fixes",
   "title": "Fixes That Fail",
-  "desc": "Overtime closes a milestone gap only while the gap is positive.",
-  "doc": { "version": 5, "nextId": 20, "nodes": [], "links": [] }
+  "desc": "Overtime closes the gap fast, then delayed burnout reopens the same problem.",
+  "doc": {
+    "version": 5,
+    "nextId": 20,
+    "nodes": [],
+    "links": [],
+    "loops": []
+  }
 }
 ```
 
 Add the filename to `examples/manifest.json` for it to appear in the Examples modal.
-
-## Exported Library
-
-The Diagrams modal exports every saved local diagram as:
-
-```json
-{
-  "type": "hdi-systems-explorer-library",
-  "version": 1,
-  "exportedAt": "2026-06-30T00:00:00.000Z",
-  "activeId": "diagram-id",
-  "diagrams": [
-    {
-      "id": "diagram-id",
-      "name": "My Diagram",
-      "doc": { "version": 5, "nextId": 20, "nodes": [], "links": [] },
-      "createdAt": "2026-06-30T00:00:00.000Z",
-      "updatedAt": "2026-06-30T00:00:00.000Z"
-    }
-  ]
-}
-```
-
-The app can import either this library format or a single diagram document.

@@ -6,18 +6,19 @@ import { svgEl } from "./diagram.js";
 export function renderEditor(ctx) {
   const { els, state } = ctx;
   if (!state.selected) {
-    els.editorSubhead.textContent = "Select a stock or link";
-    els.editorBody.innerHTML = `<div class="empty-state"><strong>No selection</strong><span>Choose a stock or rule link on the canvas.</span><div class="pill-row"><span class="pill">Stocks keep memory</span><span class="pill">Links have rules</span><span class="pill">Packages carry delay</span></div></div>`;
+    els.editorSubhead.textContent = "Select a node, link, or loop label";
+    els.editorBody.innerHTML = `<div class="empty-state"><strong>No selection</strong><span>Choose a node, rule link, or R/B loop label on the canvas.</span><div class="pill-row"><span class="pill">Nodes keep memory</span><span class="pill">Links have rules</span><span class="pill">Packages carry delay</span></div></div>`;
     return;
   }
   if (state.selected.type === "node") renderNodeEditor(ctx, nodeById(ctx.doc, state.selected.id));
   if (state.selected.type === "link") renderLinkEditor(ctx, linkById(ctx.doc, state.selected.id));
+  if (state.selected.type === "loop") renderLoopEditor(ctx, ctx.doc.loops.find(loop => loop.id === state.selected.id));
 }
 
 function renderNodeEditor(ctx, n) {
   if (!n) return;
   const { els, runtime, saveDoc, renderAll } = ctx;
-  els.editorSubhead.textContent = "stock";
+  els.editorSubhead.textContent = "node";
   els.editorBody.innerHTML = `
     <div class="editor-sections">
       <div class="editor-section-title">Identity</div>
@@ -56,10 +57,10 @@ function renderNodeEditor(ctx, n) {
         <input id="flowOutDelay" type="number" min="0" step="0.5" value="${n.flow && n.flow.out ? n.flow.out.delay : 1}">
       </div>
     </div>
-    <div class="row-actions"><button id="deleteNode" class="btn-danger" type="button">Delete stock</button></div>
+    <div class="row-actions"><button id="deleteNode" class="btn-danger" type="button">Delete node</button></div>
   `;
   const update = (redraw = false) => {
-    n.label = document.getElementById("nodeLabel").value || "Stock";
+    n.label = document.getElementById("nodeLabel").value || "Node";
     n.min = readNumber("nodeMin", n.min);
     n.max = readNumber("nodeMax", n.max);
     if (n.max <= n.min) n.max = n.min + 1;
@@ -149,6 +150,42 @@ function renderLinkEditor(ctx, l) {
     bindDraftInput(id, () => update(false), () => update(true));
   });
   document.getElementById("deleteLink").addEventListener("click", () => ctx.deleteLink(l.id));
+}
+
+function renderLoopEditor(ctx, loop) {
+  if (!loop) return;
+  const { els, saveDoc, renderAll } = ctx;
+  els.editorSubhead.textContent = "loop label";
+  els.editorBody.innerHTML = `
+    <div class="editor-sections">
+      <div class="editor-section-title">Loop label</div>
+      <div class="field-grid">
+        <label>Type
+          <select id="loopType">
+            <option value="R">R · Reinforcing</option>
+            <option value="B">B · Balancing</option>
+          </select>
+        </label>
+        <label class="field-full">Title <input id="loopTitle" value="${escapeHtml(loop.title)}" maxlength="80"></label>
+        <label>X <input id="loopX" type="number" value="${Math.round(loop.x)}" step="1"></label>
+        <label>Y <input id="loopY" type="number" value="${Math.round(loop.y)}" step="1"></label>
+      </div>
+      <div class="pill-row"><span class="pill">${loop.type === "B" ? "Balancing loop" : "Reinforcing loop"}</span><span class="pill">Tooltip: ${escapeHtml(loop.title)}</span></div>
+    </div>
+    <div class="row-actions"><button id="deleteLoop" class="btn-danger" type="button">Delete loop label</button></div>
+  `;
+  document.getElementById("loopType").value = loop.type;
+  const update = (redraw = false) => {
+    loop.type = document.getElementById("loopType").value === "B" ? "B" : "R";
+    loop.title = (document.getElementById("loopTitle").value || (loop.type === "B" ? "Balancing loop" : "Reinforcing loop")).slice(0, 80);
+    loop.x = readNumber("loopX", loop.x);
+    loop.y = readNumber("loopY", loop.y);
+    saveDoc();
+    if (redraw) renderAll();
+  };
+  document.getElementById("loopType").addEventListener("change", () => update(true));
+  ["loopTitle", "loopX", "loopY"].forEach(id => bindDraftInput(id, () => update(false), () => update(true)));
+  document.getElementById("deleteLoop").addEventListener("click", () => ctx.deleteLoop(loop.id));
 }
 
 function payloadAmount(l) {
@@ -247,7 +284,7 @@ function layoutLegend(nodes, chartWidth, chartHeight) {
       hiddenCount += 1;
       return;
     }
-    const label = trimLegendLabel(n.label || "Stock");
+    const label = trimLegendLabel(n.label || "Node");
     const itemWidth = Math.min(160, 30 + label.length * 6.3);
     if (rowWidth > 0 && rowWidth + itemWidth + 14 > maxWidth) {
       if (rows.length >= maxRows) {

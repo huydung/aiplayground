@@ -13,17 +13,29 @@
       <div class="header-actions primary-actions">
         <button id="addStockBtn" type="button">+ Node</button>
         <button id="addLinkBtn" type="button">+ Link</button>
+        <button id="addLoopBtn" type="button">+ Loop Label</button>
       </div>
-      <h1 class="app-title">HDI Systems Explorer</h1>
+      <div class="brand-title">
+        <img src="../assets/hdi-logo-transparent.png" alt="HDI">
+        <h1 class="app-title">HDI Systems Explorer</h1>
+      </div>
       <div class="header-actions utility-actions">
         <button id="diagramsBtn" class="btn-quiet" type="button">Diagrams</button>
         <button id="examplesBtn" class="btn-quiet" type="button">Examples</button>
         <button id="newBtn" class="btn-quiet" type="button">New</button>
         <button id="importBtn" class="btn-quiet" type="button">Import</button>
         <button id="exportBtn" class="btn-quiet" type="button">Export</button>
-        <button id="themeToggle" class="theme-toggle" type="button" aria-label="Switch to dark mode">Dark</button>
       </div>
     </header>
+
+    <nav class="tabbar" aria-label="Diagram tabs">
+      <div class="tab-list" id="tabList"></div>
+      <div class="tab-actions">
+        <button id="addTabBtn" type="button">+ Tab</button>
+        <button id="renameTabBtn" type="button">Rename</button>
+        <button id="deleteTabBtn" class="btn-danger" type="button">Delete</button>
+      </div>
+    </nav>
 
     <main class="workspace" id="workspace">
       <svg id="diagram" aria-label="Systems diagram canvas">
@@ -93,7 +105,7 @@
         <div class="panel-head">
           <div>
             <h2>Property Editor</h2>
-            <span id="editorSubhead">Select a stock or link</span>
+            <span id="editorSubhead">Select a node, link, or loop label</span>
           </div>
         </div>
         <div class="panel-body" id="editorBody"></div>
