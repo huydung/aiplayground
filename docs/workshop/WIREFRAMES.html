@@ -383,7 +383,7 @@
     <div class="present">
       <div class="tiny" style="color:#888; text-align:center; border:1px dashed #444; border-radius:4px; padding:4px 8px">
         DEFAULT STATE = the white 16:9 stage only, letterboxed on black — zero controls or instructions <span class="co">7</span><br>
-        everything else on this screen is an <b>overlay</b>, drawn here in its “revealed” state (mouse move / hotkey; auto-hides after ~3 s)
+        everything else on this screen is an <b>overlay</b>, drawn here in its “revealed” state (hotkey or pointer at top/bottom edge; auto-hides after ~3 s)
       </div>
       <div class="pchrome" style="outline:1px dashed #555; outline-offset:3px; border-radius:4px">
         <span class="timer">⏱ 12:41 <span class="co">1</span></span>
@@ -413,7 +413,7 @@
     <li><span class="co">4</span> Interactive template rendering live results pushed via onResults every poll tick (§4.4).</li>
     <li><span class="co">5</span> Notes drawer: slide speakerNotes + the item’s keyIdeas. On the presenting machine only — never printed (FR-6.4).</li>
     <li><span class="co">6</span> Keyboard map (FR-6.1) — itself an overlay, shown briefly on entry then hidden.</li>
-    <li><span class="co">7</span> Default is chrome-free (FR-6.1b): the audience only ever sees the slide, letterboxed 16:9 on black whatever the window/projector ratio. Overlays reveal on mouse move or their hotkey and auto-hide after ~3 s; any overlay (e.g. the timer) can be pinned for the session.</li>
+    <li><span class="co">7</span> Default is chrome-free (FR-6.1b): the audience only ever sees the slide, letterboxed 16:9 on black whatever the window/projector ratio. Overlays reveal only via their hotkey or by moving the pointer into the top/bottom edge band — <b>general mouse movement over the slide reveals nothing</b>, so pointing at the screen never flashes UI. They auto-hide ~3 s after the pointer leaves the edge; any overlay (e.g. the timer) can be pinned for the session.</li>
   </ul>
 </section>
 

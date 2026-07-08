@@ -55,7 +55,7 @@ Phased plan for AI-agent execution. Each phase is independently shippable and te
 | D2.4 | Slide CRUD + attachment flow | `src/editor.js` | Left rail = plan items with slide thumbnails grouped under each; create-slide requires picking an item **or creating one in the same dialog** (FR-5.1); reorder slides within an item; delete item → prompt delete/re-attach slides (FR-5.3). |
 | D2.5 | Field-form editor + preview | `src/editor.js` | Form generated from field schema (text/markdown/number/select/image/list editors), live preview via renderer, speaker-notes field. |
 | D2.6 | Template manager | `src/templates.js` | List w/ builtin badges, duplicate, create/edit: field-schema builder + HTML/CSS/JS tabs (CodeMirror 6 lazy from esm.sh, textarea fallback) + live preview with sample data; editing re-renders dependent slides (FR-4.3); builtin delete = hide + restorable. |
-| D2.7 | Deck player, present mode | `present.html`, `src/player.js` | Deck = flatten(items→slides); slide letterboxed to the largest 16:9 fit, **all chrome hidden by default** — overlays on mouse move/hotkey, auto-hide ~3 s, pinnable (FR-6.1/6.1b); keyboard nav, deterministic slide+step state, per-item countdown timer w/ overrun red, schedule bar, notes drawer, overview grid (Esc). |
+| D2.7 | Deck player, present mode | `present.html`, `src/player.js` | Deck = flatten(items→slides); slide letterboxed to the largest 16:9 fit, **all chrome hidden by default** — overlays revealed only by hotkey or pointer in the top/bottom edge band (NOT general mouse move), auto-hide ~3 s, pinnable (FR-6.1/6.1b); keyboard nav, deterministic slide+step state, per-item countdown timer w/ overrun red, schedule bar, notes drawer, overview grid (Esc). |
 | D2.8 | Read/print mode | `player.js`, `styles.css` | `?mode=read`: linear, section/item headings, all steps expanded, print CSS (page per slide, headers/footers), `R` toggles modes. |
 
 **Acceptance criteria**
@@ -67,7 +67,7 @@ Phased plan for AI-agent execution. Each phase is independently shippable and te
 - T2.6 Read mode: all reveals expanded, headings between item groups; Chrome print preview → one slide per page, no clipped content; save as PDF and open it.
 - T2.7 Duplicate a builtin template, change its CSS, save → only slides using the copy change; edit a template's HTML → all its slides re-render.
 - T2.8 Agenda slide reflects live plan sections + subtotals; changes to the plan appear on next render.
-- T2.9 Present mode default is chrome-free: open fresh → only the slide, letterboxed 16:9 (black bars), in windows of several aspect ratios; mouse move or `T`/`N` reveals overlays which auto-hide ~3 s after idle; a pinned timer stays.
+- T2.9 Present mode default is chrome-free: open fresh → only the slide, letterboxed 16:9 (black bars), in windows of several aspect ratios; moving the pointer across the middle of the slide reveals nothing; `T`/`N` or moving into the top/bottom edge reveals overlays which auto-hide ~3 s after the pointer leaves the edge; a pinned timer stays.
 
 **Manual test script:** build a real mini-workshop (2 sections, 5 items, 8 slides across ≥ 6 templates), run it start-to-finish in present mode, then print it.
 
