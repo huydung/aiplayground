@@ -95,9 +95,10 @@ The load-bearing rules:
 
 ### 3.6 Present mode
 
-- FR-6.1 `present.html#/<workshopId>?mode=present`: full-bleed 16:9 slide stage, keyboard nav (→/space = next step or slide, ← = back, `Esc` = overview grid, `R` = toggle read mode, `N` = notes, `T` = timer).
+- FR-6.1 `present.html#/<workshopId>?mode=present`: the slide fills the largest 16:9 rectangle that fits the window, **letterboxed on black** (bars top/bottom or sides as the window ratio dictates). **No controls, chrome, or instructions are visible by default — the audience sees only the slide.** Keyboard nav (→/space = next step or slide, ← = back, `Esc` = overview grid, `R` = toggle read mode, `N` = notes, `T` = timer).
+- FR-6.1b All presenter chrome (timer, schedule bar, progress, notes drawer, join-code badge, key hints) renders as overlays on top of the letterbox: hidden by default, revealed by mouse movement or the relevant hotkey, auto-hidden after ~3 s idle. Pinning an element (e.g. keep the timer up) is a per-element toggle that persists for the session.
 - FR-6.2 **Step reveals**: declarative `data-step="n"` in template HTML; the player reveals steps ≤ current step. Deterministic — jumping to any slide+step state works (backward nav, resume).
-- FR-6.3 **Timers** (presenter chrome, not slide content): countdown per plan item from `durationMin`, start/pause/reset, overrun turns red; a schedule bar shows actual vs planned position in the workshop.
+- FR-6.3 **Timers** (overlay chrome per FR-6.1b, not slide content): countdown per plan item from `durationMin`, start/pause/reset, overrun turns red; a schedule bar shows actual vs planned position in the workshop.
 - FR-6.4 **Speaker notes** drawer (slide `speakerNotes` + the item's `keyIdeas`), visible only in present chrome — never printed or projected via a second-screen; v1 is a toggle drawer on the presenting machine.
 - FR-6.5 Live session controls: start/end session, join code + QR badge, activate/deactivate the current slide's interaction (§3.8).
 
@@ -296,9 +297,16 @@ static/workshop/
 
 Vanilla ES modules, no framework (systems-explorer precedent; poker's React/Babel stack is explicitly *not* the model). CodeMirror 6 and `marked` load lazily from esm.sh with plain-`<textarea>` / plain-text fallbacks.
 
-### 4.7 Realtime = HTTP polling
+### 4.7 Realtime = HTTP polling (deliberate — not a placeholder)
 
-Participants and the player poll every **2 s** (`GET /sessions/:code`, `GET …/results/:id`). At workshop scale (≤ 100 phones ≈ 50 req/s) this is trivial for Express + better-sqlite3 (synchronous µs reads, WAL) on the single Fly instance. SSE/websockets add connection lifecycle + Fly idle-timeout handling for imperceptible gain. Ceiling documented in §6.
+Participants and the player poll every **2 s** (`GET /sessions/:code`, `GET …/results/:id`). Why polling beats WebSockets/SSE *for this workload*:
+
+- **Load is trivial**: ≤ 100 phones ≈ 50 req/s against synchronous µs-level better-sqlite3 reads (WAL) on the single Fly instance. Sockets save resources that aren't scarce here.
+- **Phones are hostile to sockets**: participants lock screens, switch apps, and ride flaky venue/corporate Wi-Fi (captive portals and proxies that mishandle WS upgrades). A socket needs heartbeats + reconnect/backoff + missed-state resync — which in practice means re-implementing polling as the fallback anyway. Plain HTTP polling *is* the self-healing path, with zero extra code.
+- **Latency doesn't matter at 2 s**: results render on the projector while votes trickle in over tens of seconds; the facilitator activating a question 0–2 s before phones show it is imperceptible in a room.
+- **Zero new moving parts**: no `ws`/socket.io dependency, no upgrade handling in Express, no Fly idle-timeout tuning.
+
+**Documented upgrade path** if sub-second updates are ever wanted: keep phones on polling (they benefit most from its robustness) and give the **player only** an SSE stream for results — one long-lived connection instead of one per phone, ~30 lines server-side, no client library. Revisit only if 2 s visibly lags a real workshop. Ceiling documented in §6.
 
 ## 5. Non-functional requirements
 

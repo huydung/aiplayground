@@ -378,10 +378,14 @@
 <!-- ============ 6 PRESENT MODE ============ -->
 <section class="screen" id="s6">
   <h2>6 · Present mode</h2>
-  <p class="sub">present.html#/w_x1?mode=present — dark chrome, full-bleed 16:9 stage. FR-6.x.</p>
+  <p class="sub">present.html#/w_x1?mode=present — slide letterboxed to the largest 16:9 fit, chrome hidden by default. FR-6.1/6.1b.</p>
   <div class="frame">
     <div class="present">
-      <div class="pchrome">
+      <div class="tiny" style="color:#888; text-align:center; border:1px dashed #444; border-radius:4px; padding:4px 8px">
+        DEFAULT STATE = the white 16:9 stage only, letterboxed on black — zero controls or instructions <span class="co">7</span><br>
+        everything else on this screen is an <b>overlay</b>, drawn here in its “revealed” state (mouse move / hotkey; auto-hides after ~3 s)
+      </div>
+      <div class="pchrome" style="outline:1px dashed #555; outline-offset:3px; border-radius:4px">
         <span class="timer">⏱ 12:41 <span class="co">1</span></span>
         <span class="timer over">item −1:20</span>
         <div class="schedbar"><div class="plan"></div><div class="actual"></div></div>
@@ -408,7 +412,8 @@
     <li><span class="co">3</span> Live session badge: join code + QR flyout. Click to activate/deactivate the current slide’s interaction (FR-6.5).</li>
     <li><span class="co">4</span> Interactive template rendering live results pushed via onResults every poll tick (§4.4).</li>
     <li><span class="co">5</span> Notes drawer: slide speakerNotes + the item’s keyIdeas. On the presenting machine only — never printed (FR-6.4).</li>
-    <li><span class="co">6</span> Keyboard map (FR-6.1). Chrome auto-hides when idle; mouse move brings it back.</li>
+    <li><span class="co">6</span> Keyboard map (FR-6.1) — itself an overlay, shown briefly on entry then hidden.</li>
+    <li><span class="co">7</span> Default is chrome-free (FR-6.1b): the audience only ever sees the slide, letterboxed 16:9 on black whatever the window/projector ratio. Overlays reveal on mouse move or their hotkey and auto-hide after ~3 s; any overlay (e.g. the timer) can be pinned for the session.</li>
   </ul>
 </section>
 
