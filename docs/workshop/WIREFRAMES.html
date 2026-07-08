@@ -1,0 +1,502 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>HDI Workshop Studio — Wireframes</title>
+<style>
+  :root {
+    --red: #BD0129; --deep: #8E011F;
+    --ink: #333; --mid: #888; --line: #bbb; --fill: #e8e8e8; --fill2: #f4f4f4;
+    --green: #4a7c59;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: -apple-system, "Segoe UI", Helvetica, Arial, sans-serif; color: var(--ink); background: #fafafa; padding-bottom: 80px; }
+
+  header.page { padding: 24px 32px 12px; border-bottom: 1px solid var(--line); background: #fff; }
+  header.page h1 { font-size: 22px; } header.page h1 span { color: var(--red); }
+  header.page p { color: var(--mid); font-size: 13px; margin-top: 4px; }
+
+  nav { position: sticky; top: 0; z-index: 50; background: #fff; border-bottom: 1px solid var(--line); padding: 8px 32px; display: flex; gap: 6px; flex-wrap: wrap; }
+  nav button { border: 1px solid var(--line); background: #fff; padding: 6px 12px; font-size: 13px; cursor: pointer; border-radius: 4px; color: var(--ink); }
+  nav button.active { background: var(--red); border-color: var(--red); color: #fff; }
+
+  .screen { display: none; max-width: 1150px; margin: 24px auto; padding: 0 24px; }
+  .screen.active { display: block; }
+  .screen > h2 { font-size: 18px; margin-bottom: 2px; }
+  .screen > p.sub { color: var(--mid); font-size: 13px; margin-bottom: 14px; }
+
+  /* browser / phone frames */
+  .frame { background: #fff; border: 2px solid var(--ink); border-radius: 8px; overflow: hidden; box-shadow: 3px 3px 0 rgba(0,0,0,.12); }
+  .chrome { background: var(--fill); border-bottom: 1px solid var(--line); padding: 6px 10px; display: flex; gap: 6px; align-items: center; font-size: 11px; color: var(--mid); }
+  .chrome .dots { display: flex; gap: 4px; } .chrome .dots i { width: 9px; height: 9px; border-radius: 50%; background: #ccc; display: block; }
+  .chrome .url { background: #fff; border: 1px solid var(--line); border-radius: 10px; padding: 2px 10px; flex: 1; max-width: 420px; }
+  .phone { width: 300px; border: 3px solid var(--ink); border-radius: 24px; background: #fff; overflow: hidden; box-shadow: 3px 3px 0 rgba(0,0,0,.12); }
+  .phone .notch { height: 18px; background: var(--fill); border-bottom: 1px solid var(--line); }
+
+  /* wireframe atoms */
+  .bar { background: var(--fill); border-radius: 3px; height: 12px; }
+  .bar.w30{width:30%} .bar.w45{width:45%} .bar.w60{width:60%} .bar.w80{width:80%} .bar.hd{height:18px; background:#d5d5d5}
+  .box { border: 1.5px dashed var(--line); border-radius: 4px; background: var(--fill2); }
+  .btn { display: inline-block; border: 1.5px solid var(--ink); border-radius: 4px; padding: 5px 12px; font-size: 12px; background: #fff; white-space: nowrap; }
+  .btn.primary { background: var(--red); border-color: var(--red); color: #fff; }
+  .btn.small { padding: 2px 8px; font-size: 11px; }
+  .chip { display: inline-block; border-radius: 10px; padding: 1px 8px; font-size: 10.5px; border: 1px solid var(--line); background: #fff; color: var(--mid); }
+  .chip.seg { background: #eee; } .chip.act { background: #e3efe7; border-color: var(--green); color: var(--green); }
+  .chip.brk { background: #fdf3e3; }
+  .co { display: inline-flex; align-items: center; justify-content: center; width: 17px; height: 17px; border-radius: 50%; background: var(--red); color: #fff; font-size: 11px; font-weight: 700; vertical-align: middle; margin-left: 5px; flex: none; }
+  .legend { margin-top: 12px; font-size: 13px; background: #fff; border: 1px solid var(--line); border-radius: 6px; padding: 12px 16px; }
+  .legend li { margin: 5px 0 5px 4px; list-style: none; display: flex; gap: 8px; }
+  .legend .co { margin: 1px 0 0; }
+  .muted { color: var(--mid); } .tiny { font-size: 11px; } .sm { font-size: 12px; }
+  .row { display: flex; gap: 10px; align-items: center; } .grow { flex: 1; }
+  .stack { display: flex; flex-direction: column; gap: 8px; }
+  h4.wf { font-size: 12px; text-transform: uppercase; letter-spacing: .06em; color: var(--mid); margin-bottom: 6px; }
+
+  /* app top bar inside frames */
+  .appbar { display: flex; align-items: center; gap: 12px; padding: 10px 16px; border-bottom: 1px solid var(--line); }
+  .logo { font-weight: 800; font-size: 13px; color: var(--red); border: 1.5px solid var(--red); border-radius: 4px; padding: 2px 7px; }
+  .appbar nav2 { display: flex; gap: 14px; font-size: 12.5px; color: var(--mid); }
+  .appbar nav2 b { color: var(--ink); border-bottom: 2px solid var(--red); padding-bottom: 2px; }
+
+  /* ------ dashboard cards ------ */
+  .cards { display: grid; grid-template-columns: repeat(3, 1fr); gap: 14px; padding: 18px; }
+  .card { border: 1.5px solid var(--line); border-radius: 6px; padding: 14px; background: #fff; }
+  .card h5 { font-size: 14px; margin-bottom: 6px; }
+  .card .meta { font-size: 11.5px; color: var(--mid); line-height: 1.7; }
+  .card.new { border-style: dashed; display: flex; align-items: center; justify-content: center; color: var(--mid); min-height: 120px; font-size: 13px; }
+
+  /* ------ planner ------ */
+  .define { border: 1.5px solid var(--line); border-radius: 6px; margin: 14px 16px 0; }
+  .define .hd2 { background: var(--deep); color: #fff; font-size: 11px; font-weight: 700; letter-spacing: .08em; padding: 4px 10px; border-radius: 4px 4px 0 0; }
+  .define table { width: 100%; border-collapse: collapse; font-size: 12px; }
+  .define td { border-top: 1px solid #eee; padding: 6px 10px; vertical-align: top; }
+  .define td:first-child { width: 190px; color: var(--mid); }
+  .sheet { margin: 12px 16px; border: 1.5px solid var(--line); border-radius: 6px; overflow: hidden; }
+  .sheet .thead { display: grid; grid-template-columns: 26px 1fr 90px 150px 60px; background: #3f6f4f; color: #fff; font-size: 11px; font-weight: 700; padding: 5px 8px; gap: 8px; }
+  .prow { display: grid; grid-template-columns: 26px 1fr 90px 150px 60px; gap: 8px; padding: 6px 8px; border-top: 1px solid #eee; font-size: 12px; align-items: center; }
+  .prow.section { background: #e9f1ea; font-weight: 700; }
+  .prow .drag { color: var(--line); cursor: grab; font-size: 14px; }
+  .prow .time { text-align: right; font-variant-numeric: tabular-nums; }
+  .totals { display: flex; justify-content: space-between; padding: 8px 12px; font-size: 12.5px; background: var(--fill2); border-top: 1.5px solid var(--line); }
+  .totals b.over { color: var(--red); }
+
+  .split { display: flex; gap: 0; }
+  .split .main { flex: 1; min-width: 0; }
+  .side { width: 250px; border-left: 1.5px solid var(--line); background: var(--fill2); padding: 12px; flex: none; }
+  .bank-item { background: #fff; border: 1px solid var(--line); border-radius: 5px; padding: 8px; margin-bottom: 8px; font-size: 11.5px; }
+  .bank-item .row { justify-content: space-between; }
+
+  /* ------ slide editor ------ */
+  .ed { display: grid; grid-template-columns: 215px 1fr 250px; min-height: 430px; }
+  .ed .rail { border-right: 1.5px solid var(--line); background: var(--fill2); padding: 10px; overflow: auto; }
+  .rail .pi { font-size: 11px; font-weight: 700; margin: 10px 0 4px; display: flex; justify-content: space-between; align-items: center; }
+  .thumb { background: #fff; border: 1.5px solid var(--line); border-radius: 3px; height: 44px; margin: 4px 0 4px 10px; display: flex; align-items: center; justify-content: center; font-size: 9.5px; color: var(--mid); position: relative; }
+  .thumb.sel { border-color: var(--red); border-width: 2px; }
+  .ed .stage { padding: 16px; display: flex; flex-direction: column; gap: 10px; align-items: center; justify-content: center; }
+  .slide169 { width: 100%; max-width: 460px; aspect-ratio: 16/9; border: 1.5px solid var(--ink); border-radius: 4px; background: #fff; padding: 20px; display: flex; flex-direction: column; gap: 10px; }
+  .ed .props { border-left: 1.5px solid var(--line); padding: 12px; background: var(--fill2); font-size: 12px; }
+  .field { margin-bottom: 10px; } .field label { display: block; font-size: 10.5px; color: var(--mid); margin-bottom: 3px; text-transform: uppercase; letter-spacing: .04em; }
+  .input { border: 1px solid var(--line); border-radius: 3px; background: #fff; padding: 5px 8px; font-size: 12px; min-height: 26px; }
+  .input.area { min-height: 54px; }
+
+  /* ------ modal ------ */
+  .modal-wrap { background: rgba(0,0,0,.35); padding: 34px; display: flex; justify-content: center; }
+  .modal { background: #fff; border: 2px solid var(--ink); border-radius: 8px; width: 520px; padding: 18px; }
+  .modal h5 { font-size: 14px; margin-bottom: 10px; }
+  .genrow { display: grid; grid-template-columns: 30px 1fr 130px; gap: 8px; align-items: center; margin: 6px 0; font-size: 12px; }
+
+  /* ------ present ------ */
+  .present { background: #1b1b1b; padding: 18px; display: flex; flex-direction: column; gap: 10px; }
+  .pstage { aspect-ratio: 16/9; background: #fff; border-radius: 4px; padding: 26px; position: relative; display: flex; flex-direction: column; gap: 12px; }
+  .pchrome { display: flex; gap: 10px; align-items: center; color: #ddd; font-size: 12px; }
+  .timer { background: #2c2c2c; border: 1px solid #555; border-radius: 4px; padding: 4px 10px; font-variant-numeric: tabular-nums; }
+  .timer.over { border-color: var(--red); color: #ff8ba0; }
+  .schedbar { flex: 1; height: 8px; background: #333; border-radius: 4px; position: relative; }
+  .schedbar .plan { position: absolute; left: 0; top: 0; bottom: 0; width: 58%; background: #555; border-radius: 4px; }
+  .schedbar .actual { position: absolute; left: 0; top: 0; bottom: 0; width: 64%; background: var(--red); border-radius: 4px; opacity: .85; }
+  .joincode { background: #fff; color: var(--ink); border-radius: 4px; padding: 3px 9px; font-weight: 800; letter-spacing: .1em; }
+  .pollbars { display: flex; flex-direction: column; gap: 8px; margin-top: 4px; }
+  .pollbar { display: grid; grid-template-columns: 90px 1fr 30px; gap: 8px; align-items: center; font-size: 12px; }
+  .pollbar .track { height: 16px; background: var(--fill); border-radius: 3px; overflow: hidden; }
+  .pollbar .fillb { height: 100%; background: var(--red); opacity: .85; }
+  .notesdrawer { background: #262626; border: 1px dashed #555; color: #bbb; border-radius: 4px; padding: 8px 12px; font-size: 11.5px; }
+
+  /* ------ read mode ------ */
+  .readpage { padding: 20px 40px; }
+  .readpage .sechd { border-left: 4px solid var(--red); padding: 2px 0 2px 10px; margin: 18px 0 8px; font-weight: 700; font-size: 13px; }
+  .readslide { border: 1.5px solid var(--line); border-radius: 4px; padding: 16px; margin: 10px 0; background: #fff; }
+  .pgbrk { border: none; border-top: 2px dashed var(--line); margin: 14px 0 4px; position: relative; }
+  .pgbrk::after { content: "page break"; position: absolute; right: 0; top: -9px; font-size: 9.5px; color: var(--mid); background: #fff; padding: 0 4px; }
+
+  .duo { display: flex; gap: 24px; flex-wrap: wrap; align-items: flex-start; }
+  footer.page { max-width: 1150px; margin: 30px auto 0; padding: 0 24px; color: var(--mid); font-size: 12px; }
+  @media (max-width: 760px) { .cards { grid-template-columns: 1fr; } .ed { grid-template-columns: 1fr; } .side { width: 100%; border-left: 0; border-top: 1.5px solid var(--line);} .split { flex-direction: column; } }
+</style>
+</head>
+<body>
+
+<header class="page">
+  <h1><span>HDI Workshop Studio</span> — Wireframes</h1>
+  <p>8 screens · companion to PRD.md (FR references) · grayscale = structure, red = primary action / brand accent</p>
+</header>
+
+<nav id="nav">
+  <button data-s="s1" class="active">1 Dashboard</button>
+  <button data-s="s2">2 Planner</button>
+  <button data-s="s3">3 Slide editor</button>
+  <button data-s="s4">4 AI generate</button>
+  <button data-s="s5">5 Template manager</button>
+  <button data-s="s6">6 Present mode</button>
+  <button data-s="s7">7 Read / print</button>
+  <button data-s="s8">8 Participant</button>
+</nav>
+
+<!-- ============ 1 DASHBOARD ============ -->
+<section class="screen active" id="s1">
+  <h2>1 · Dashboard / workshop list</h2>
+  <p class="sub">Entry screen after login. FR-1.2.</p>
+  <div class="frame">
+    <div class="chrome"><span class="dots"><i></i><i></i><i></i></span><span class="url">hdi.fly.dev/workshop/</span></div>
+    <div class="appbar">
+      <span class="logo">HDI</span> <b class="sm">Workshop Studio</b>
+      <nav2 class="grow"><b>Workshops</b> <span>Idea bank <span class="co">3</span></span> <span>Templates <span class="co">4</span></span></nav2>
+      <span class="chip">dave ▾</span>
+    </div>
+    <div class="cards">
+      <div class="card">
+        <h5>Effective Trainer Bootcamp <span class="co">1</span></h5>
+        <div class="meta">📅 2026-08-12 · 10:00<br>⏱ 118 / 120 min planned <span class="co">2</span><br>14 items · 22 slides</div>
+        <div class="row" style="margin-top:8px"><span class="btn small primary">Open</span><span class="btn small">Present</span><span class="btn small muted">⋯</span></div>
+      </div>
+      <div class="card">
+        <h5>Feedback Culture 101</h5>
+        <div class="meta">📅 2026-09-02 · 14:00<br>⏱ 95 / 90 min planned<br>11 items · 16 slides</div>
+        <div class="row" style="margin-top:8px"><span class="btn small primary">Open</span><span class="btn small">Present</span><span class="btn small muted">⋯</span></div>
+      </div>
+      <div class="card new">+ New workshop <span class="co">4</span></div>
+    </div>
+  </div>
+  <ul class="legend">
+    <li><span class="co">1</span> Workshop card: title, date, planned-vs-target duration, item/slide counts. “⋯” = duplicate / delete (delete snapshots first, FR-10.2).</li>
+    <li><span class="co">2</span> Planned vs target minutes — red when over target.</li>
+    <li><span class="co">3</span> Idea bank and Template manager are global (per-account), not per-workshop.</li>
+    <li><span class="co">4</span> New workshop opens the DEFINE block (screen 2, top).</li>
+  </ul>
+</section>
+
+<!-- ============ 2 PLANNER ============ -->
+<section class="screen" id="s2">
+  <h2>2 · Planner — DEFINE block + run-sheet + idea bank</h2>
+  <p class="sub">Mirrors the current Google Sheets workflow. FR-2.x, FR-3.x.</p>
+  <div class="frame">
+    <div class="chrome"><span class="dots"><i></i><i></i><i></i></span><span class="url">/workshop/#/w_x1/plan</span></div>
+    <div class="appbar"><span class="logo">HDI</span><nav2 class="grow"><b>Plan</b> <span>Slides</span> <span>Present ▸</span> <span>Read ▸</span></nav2><span class="tiny muted">saved ✓ <span class="co">8</span></span></div>
+    <div class="split">
+      <div class="main">
+        <div class="define">
+          <div class="hd2">DEFINE <span style="float:right">12/5/2025 10:00 AM</span></div>
+          <table>
+            <tr><td>Topic in one sentence <span class="co">1</span></td><td><i>Effective Trainer Bootcamp</i></td></tr>
+            <tr><td>Who is the audience?</td><td class="tiny">16 total — 4 HAN, 12 SAI · 7 HR, 9 Leads/Managers</td></tr>
+            <tr><td>Target duration</td><td><b>120 minutes</b></td></tr>
+          </table>
+        </div>
+        <div class="sheet">
+          <div class="thead"><span></span><span>Topic – Question / Key ideas</span><span style="text-align:right">Time</span><span>Type</span><span></span></div>
+          <div class="prow section"><span class="drag">⠿</span><span>1 · Introduction <span class="co">2</span></span><span class="time">23′</span><span></span><span></span></div>
+          <div class="prow"><span class="drag">⠿</span>
+            <span>Hook — the Sergey Brin interview question<br><span class="tiny muted">It’s about _teaching_ a concept, NOT purely a story</span></span>
+            <span class="time">3′</span><span><span class="chip seg">S: CTA/Hook</span> <span class="co">3</span></span><span class="tiny muted">▦2 <span class="co">4</span></span></div>
+          <div class="prow"><span class="drag">⠿</span>
+            <span>Initial practice — groups of 3, rotate present/feedback</span>
+            <span class="time">18′</span><span><span class="chip act">A: Pair Activity</span></span><span class="tiny muted">▦1</span></div>
+          <div class="prow"><span class="drag">⠿</span><span>Feedback debrief</span><span class="time">2′</span><span><span class="chip seg">S: Analyze Input</span></span><span class="tiny muted">—</span></div>
+          <div class="prow section"><span class="drag">⠿</span><span>2 · Why becoming a part-time trainer?</span><span class="time">12′</span><span></span><span></span></div>
+          <div class="prow"><span class="drag">⠿</span><span>Your rating (from survey)</span><span class="time">1′</span><span><span class="chip seg">S: Analyze Input</span></span><span class="tiny muted">▦1</span></div>
+          <div class="prow"><span class="drag">⠿</span><span class="muted">+ Add item · + Add section</span><span></span><span></span><span></span></div>
+          <div class="totals">
+            <span>Section subtotals live above <span class="co">5</span></span>
+            <span>Total <b>118′</b> / 120′ target · <b class="over">−2′ spare</b> · ends 12:00 <span class="co">6</span></span>
+          </div>
+        </div>
+      </div>
+      <div class="side">
+        <h4 class="wf">Idea bank <span class="co">7</span></h4>
+        <div class="input" style="margin-bottom:8px">🔎 search…</div>
+        <div class="bank-item"><div class="row"><b>1-2-4-All</b><span class="chip act tiny">A</span></div><div class="tiny muted">12–20′ · any size</div><span class="btn small">+ Add to plan</span></div>
+        <div class="bank-item"><div class="row"><b>Brainwriting 6-3-5</b><span class="chip act tiny">A</span></div><div class="tiny muted">30′ · 6 per table</div><span class="btn small">+ Add to plan</span></div>
+        <div class="bank-item"><div class="row"><b>ORID Debrief</b><span class="chip seg tiny">R</span></div><div class="tiny muted">15–20′</div><span class="btn small">+ Add to plan</span></div>
+      </div>
+    </div>
+  </div>
+  <ul class="legend">
+    <li><span class="co">1</span> DEFINE block (FR-1.1): topic sentence, audience profile, date/start time, target duration, language.</li>
+    <li><span class="co">2</span> Section rows group the items below them; subtotal computed live (FR-2.3). Dragging a section moves its whole block (FR-2.4).</li>
+    <li><span class="co">3</span> Type from the editable taxonomy (FR-2.5) — S: gray, A: green, structural amber; colors user-defined. Click chip = change type; “edit types…” at the bottom of the dropdown.</li>
+    <li><span class="co">4</span> Slide count attached to this item — click jumps to the slide editor filtered to it. “—” = no slides yet.</li>
+    <li><span class="co">5</span> Clicking an item opens the detail panel (goal/key ideas markdown, materials, sources) in place of the idea bank sidebar.</li>
+    <li><span class="co">6</span> Live math: total vs target + computed end time from start time (FR-2.3).</li>
+    <li><span class="co">7</span> Idea bank sidebar: search/filter, “Add to plan” inserts a pre-filled item at the cursor (FR-3.3). Full-page bank management via the top nav.</li>
+    <li><span class="co">8</span> Autosave state (debounced 800 ms, FR-10.2): “saving… / saved ✓ / offline — retrying”.</li>
+  </ul>
+</section>
+
+<!-- ============ 3 SLIDE EDITOR ============ -->
+<section class="screen" id="s3">
+  <h2>3 · Slide editor</h2>
+  <p class="sub">Attachment is always visible: slides live under their plan item. FR-5.x.</p>
+  <div class="frame">
+    <div class="chrome"><span class="dots"><i></i><i></i><i></i></span><span class="url">/workshop/#/w_x1/slides</span></div>
+    <div class="appbar"><span class="logo">HDI</span><nav2 class="grow"><span>Plan</span> <b>Slides</b> <span>Present ▸</span> <span>Read ▸</span></nav2><span class="tiny muted">saved ✓</span></div>
+    <div class="ed">
+      <div class="rail">
+        <h4 class="wf">Deck = plan order <span class="co">1</span></h4>
+        <div class="pi"><span>1 · Introduction</span></div>
+        <div class="pi"><span class="tiny">Hook — Sergey Brin…</span><span class="btn small">＋<span class="co">2</span></span></div>
+        <div class="thumb sel">Title</div>
+        <div class="thumb">Bullets</div>
+        <div class="pi"><span class="tiny">Initial practice</span><span class="btn small">＋</span></div>
+        <div class="thumb">Instructions ⏱</div>
+        <div class="pi"><span class="tiny">Feedback debrief <span class="muted">(no slides)</span></span><span class="btn small">＋</span></div>
+        <div class="pi"><span>2 · Why part-time trainer?</span></div>
+        <div class="pi"><span class="tiny">Your rating (survey)</span><span class="btn small">＋</span></div>
+        <div class="thumb">Poll ⚡</div>
+      </div>
+      <div class="stage">
+        <div class="slide169">
+          <div class="bar hd w60"></div>
+          <div class="bar w80"></div><div class="bar w60"></div><div class="bar w45"></div>
+          <div class="tiny muted" style="margin-top:auto">live preview (renderer.js) — steps: ▸ 2/4 <span class="co">3</span></div>
+        </div>
+        <div class="row">
+          <span class="btn small">◂ prev</span><span class="btn small">step ▸</span><span class="btn small">next ▸</span>
+          <span class="grow"></span>
+          <span class="btn small primary">✨ AI generate for this item <span class="co">4</span></span>
+        </div>
+      </div>
+      <div class="props">
+        <h4 class="wf">Slide properties</h4>
+        <div class="field"><label>Template</label><div class="input">Content bullets (reveal) ▾ <span class="co">5</span></div></div>
+        <div class="field"><label>Title (text)</label><div class="input">Why teach?</div></div>
+        <div class="field"><label>Bullets (list · markdown) <span class="co">6</span></label>
+          <div class="input">≡ Sharpen super-skills</div>
+          <div class="input">≡ Deepen expertise</div>
+          <div class="input tiny muted">+ add bullet</div>
+        </div>
+        <div class="field"><label>Speaker notes</label><div class="input area tiny muted">Mention the survey numbers first…</div></div>
+        <div class="row"><span class="btn small">✨ Edit via prompt</span><span class="btn small muted">Delete</span></div>
+      </div>
+    </div>
+  </div>
+  <ul class="legend">
+    <li><span class="co">1</span> Left rail is the plan: slides render grouped under their item — deck order is derived, never stored (FR-5.2). Items with no slides still show (activities often need none).</li>
+    <li><span class="co">2</span> “＋” adds a slide <em>to that item</em>. A global “new slide” asks: attach to which item / create new item — no orphans possible (FR-5.1).</li>
+    <li><span class="co">3</span> Preview is the real renderer with step controls; interactive templates preview with sample results.</li>
+    <li><span class="co">4</span> Opens the AI generation dialog (screen 4) scoped to this plan item.</li>
+    <li><span class="co">5</span> Switching template keeps matching field keys, warns about dropped ones.</li>
+    <li><span class="co">6</span> Form is generated from the template’s field schema (FR-5.4): text / markdown / number / select / image / list / interaction editors. No code on slides.</li>
+  </ul>
+</section>
+
+<!-- ============ 4 AI GENERATE ============ -->
+<section class="screen" id="s4">
+  <h2>4 · AI generation dialog</h2>
+  <p class="sub">Per plan item: describe → generate → review → accept. FR-9.1.</p>
+  <div class="frame">
+    <div class="modal-wrap">
+      <div class="modal">
+        <h5>✨ Generate slides — “Initial practice” (18′, A: Pair Activity)</h5>
+        <div class="field"><label>Slides <span class="co">1</span></label>
+          <div class="genrow"><b>#1</b><span class="input">Activity instructions ▾</span><span class="tiny muted">template</span></div>
+          <div class="genrow"><b>#2</b><span class="input">Debrief questions ▾</span><span class="tiny muted">template</span></div>
+          <div class="tiny muted">+ add slide row</div>
+        </div>
+        <div class="field"><label>Instruction <span class="co">2</span></label>
+          <div class="input area tiny">Groups of 3, rotating rounds: 1′ prep, 3′ present, 1′ written feedback. Emphasize psychological safety. Vietnamese.</div>
+        </div>
+        <div class="row"><span class="grow tiny muted">Context sent: DEFINE block + this item’s key ideas + field schemas <span class="co">3</span></span><span class="btn primary">Generate</span></div>
+        <hr style="margin:12px 0; border:none; border-top:1px solid #eee">
+        <h5 class="muted sm">Review <span class="co">4</span></h5>
+        <div class="row" style="align-items:stretch">
+          <div class="slide169" style="max-width:200px"><div class="bar hd w60"></div><div class="bar w80"></div><div class="bar w60"></div></div>
+          <div class="stack grow">
+            <span class="tiny">#1 Activity instructions — ✓ schema valid</span>
+            <span class="row"><span class="btn small primary">Accept</span><span class="btn small">Regenerate…</span><span class="btn small muted">Discard</span></span>
+            <span class="tiny muted">Daily AI: 12/100 · this month ≈ $0.84 <span class="co">5</span></span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+  <ul class="legend">
+    <li><span class="co">1</span> One row per requested slide: pick a template each (defaults suggested by the item’s type / bank entry).</li>
+    <li><span class="co">2</span> Free instruction; the workshop language flows in automatically from the DEFINE block.</li>
+    <li><span class="co">3</span> Server assembles: renderer contract (cached prefix) + DEFINE + plan item + schemas + instruction (§4.5). Output = field values, validated server-side.</li>
+    <li><span class="co">4</span> Per-slide accept / regenerate-with-refinement / discard. Accepted slides append to this item — attachment is automatic.</li>
+    <li><span class="co">5</span> Usage guardrails always visible (FR-9.4). No API key → this dialog shows “AI unavailable”, rest of app unaffected.</li>
+  </ul>
+</section>
+
+<!-- ============ 5 TEMPLATE MANAGER ============ -->
+<section class="screen" id="s5">
+  <h2>5 · Template manager</h2>
+  <p class="sub">Slide + interaction templates are data: add / edit / duplicate / remove. FR-4.x.</p>
+  <div class="frame">
+    <div class="chrome"><span class="dots"><i></i><i></i><i></i></span><span class="url">/workshop/#/templates/tpl_bullets</span></div>
+    <div class="appbar"><span class="logo">HDI</span><nav2 class="grow"><span>Slide templates</span> <span class="muted">| Interaction presets <span class="co">6</span></span></nav2><span class="btn small">✨ Generate template</span><span class="btn small primary">+ New</span></div>
+    <div class="ed" style="grid-template-columns: 215px 1fr 280px;">
+      <div class="rail">
+        <div class="bank-item"><b>Title</b> <span class="chip tiny">builtin</span></div>
+        <div class="bank-item" style="border-color: var(--red)"><b>Content bullets</b> <span class="chip tiny">builtin</span> <span class="co">1</span></div>
+        <div class="bank-item"><b>Myth vs Fact</b> <span class="chip act tiny">custom</span></div>
+        <div class="bank-item muted tiny">…15 more</div>
+      </div>
+      <div class="stage">
+        <div class="slide169"><div class="bar hd w45"></div><div class="bar w80"></div><div class="bar w60"></div><div class="tiny muted" style="margin-top:auto">preview with sample data <span class="co">2</span></div></div>
+        <div class="row tiny muted"><span>used by 9 slides across 2 workshops <span class="co">3</span></span></div>
+      </div>
+      <div class="props">
+        <div class="row" style="margin-bottom:8px"><span class="btn small">Fields <span class="co">4</span></span><span class="btn small">HTML</span><span class="btn small">CSS</span><span class="btn small">JS</span></div>
+        <div class="field"><label>field: title</label><div class="input tiny">text · required</div></div>
+        <div class="field"><label>field: bullets</label><div class="input tiny">list of markdown · min 1</div></div>
+        <div class="box" style="height:110px; padding:8px" ><span class="tiny muted">CodeMirror (lazy esm.sh; textarea fallback) —<br>&lt;h2&gt;{{title}}&lt;/h2&gt;&lt;ul&gt;&lt;li data-list="bullets" data-step="auto"&gt;{{item}}&lt;/li&gt;… <span class="co">5</span></span></div>
+        <div class="row" style="margin-top:8px"><span class="btn small primary">Save</span><span class="btn small">Duplicate</span><span class="btn small muted">Delete</span></div>
+      </div>
+    </div>
+  </div>
+  <ul class="legend">
+    <li><span class="co">1</span> Builtins can be duplicated-then-edited; deleting a builtin hides it (restorable from seed). Custom templates fully editable (FR-4.2).</li>
+    <li><span class="co">2</span> Live preview renders the template with generated sample data for its schema.</li>
+    <li><span class="co">3</span> Usage count — saving re-renders all dependent slides (FR-4.3); a template edit is a deck-wide restyle.</li>
+    <li><span class="co">4</span> Field-schema builder: key, label, type, required/min — this schema drives the slide editor’s form AND the AI output validation.</li>
+    <li><span class="co">5</span> Renderer contract conventions ({{key}}, data-list, data-step, scoped CSS, optional JS hooks) per PRD §4.4 / renderer-contract.md.</li>
+    <li><span class="co">6</span> Second tab manages interaction presets (Appendix C): kind + question defaults + results display.</li>
+  </ul>
+</section>
+
+<!-- ============ 6 PRESENT MODE ============ -->
+<section class="screen" id="s6">
+  <h2>6 · Present mode</h2>
+  <p class="sub">present.html#/w_x1?mode=present — dark chrome, full-bleed 16:9 stage. FR-6.x.</p>
+  <div class="frame">
+    <div class="present">
+      <div class="pchrome">
+        <span class="timer">⏱ 12:41 <span class="co">1</span></span>
+        <span class="timer over">item −1:20</span>
+        <div class="schedbar"><div class="plan"></div><div class="actual"></div></div>
+        <span class="tiny">slide 9/22 · step 2/4 <span class="co">2</span></span>
+        <span class="joincode">KQ7P <span class="co">3</span></span>
+      </div>
+      <div class="pstage">
+        <div class="bar hd w45" style="background:#d3aeb6"></div>
+        <div class="sm" style="margin-top:6px">Which mindset trips new trainers most? <span class="tiny muted">(live · 14 votes)</span></div>
+        <div class="pollbars">
+          <div class="pollbar"><span>Performer</span><div class="track"><div class="fillb" style="width:64%"></div></div><span>9</span></div>
+          <div class="pollbar"><span>Perfectionist</span><div class="track"><div class="fillb" style="width:21%"></div></div><span>3</span></div>
+          <div class="pollbar"><span>Improviser</span><div class="track"><div class="fillb" style="width:14%"></div></div><span>2</span></div>
+        </div>
+        <div class="tiny muted" style="margin-top:auto">⚡ poll active — updates every 2 s <span class="co">4</span></div>
+      </div>
+      <div class="notesdrawer">📝 Notes (N): Tie the winner back to the “Do not be an Actor” section · Key ideas from plan item shown here too <span class="co">5</span></div>
+      <div class="pchrome tiny" style="justify-content:center; color:#888">→ / space: step·slide ▸ &nbsp; ←: back &nbsp; Esc: overview &nbsp; R: read mode &nbsp; N: notes &nbsp; T: timer <span class="co">6</span></div>
+    </div>
+  </div>
+  <ul class="legend">
+    <li><span class="co">1</span> Left timer: wall clock into the workshop. Right: current plan item countdown from its durationMin — red when over (FR-6.3). Schedule bar: planned position (gray) vs actual (red).</li>
+    <li><span class="co">2</span> Deterministic slide+step state — jump anywhere from the Esc overview grid and steps restore (FR-6.2).</li>
+    <li><span class="co">3</span> Live session badge: join code + QR flyout. Click to activate/deactivate the current slide’s interaction (FR-6.5).</li>
+    <li><span class="co">4</span> Interactive template rendering live results pushed via onResults every poll tick (§4.4).</li>
+    <li><span class="co">5</span> Notes drawer: slide speakerNotes + the item’s keyIdeas. On the presenting machine only — never printed (FR-6.4).</li>
+    <li><span class="co">6</span> Keyboard map (FR-6.1). Chrome auto-hides when idle; mouse move brings it back.</li>
+  </ul>
+</section>
+
+<!-- ============ 7 READ / PRINT ============ -->
+<section class="screen" id="s7">
+  <h2>7 · Read / print mode</h2>
+  <p class="sub">Same player, ?mode=read — linear document, everything expanded, print → PDF. FR-7.x.</p>
+  <div class="frame">
+    <div class="chrome"><span class="dots"><i></i><i></i><i></i></span><span class="url">/workshop/present.html#/w_x1?mode=read</span></div>
+    <div class="appbar"><span class="logo">HDI</span><b class="sm grow">Effective Trainer Bootcamp — handout</b><span class="btn small">▶ Present mode <span class="co">1</span></span><span class="btn small primary">🖨 Print / PDF <span class="co">2</span></span></div>
+    <div class="readpage">
+      <div class="sechd">1 · Introduction — 23′ <span class="co">3</span></div>
+      <div class="tiny muted">Hook — the Sergey Brin interview question · 3′ · S: CTA/Hook</div>
+      <div class="readslide"><div class="bar hd w45"></div><div class="bar w80"></div><div class="bar w60"></div><div class="bar w60"></div><div class="tiny muted" style="margin-top:8px">all 4 bullets visible — steps expanded <span class="co">4</span></div></div>
+      <hr class="pgbrk">
+      <div class="readslide"><div class="bar hd w30"></div><div class="pollbars" style="max-width:340px"><div class="pollbar"><span class="tiny">Performer</span><div class="track"><div class="fillb" style="width:64%"></div></div><span class="tiny">9</span></div></div><div class="tiny muted" style="margin-top:8px">interaction slides print question + final results <span class="co">5</span></div></div>
+      <div class="tiny muted" style="text-align:center; margin-top:10px">footer on every printed page: workshop title · date · page n/N <span class="co">6</span></div>
+    </div>
+  </div>
+  <ul class="legend">
+    <li><span class="co">1</span> One-key toggle between the two modes (R) — same content, two renderings (FR-7.3).</li>
+    <li><span class="co">2</span> Browser print; print CSS gives one slide per page, no clipping. Chrome is the supported PDF path (§5).</li>
+    <li><span class="co">3</span> Section/item headings between slide groups keep the handout navigable — the plan structure is the document outline.</li>
+    <li><span class="co">4</span> data-step reveals all render expanded in read mode; JS-hook templates get mode:'read' and must degrade statically.</li>
+    <li><span class="co">5</span> If a session ran, final aggregates print; else the question prints with a blank space for handwriting.</li>
+    <li><span class="co">6</span> Speaker notes are excluded from the handout (FR-6.4).</li>
+  </ul>
+</section>
+
+<!-- ============ 8 PARTICIPANT ============ -->
+<section class="screen" id="s8">
+  <h2>8 · Participant page (mobile)</h2>
+  <p class="sub">join.html?c=KQ7P — no login, no user JS, 4 native input kinds. FR-8.x.</p>
+  <div class="duo">
+    <div class="phone">
+      <div class="notch"></div>
+      <div style="padding:16px" class="stack">
+        <div style="text-align:center"><span class="logo">HDI</span></div>
+        <h4 class="wf" style="text-align:center">Join workshop</h4>
+        <div class="input" style="text-align:center; letter-spacing:.3em; font-weight:700">K Q 7 P <span class="co">1</span></div>
+        <span class="btn primary" style="text-align:center">Join</span>
+        <span class="tiny muted" style="text-align:center">no account needed · answers are anonymous <span class="co">2</span></span>
+      </div>
+    </div>
+    <div class="phone">
+      <div class="notch"></div>
+      <div style="padding:16px" class="stack">
+        <div class="tiny muted">Effective Trainer Bootcamp</div>
+        <b class="sm">Which mindset trips new trainers most? <span class="co">3</span></b>
+        <span class="btn" style="border-color:var(--red)">Performer ✓</span>
+        <span class="btn">Perfectionist</span>
+        <span class="btn">Improviser</span>
+        <span class="tiny muted">answer sent — tap another to change it <span class="co">4</span></span>
+      </div>
+    </div>
+    <div class="phone">
+      <div class="notch"></div>
+      <div style="padding:16px" class="stack">
+        <div class="tiny muted">Effective Trainer Bootcamp</div>
+        <b class="sm">One word: how do you feel about presenting?</b>
+        <div class="input">tự tin</div>
+        <span class="btn primary" style="text-align:center">Send (2 of 3 left) <span class="co">5</span></span>
+        <div class="box" style="padding:14px; text-align:center" >
+          <span class="tiny muted">⏳ waiting state between activations:<br>“Look up! The facilitator will open the next question.” <span class="co">6</span></span>
+        </div>
+      </div>
+    </div>
+  </div>
+  <ul class="legend">
+    <li><span class="co">1</span> Code pre-filled when arriving by QR; manual entry uses an unambiguous alphabet (no 0/O/1/I).</li>
+    <li><span class="co">2</span> Anonymous participant id generated into localStorage — makes re-votes idempotent (UNIQUE upsert, §4.2) without accounts (R7).</li>
+    <li><span class="co">3</span> Phone polls GET /sessions/:code every 2 s and renders whichever interaction is active — facilitator drives, phones follow (FR-8.3).</li>
+    <li><span class="co">4</span> Re-vote while active replaces the previous answer; totals never double-count.</li>
+    <li><span class="co">5</span> freetext kind with submission limit (word cloud preset = up to 3 short words). Input length capped; rendered on the big screen as text nodes only — never HTML (R2).</li>
+    <li><span class="co">6</span> Waiting/ended states; session end shows “session ended, thanks!”.</li>
+  </ul>
+</section>
+
+<footer class="page">HDI Workshop Studio wireframes · self-contained, no external assets · generated 2026-07-08</footer>
+
+<script>
+  const nav = document.getElementById('nav');
+  nav.addEventListener('click', e => {
+    const b = e.target.closest('button'); if (!b) return;
+    nav.querySelectorAll('button').forEach(x => x.classList.toggle('active', x === b));
+    document.querySelectorAll('.screen').forEach(s => s.classList.toggle('active', s.id === b.dataset.s));
+    window.scrollTo(0, 0);
+  });
+</script>
+</body>
+</html>
