@@ -1367,6 +1367,16 @@
             turn: initialHand.bets.turn.folded,
             river: initialHand.bets.river.folded
           } : { preflop: false, flop: false, turn: false, river: false });
+
+          // Per-street aggressor flag — was I the one making the last bet/raise on that street?
+          // Older saved hands have no aggressor field, so default each street to false.
+          const [aggressor, setAggressor] = useState(initialHand ? {
+            preflop: !!initialHand.bets.preflop.aggressor,
+            flop: !!initialHand.bets.flop.aggressor,
+            turn: !!initialHand.bets.turn.aggressor,
+            river: !!initialHand.bets.river.aggressor
+          } : { preflop: false, flop: false, turn: false, river: false });
+          const toggleAggressor = (round) => setAggressor(prev => ({ ...prev, [round]: !prev[round] }));
           
           const [result, setResult] = useState(initialHand ? initialHand.result : null);
 
@@ -1428,10 +1438,10 @@
             if (!result) return;
 
             const formattedBets = {
-              preflop: { amount: parseFloat(bets.preflop) || 0, folded: folds.preflop },
-              flop: { amount: parseFloat(bets.flop) || 0, folded: folds.flop },
-              turn: { amount: parseFloat(bets.turn) || 0, folded: folds.turn },
-              river: { amount: parseFloat(bets.river) || 0, folded: folds.river }
+              preflop: { amount: parseFloat(bets.preflop) || 0, folded: folds.preflop, aggressor: aggressor.preflop },
+              flop: { amount: parseFloat(bets.flop) || 0, folded: folds.flop, aggressor: aggressor.flop },
+              turn: { amount: parseFloat(bets.turn) || 0, folded: folds.turn, aggressor: aggressor.turn },
+              river: { amount: parseFloat(bets.river) || 0, folded: folds.river, aggressor: aggressor.river }
             };
 
             if (initialHand) {
@@ -1596,23 +1606,36 @@
 
                 {/* Betting section */}
                 <div className="bg-neutral-900 rounded-xl p-4 border border-neutral-800/50 space-y-3">
-                  <div className="text-[11px] uppercase tracking-widest text-neutral-500 mb-2">Chips Put In</div>
-                  
+                  <div className="text-[11px] uppercase tracking-widest text-neutral-500 mb-1">Chips Put In</div>
+                  <div className="text-[10px] text-neutral-600 mb-2">Tap <span className="font-bold text-red-400">AGG</span> on each street where you made the last bet/raise (you were the aggressor).</div>
+
                   {[
                     { id: 'preflop', label: 'Pre-flop', color: 'text-yellow-500' },
                     { id: 'flop', label: 'Flop', color: 'text-cyan-400' },
                     { id: 'turn', label: 'Turn', color: 'text-purple-400' },
                     { id: 'river', label: 'River', color: 'text-green-500' }
                   ].map(round => (
-                    <div key={round.id} className="flex items-center gap-3">
-                      <div className={`w-16 text-xs font-medium ${round.color}`}>{round.label}</div>
+                    <div key={round.id} className="flex items-center gap-2">
+                      <div className={`w-14 text-xs font-medium ${round.color}`}>{round.label}</div>
                       <input
                         type="number"
                         placeholder="0"
                         value={bets[round.id]}
                         onChange={(e) => handleBetChange(round.id, e.target.value)}
-                        className="flex-1 bg-neutral-950 border border-neutral-700 rounded-lg p-2 text-white font-mono focus:border-yellow-500 outline-none placeholder:text-neutral-600"
+                        className="flex-1 min-w-0 bg-neutral-950 border border-neutral-700 rounded-lg p-2 text-white font-mono focus:border-yellow-500 outline-none placeholder:text-neutral-600"
                       />
+                      <button
+                        type="button"
+                        onClick={() => toggleAggressor(round.id)}
+                        aria-pressed={aggressor[round.id]}
+                        title="I was the aggressor (last bet/raise) this street"
+                        className={`shrink-0 w-12 py-2 rounded-lg border text-[11px] font-bold tracking-wide transition-all active:scale-95
+                          ${aggressor[round.id]
+                            ? 'bg-red-500/20 border-red-500 text-red-400 shadow-[0_0_10px_rgba(239,68,68,0.15)]'
+                            : 'bg-neutral-800 border-neutral-700 text-neutral-500 hover:bg-neutral-700'}`}
+                      >
+                        AGG
+                      </button>
                     </div>
                   ))}
 
@@ -1816,9 +1839,10 @@
                            const color = r==='preflop'?'text-yellow-500':r==='flop'?'text-cyan-400':r==='turn'?'text-purple-400':'text-green-500';
                            return (
                              <span key={r} className="flex items-center gap-1">
-                               <span className={color}>{r.substring(0,3).toUpperCase()}:</span> 
-                               {bet.amount > 0 ? bet.amount : '-'} 
+                               <span className={color}>{r.substring(0,3).toUpperCase()}:</span>
+                               {bet.amount > 0 ? bet.amount : '-'}
                                {bet.folded && <span className="text-red-500/70">(F)</span>}
+                               {bet.aggressor && <span className="text-red-400 font-bold" title="aggressor">▲</span>}
                              </span>
                            );
                          })}
@@ -1848,6 +1872,15 @@
         function ScreenSessions({ sessions, setSessions, showToast }) {
           const [openIds, setOpenIds] = useState(new Set());
           const [viewingHand, setViewingHand] = useState(null);
+          const [editPnlId, setEditPnlId] = useState(null);
+          const [pnlDraft, setPnlDraft] = useState('');
+
+          const startEditPnl = (e, s) => { e.stopPropagation(); setEditPnlId(s.id); setPnlDraft(String(s.pnl ?? 0)); };
+          const savePnl = (id) => {
+            setSessions(sessions.map(x => x.id === id ? { ...x, pnl: parseFloat(pnlDraft) || 0 } : x));
+            setEditPnlId(null);
+            showToast('Win/Loss updated');
+          };
 
           const toggleOpen = (idx) => {
             setOpenIds(prev => {
@@ -1989,12 +2022,35 @@
                               </div>
                             )}
 
-                            <button
-                              onClick={(e) => deleteSession(e, s.id)}
-                              className="flex items-center gap-2 text-xs text-red-500 bg-red-500/10 border border-red-500/20 px-3 py-2 rounded hover:bg-red-500/20 transition-colors"
-                            >
-                              <Trash2 size={14} /> Delete
-                            </button>
+                            <div className="flex items-center gap-2 flex-wrap" onClick={(e) => e.stopPropagation()}>
+                              {editPnlId === s.id ? (
+                                <div className="flex items-center gap-2">
+                                  <span className="text-xs text-neutral-400">Win/Loss</span>
+                                  <input
+                                    type="number"
+                                    value={pnlDraft}
+                                    autoFocus
+                                    onChange={(e) => setPnlDraft(e.target.value)}
+                                    className="w-24 bg-neutral-950 border border-neutral-700 rounded px-2 py-1.5 text-white font-mono text-sm focus:border-yellow-500 outline-none text-right"
+                                  />
+                                  <button onClick={() => savePnl(s.id)} className="text-xs font-semibold text-black bg-yellow-500 px-3 py-1.5 rounded hover:bg-yellow-400 active:scale-95 transition-all">Save</button>
+                                  <button onClick={() => setEditPnlId(null)} className="text-xs text-neutral-400 px-2 py-1.5 rounded hover:text-neutral-200">Cancel</button>
+                                </div>
+                              ) : (
+                                <button
+                                  onClick={(e) => startEditPnl(e, s)}
+                                  className="flex items-center gap-2 text-xs text-neutral-300 bg-neutral-800 border border-neutral-700 px-3 py-2 rounded hover:bg-neutral-700 transition-colors"
+                                >
+                                  Edit Win/Loss
+                                </button>
+                              )}
+                              <button
+                                onClick={(e) => deleteSession(e, s.id)}
+                                className="flex items-center gap-2 text-xs text-red-500 bg-red-500/10 border border-red-500/20 px-3 py-2 rounded hover:bg-red-500/20 transition-colors"
+                              >
+                                <Trash2 size={14} /> Delete
+                              </button>
+                            </div>
                           </div>
                           );
                         })()}
@@ -3190,23 +3246,18 @@
         // restore, or the load-time cache seed — from silently overwriting newer data, which was
         // the root cause of the recurring "my saved session reverted to an old one" data loss.
         function DataProvider({ token, onLogout, children }) {
-          // localStorage key is per-user so multiple accounts on the same device don't mix
-          const lsKey = `poker_data_${(() => { try { return JSON.parse(atob(token.split('.')[1])).id; } catch(_) { return '0'; } })()}`;
-
-          // Seed UI instantly from the local cache so the app is usable while the server wakes up.
-          // Cached data is DISPLAYED but never SYNCED until we learn the server's current rev.
-          const cached = (() => { try { const c = safeStorage.get(lsKey); return c ? JSON.parse(c) : null; } catch(_) { return null; } })();
-          const [data, setData] = useState(cached);
+          // Server is the ONLY store for user data — no localStorage caching of the data blob
+          // (removed to eliminate the stale-cache class of bugs). The app shows a spinner until
+          // the server responds, then keeps everything server-synced.
+          const [data, setData] = useState(null);
           const [offlineMode, setOfflineMode] = useState(false);
           const [retryKey, setRetryKey] = useState(0);
 
           const syncTimer = useRef(null);
-          const latestDataRef = useRef(cached); // freshest data, for flush-on-close
+          const latestDataRef = useRef(null);   // freshest data, for flush-on-close
           const revRef = useRef(null);          // server rev this client is based on (null = not loaded)
           const loadedRef = useRef(false);      // true once the initial server fetch has resolved
           const dirtyRef = useRef(false);       // true while the user has unsaved local changes
-
-          const writeCache = useCallback((d) => { safeStorage.set(lsKey, JSON.stringify(d)); }, [lsKey]);
 
           // Adopt server state as the truth (on load, on focus-refetch, or on a 409 conflict).
           const adoptServer = useCallback((server) => {
@@ -3215,8 +3266,7 @@
             latestDataRef.current = clean;
             dirtyRef.current = false;
             setData(clean);
-            writeCache(clean);
-          }, [writeCache]);
+          }, []);
 
           // Low-level PUT with optimistic concurrency. keepalive so it survives page close.
           // opts.snapshot (a label string) asks the server to keep a restorable Session-End snapshot.
@@ -3262,7 +3312,7 @@
               })
               .catch(err => {
                 if (String(err.message) === '401') { onLogout(); return; }
-                setOfflineMode(true); // cached data (if any) still shown; writes stay gated
+                setOfflineMode(true); // keep showing in-memory data if we already loaded; writes stay gated
               });
           }, [token, retryKey]);
 
@@ -3271,16 +3321,15 @@
             syncTimer.current = setTimeout(() => { syncTimer.current = null; putData(newData); }, 800);
           }, [putData]);
 
-          // Immediate flush — cancel debounce, write localStorage + server right now
+          // Immediate flush — cancel debounce, save to server right now
           const flush = useCallback((overrideData) => {
             clearTimeout(syncTimer.current);
             syncTimer.current = null;
             const toSave = overrideData ?? latestDataRef.current;
             if (toSave == null) return;
             latestDataRef.current = toSave;
-            writeCache(toSave);
             putData(toSave);
-          }, [putData, writeCache]);
+          }, [putData]);
 
           const update = useCallback((key, valueOrFn) => {
             setData(prev => {
@@ -3288,11 +3337,10 @@
               const next = { ...base, [key]: valueOrFn instanceof Function ? valueOrFn(base[key]) : valueOrFn };
               latestDataRef.current = next;
               dirtyRef.current = true;
-              writeCache(next);   // immediate local backup (always safe)
               scheduleSync(next); // debounced server sync (gated inside putData until loaded)
               return next;
             });
-          }, [scheduleSync, writeCache]);
+          }, [scheduleSync]);
 
           // Replace the entire data blob at once (used by Session End and snapshot Restore).
           const replaceAll = useCallback((newData, opts = {}) => {
@@ -3301,11 +3349,10 @@
             latestDataRef.current = clean;
             dirtyRef.current = true;
             setData(clean);
-            writeCache(clean);
             clearTimeout(syncTimer.current);
             syncTimer.current = null;
             putData(clean, opts); // immediate save (carries snapshot flag when requested)
-          }, [putData, writeCache]);
+          }, [putData]);
 
           // Session-End snapshot access (list + fetch one) for the in-app Restore UI
           const listSnapshots = useCallback(() =>
@@ -3369,7 +3416,7 @@
             <DataCtx.Provider value={ctxValue}>
               {offlineMode && (
                 <div className="fixed top-0 inset-x-0 z-50 bg-orange-500 text-black text-xs text-center py-1.5 font-semibold">
-                  Offline — showing cached data.{' '}
+                  Offline — changes aren’t being saved.{' '}
                   <button onClick={() => setRetryKey(k => k + 1)} className="underline">Retry</button>
                 </div>
               )}
