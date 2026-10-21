@@ -10,7 +10,7 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@600;700&family=IBM+Plex+Mono:wght@500&family=Public+Sans:wght@400;500;600&display=swap">
 <style>
-/* Layout: a luggage-tag header with a scale gauge, then planner form (left) beside the live, weight-fitted list (right); Pack view is a full-width checklist. */
+/* Layout: a luggage-tag header with a scale gauge, then planner form (left) beside the live, weight-fitted list (right); Pack view is a full-width checklist with a tick per traveller. */
 :root{
   --bg:#E9EEEC; --surface:#FFFFFF; --sunk:#DDE5E2; --ink:#15303A; --muted:#566C72; --line:#C9D4D1;
   --accent:#D4521C; --accent-ink:#FFFFFF; --accent-soft:#F7E1D6;
@@ -67,7 +67,7 @@ button{font:inherit;color:inherit;cursor:pointer}
 .tabs .sync{margin-left:auto;font-size:12px;color:var(--muted);padding:0 0 10px}
 
 /* ---------- plan layout ---------- */
-.plan{display:grid;grid-template-columns:minmax(0,440px) minmax(0,1fr);gap:24px;align-items:start}
+.plan{display:grid;grid-template-columns:minmax(0,460px) minmax(0,1fr);gap:24px;align-items:start}
 form.trip{display:grid;gap:14px}
 fieldset{border:0;margin:0;padding:16px;background:var(--surface);border-radius:var(--r);display:grid;gap:12px;min-width:0}
 legend{float:left;width:100%;padding:0;font:700 22px/1 var(--f-display);margin-bottom:2px}
@@ -75,6 +75,7 @@ legend{float:left;width:100%;padding:0;font:700 22px/1 var(--f-display);margin-b
 .row2{display:grid;grid-template-columns:1fr 1fr;gap:10px}
 .row3{display:grid;grid-template-columns:repeat(3,1fr);gap:10px}
 input[type=text],input[type=date],input[type=number],select{width:100%;box-sizing:border-box;font:inherit;color:var(--ink);background:var(--bg);border:1px solid var(--line);border-radius:7px;padding:8px 10px;min-width:0}
+select{padding:7px 8px;font-size:14px}
 input[type=number]{font-family:var(--f-mono)}
 .chips{display:flex;flex-wrap:wrap;gap:6px}
 .chips label{position:relative}
@@ -83,17 +84,40 @@ input[type=number]{font-family:var(--f-mono)}
 .chips input:checked+span{background:var(--ink);color:var(--surface);border-color:var(--ink)}
 .chips input:focus-visible+span{outline:2px solid var(--accent);outline-offset:2px}
 .chips.lug span{border-radius:7px}
+.chips.sm span{padding:4px 9px;font-size:12.5px}
 .check{display:flex;gap:8px;align-items:center;font-size:14px}
 .check input{width:17px;height:17px;accent-color:var(--accent)}
 .hint{font-size:12.5px;color:var(--muted)}
 .err{font-size:13px;color:var(--over)}
 .btn{border:0;border-radius:8px;padding:10px 16px;font-weight:600;background:var(--ink);color:var(--surface)}
+.btn.sm{padding:6px 11px;font-size:13.5px}
 .btn.accent{background:var(--accent);color:var(--accent-ink)}
 .btn.ghost{background:transparent;color:var(--ink);border:1px solid var(--line)}
 .btn:disabled{opacity:.5;cursor:wait}
-.climate{border-left:3px solid var(--accent);padding:10px 12px;background:var(--bg);border-radius:0 7px 7px 0;font-size:14px;display:grid;gap:6px}
+
+/* travellers */
+.people{display:grid;gap:10px}
+.person{border:1px solid var(--line);border-radius:8px;padding:12px;display:grid;gap:10px;background:var(--bg)}
+.person .phead{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:8px;align-items:center}
+.person .phead input{background:var(--surface);font-weight:600}
+.person select{background:var(--surface)}
+.person .chips span{background:var(--surface)}
+.person details summary{cursor:pointer;font-size:13.5px;font-weight:600}
+.person details[open] summary{margin-bottom:8px}
+.xbtn{background:none;border:1px solid var(--line);border-radius:6px;padding:6px 10px;font-size:13px;color:var(--muted)}
+.addrow{display:flex;flex-wrap:wrap;gap:6px;align-items:center}
+.count{font:500 13px var(--f-mono);color:var(--muted)}
+
+/* weather */
+.climate{border-left:3px solid var(--accent);padding:10px 12px;background:var(--bg);border-radius:0 7px 7px 0;font-size:14px;display:grid;gap:8px}
 .climate ul{margin:0;padding-left:18px}
+.wx{display:grid;grid-template-columns:repeat(auto-fit,minmax(92px,1fr));gap:8px}
+.wx div{background:var(--surface);border-radius:6px;padding:8px 10px;display:grid;gap:2px}
+.wx b{font:600 18px/1.1 var(--f-display);letter-spacing:.02em}
+.wx small{font:500 11.5px var(--f-mono);color:var(--muted)}
 .facts{display:flex;flex-wrap:wrap;gap:4px 16px;font:500 12.5px/1.4 var(--f-mono);color:var(--muted)}
+details.adjust summary{cursor:pointer;font-size:13.5px;font-weight:600;color:var(--muted)}
+details.adjust[open]{display:grid;gap:10px}
 
 /* ---------- review list ---------- */
 .listhead{display:flex;flex-wrap:wrap;gap:10px 16px;align-items:center;justify-content:space-between;margin-bottom:12px}
@@ -106,6 +130,7 @@ input[type=number]{font-family:var(--f-mono)}
 .item input[type=checkbox]{width:17px;height:17px;accent-color:var(--accent);margin:0}
 .item label{min-width:0;cursor:pointer}
 .item .why{display:block;font-size:12.5px;color:var(--muted)}
+.item .who{display:block;font:500 12px/1.4 var(--f-mono);color:var(--ink);opacity:.8}
 .item .wt{font:500 12.5px var(--f-mono);text-align:right;color:var(--muted)}
 .qty{display:inline-flex;align-items:center;border:1px solid var(--line);border-radius:6px}
 .qty button{background:none;border:0;width:24px;height:24px;line-height:1}
@@ -116,22 +141,30 @@ input[type=number]{font-family:var(--f-mono)}
 .item.off .name{text-decoration:line-through}
 .item.nofit{background:repeating-linear-gradient(135deg,transparent 0 8px,var(--sunk) 8px 9px)}
 .flag{font:600 10.5px var(--f-body);text-transform:uppercase;letter-spacing:.07em;color:var(--over)}
-.wear{font:600 10.5px var(--f-body);text-transform:uppercase;letter-spacing:.07em;color:var(--ok)}
+.wear,.shared{font:600 10.5px var(--f-body);text-transform:uppercase;letter-spacing:.07em;color:var(--ok)}
+.shared{color:var(--muted)}
 .addown{display:grid;grid-template-columns:minmax(0,1fr) 150px 70px auto;gap:8px;padding:12px 16px;border-top:1px solid var(--line)}
 .del{background:none;border:0;color:var(--muted);font-size:12px;text-decoration:underline}
 .confirmbar{position:sticky;bottom:0;padding:12px 0 calc(12px + env(safe-area-inset-bottom,0px));background:linear-gradient(180deg,transparent,var(--bg) 30%);display:flex;gap:10px;flex-wrap:wrap;align-items:center;justify-content:flex-end}
 
 /* ---------- pack view ---------- */
 .packtools{display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin-bottom:14px}
+.packtools select{width:auto}
 .progress{flex:1 1 220px;display:grid;gap:6px}
 .progress .bar{height:10px;background:var(--sunk);border-radius:5px;overflow:hidden}
 .progress .bar i{display:block;height:100%;background:var(--ok);transition:width .25s}
 .packgrid{columns:3 300px;column-gap:14px}
 .packgrid .group{break-inside:avoid;display:inline-block;width:100%}
-.pk{display:flex;gap:10px;align-items:flex-start;padding:8px 16px;border-top:1px solid var(--line);cursor:pointer}
+.pk{display:grid;gap:6px;padding:8px 16px;border-top:1px solid var(--line)}
+.pk .line{display:flex;gap:10px;align-items:flex-start}
+.pk .line label{display:flex;gap:10px;align-items:flex-start;cursor:pointer;flex:1;min-width:0}
 .pk input{width:20px;height:20px;accent-color:var(--ok);margin:1px 0 0;flex:none}
-.pk.done span{color:var(--muted);text-decoration:line-through}
+.pk.done .nm{color:var(--muted);text-decoration:line-through}
 .pk .q{margin-left:auto;font:500 12.5px var(--f-mono);color:var(--muted);white-space:nowrap}
+.pk .ticks{display:flex;flex-wrap:wrap;gap:6px;padding-left:30px}
+.pk .ticks label{display:inline-flex;gap:6px;align-items:center;border:1px solid var(--line);border-radius:999px;padding:3px 10px 3px 6px;font-size:12.5px;cursor:pointer}
+.pk .ticks input{width:16px;height:16px;margin:0}
+.pk .ticks label.on{background:var(--sunk);color:var(--muted);text-decoration:line-through}
 .empty{padding:28px;background:var(--surface);border-radius:var(--r);color:var(--muted)}
 .note{font-size:13px;color:var(--muted)}
 
@@ -145,7 +178,7 @@ input[type=number]{font-family:var(--f-mono)}
 }
 @media (prefers-reduced-motion:reduce){*{transition:none!important}}
 @media print{
-  .tabs,.packtools button,.packtools label,.scale,.confirmbar,#planView{display:none!important}
+  .tabs,.packtools,.scale,.confirmbar,#planView{display:none!important}
   #packView{display:block!important}
   body{background:#fff;color:#000}
   .group{border:1px solid #999;background:#fff}
@@ -164,7 +197,7 @@ input[type=number]{font-family:var(--f-mono)}
       <div class="barcode" aria-hidden="true"></div>
     </div>
     <div class="scale" aria-live="polite">
-      <div class="label">Luggage scale</div>
+      <div class="label">Luggage scale · whole group</div>
       <div class="read"><span class="big mono" id="kgUsed">0.0</span><span class="mono" id="kgCap">/ 0 kg</span></div>
       <div class="gauge" id="gauge"><div class="fill" id="gaugeFill"></div><div class="ticks" id="ticks"></div></div>
       <small id="scaleNote"></small>
@@ -195,6 +228,8 @@ input[type=number]{font-family:var(--f-mono)}
   <section id="packView" hidden>
     <div class="packtools">
       <div class="progress"><div class="label" id="progLabel"></div><div class="bar"><i id="progBar"></i></div></div>
+      <label class="check" for="packWho">Show</label>
+      <select id="packWho" aria-label="Show items for"></select>
       <label class="check"><input type="checkbox" id="hidePacked"> Hide packed</label>
       <button class="btn ghost" type="button" id="copyText">Copy as text</button>
       <button class="btn ghost" type="button" id="dlPrint">Download printable list</button>
@@ -211,17 +246,17 @@ const OPT = {
   purpose:[['business','Business meetings'],['conference','Conference or expo'],['leisure','Holiday / sightseeing'],['city','City break'],['beach','Beach'],['hike','Hiking or trekking'],['ski','Ski or snow'],['camping','Camping'],['study','Study or exam'],['competition','Competition or tournament'],['wedding','Wedding or formal event'],['family','Visiting family'],['backpack','Backpacking'],['cruise','Cruise'],['religious','Pilgrimage or temple visits'],['remote','Remote work']],
   transport:[['flight','Flight'],['longhaul','Long-haul flight (6 h+)'],['bus','Train or bus'],['car','Car or road trip'],['cruise','Ship or cruise']],
   stay:[['hotel','Hotel'],['apartment','Apartment / rental'],['hostel','Hostel'],['family','Family or friends'],['camping','Tent or cabin']],
-  rain:[['dry','Mostly dry'],['some','Some showers'],['wet','Rainy season']],
+  rain:[['dry','Mostly dry'],['some','Some showers'],['wet','Rainy']],
   humidity:[['low','Dry air'],['moderate','Moderate'],['high','Humid']],
-  uv:[['low','Low'],['moderate','Moderate'],['high','High'],['extreme','Extreme']],
+  uv:[['low','Low (0–2)'],['moderate','Moderate (3–5)'],['high','High (6–7)'],['extreme','Very high (8+)']],
   style:[['light','Minimalist'],['balanced','Balanced'],['prepared','Prepared for anything']],
-  wardrobe:[['few','Few outfits, re-wear'],['some','Some variety'],['lots','Lots of outfit options']],
-  grooming:[['basic','Basic'],['skincare','Full skincare routine'],['makeup-light','Light makeup'],['makeup-full','Full makeup']],
+  age:[['adult','Adult'],['teen','Teen 13–17'],['child','Child 3–12'],['baby','Baby 0–2']],
+  wardrobe:[['few','Few outfits, re-wear'],['some','Some variety'],['lots','Lots of options']],
+  grooming:[['basic','Basic grooming'],['skincare','Full skincare'],['makeup-light','Light makeup'],['makeup-full','Full makeup']],
   hair:[['short','Short hair'],['long','Long hair']],
-  kids:[['none','No children'],['baby','Baby or toddler'],['children','School-age children']],
-  prefs:[['laptop','Work laptop'],['shave','Shaving'],['contacts','Contact lenses'],['glasses','Glasses'],['meds','Prescription medicine'],['period','Period products'],['sleeper','Light sleeper'],['gym','Gym or running'],['swim','Swimming'],['photo','Photography'],['reading','Reading'],['gaming','Gaming'],['motion','Motion sickness'],['styling','Hair dryer / styling tools'],['watch','Smartwatch'],['coffee','Own coffee or tea'],['gifts','Gifts for hosts']]
+  needs:[['phone','Phone'],['money','Carries money and cards'],['laptop','Work laptop'],['shave','Shaving'],['contacts','Contact lenses'],['glasses','Glasses'],['meds','Prescription medicine'],['period','Period products'],['sleeper','Light sleeper'],['gym','Gym or running'],['swim','Swimming'],['photo','Photography'],['reading','Reading'],['gaming','Gaming'],['motion','Motion sickness'],['styling','Hair dryer / styling tools'],['watch','Smartwatch'],['coffee','Own coffee or tea']]
 };
-// Airline-style allowances. tare = typical weight of the empty bags themselves.
+// Allowance per traveller with a seat. tare = typical weight of that traveller's empty bags.
 const LUG = {
   personal:{label:'Personal item only (4 kg)',kg:4,tare:.6,cabin:true},
   cabin:{label:'Cabin bag (7 kg)',kg:7,tare:2.2,cabin:true},
@@ -229,196 +264,204 @@ const LUG = {
   chk20:{label:'Checked 20 kg + cabin 7 kg',kg:27,tare:5.7},
   chk23:{label:'Checked 23 kg + cabin 7 kg',kg:30,tare:6},
   two:{label:'2 × checked 23 kg + cabin 7 kg',kg:53,tare:10},
-  custom:{label:'Custom limit',kg:0,tare:0}
+  custom:{label:'Custom total for the group',kg:0,tare:0}
 };
-const CATS = {docs:'Documents & money',clo:'Clothing',sho:'Shoes',toi:'Toiletries & grooming',med:'Health',ele:'Electronics',wrk:'Work & study',act:'Activities & gear',kid:'Children',com:'Comfort & organisation',ext:'For this destination',own:'Your own items'};
+OPT.luggage=Object.entries(LUG).map(([k,v])=>[k,v.label]);
+const CATS = {docs:'Documents & money',clo:'Clothing',sho:'Shoes',toi:'Toiletries & grooming',med:'Health',ele:'Electronics',wrk:'Work & study',act:'Activities & gear',kid:'Babies & children',com:'Comfort & organisation',ext:'For this destination',own:'Your own items'};
 const PRI = {1:'Essential',2:'Recommended',3:'Optional'};
 
 /* ================= item catalog =================
-   [id, name, category, grams per unit, priority (1-3), quantity, include-when, why, {wear|free}]
-   any of name/grams/priority/qty/why may be a function of the trip context c */
+   [scope, id, name, category, grams per unit, priority 1-3, quantity, include-when, why, {wear|free}]
+   scope 'p' = one per traveller (evaluated for each person with their age, needs and activities);
+   scope 's' = shared by the whole group (evaluated once with group totals).
+   name/grams/priority/qty/why may be functions of the context c. */
 const has=(s,...k)=>k.some(x=>s.has(x));
-const kids=c=>c.kids!=='none', baby=c=>c.kids==='baby';
+const W=g=>c=>Math.round(g*c.wf);            // clothing weight scaled by body size
 const C = [
  // documents & money
- ['passport','Passport (6+ months validity left)','docs',40,1,1,c=>c.intl,'Required to cross the border'],
- ['visa','Visa or entry approval printout','docs',10,1,1,c=>c.intl,'Check entry rules for your nationality'],
- ['passcopy','Passport copy and spare photos','docs',10,2,1,c=>c.intl,'Speeds up a replacement if it is lost'],
- ['idcard','National ID card','docs',10,1,1,c=>!c.intl,'Hotels and domestic flights ask for it'],
- ['tickets','Tickets and boarding passes (offline copy)','docs',0,1,1,true,'Saved offline in case there is no signal'],
- ['bookings','Accommodation confirmations and addresses','docs',0,1,1,c=>c.stay!=='family','Show the address to taxi drivers'],
- ['insurance','Travel insurance policy and hotline number','docs',0,1,1,c=>c.intl,'Medical bills abroad can be large'],
- ['wallet','Wallet','docs',120,1,1,true],
- ['cards','Two payment cards on different networks','docs',10,1,1,true,'A backup if one card is blocked'],
- ['cash',c=>'Local cash'+(c.currency?' ('+c.currency+')':''),'docs',20,1,1,c=>c.intl,'For taxis, markets and tips on arrival'],
- ['license','Driving licence','docs',10,1,1,c=>c.T.has('car')],
- ['idp','International Driving Permit','docs',10,1,1,c=>c.T.has('car')&&c.intl,'Many countries require it with your licence'],
- ['bizcards','Business cards','docs',60,2,1,c=>c.biz],
- ['eventdocs','Event registration, invitation or entry pass','docs',10,1,1,c=>has(c.P,'conference','competition','wedding')],
- ['studentdocs','Student ID, admission letter and transcripts','docs',30,1,1,c=>c.P.has('study')],
- ['kiddocs',"Children's passports or birth certificate copies",'docs',20,1,1,kids,'Some borders ask for proof of guardianship'],
- ['emergency','Emergency contacts on paper','docs',5,2,1,true,'In case your phone dies'],
- ['pen','Pen for arrival forms','docs',10,2,1,c=>c.intl&&c.flight],
- // clothing
- ['underwear','Underwear','clo',60,1,c=>c.cd+1,true,'One spare beyond the days covered'],
- ['socks','Socks (pairs)','clo',50,1,c=>c.cd+(c.P.has('hike')?2:0),true],
- ['tops','Casual tops / T-shirts','clo',150,1,c=>c.bizOnly?Math.ceil(c.cd/2):Math.ceil(c.cd*c.wm),true],
- ['bizshirt','Business shirts or blouses','clo',200,1,c=>c.bizOnly?c.cd:Math.ceil(c.cd/2),c=>c.biz],
- ['suit','Suit or blazer','clo',900,1,1,c=>c.biz||c.P.has('wedding')],
- ['smartbottoms','Smart trousers or skirts','clo',400,1,c=>Math.max(1,Math.ceil(c.cd/3)),c=>c.biz],
- ['bottoms','Casual trousers or jeans','clo',600,1,c=>c.hot?1:Math.max(1,Math.ceil(c.cd*c.wm/3)),c=>!c.bizOnly||c.d>3],
- ['shorts','Shorts or light skirts','clo',200,1,c=>Math.max(1,Math.ceil(c.cd*c.wm/3)),c=>c.warm&&!c.bizOnly],
- ['dinner','Smart-casual outfit for evenings out','clo',400,c=>c.wm>1?2:3,c=>c.wm>1?2:1,c=>!c.bizOnly&&has(c.P,'leisure','city','cruise','family','beach')],
- ['formal','Formal outfit for the event','clo',800,1,1,c=>c.P.has('wedding')],
- ['tie','Tie, scarf or statement accessories','clo',100,3,1,c=>c.biz||c.P.has('wedding')],
- ['sleepwear','Sleepwear','clo',250,1,c=>c.d>5?2:1,true],
- ['gymwear','Workout outfits','clo',250,2,c=>Math.max(1,Math.ceil(c.cd/3)),c=>c.F.has('gym')],
- ['swim','Swimwear','clo',150,c=>c.P.has('beach')?1:2,c=>c.P.has('beach')?2:1,c=>has(c.P,'beach','cruise')||c.F.has('swim')||c.T.has('cruise')],
- ['layer','Light sweater or cardigan','clo',350,2,1,c=>!c.hot||c.flight,'For air-conditioning, planes and cool evenings'],
- ['fleece','Fleece or warm mid-layer','clo',400,1,1,c=>c.cool||has(c.P,'hike','ski','camping')],
- ['coat','Warm insulated coat','clo',1200,1,1,c=>c.cold||c.P.has('ski'),'Wear it on travel day to save weight',{wear:true}],
- ['shell','Waterproof rain jacket','clo',300,c=>c.wet||has(c.P,'hike','camping')?1:2,1,c=>c.rain||has(c.P,'hike','camping','ski')],
- ['thermals','Thermal base layers (top and bottom)','clo',200,1,2,c=>c.freezing||c.P.has('ski')],
- ['beanie','Warm hat','clo',80,1,1,c=>c.cold||c.P.has('ski')],
- ['gloves','Gloves','clo',80,1,1,c=>c.cold&&!c.P.has('ski')],
- ['scarf','Scarf or neck gaiter','clo',150,2,1,c=>c.cold],
- ['sunhat','Sun hat or cap','clo',80,c=>has(c.P,'beach','hike')?1:2,1,c=>c.hot||c.uv||has(c.P,'beach','hike')],
- ['teamkit','Team kit or competition uniform','clo',300,1,2,c=>c.P.has('competition')],
- ['modest','Modest outfit and a cover-up scarf','clo',200,1,1,c=>c.P.has('religious'),'Shoulders and knees covered at holy sites'],
- ['belt','Belt','clo',150,2,1,c=>c.biz||!c.hot],
- ['compression','Compression socks','clo',60,2,1,c=>c.longhaul,'Reduce leg swelling on flights over 6 hours'],
- // shoes
- ['walkshoes','Comfortable walking shoes','sho',800,1,1,true,'Wear them on travel day',{wear:true}],
- ['dressshoes','Dress shoes','sho',900,1,1,c=>c.biz||c.P.has('wedding')],
- ['sandals','Sandals or flip-flops','sho',250,c=>c.P.has('beach')||c.stay==='hostel'?1:2,1,c=>c.warm||c.P.has('beach')||c.stay==='hostel'||c.stay==='camping','Also for shared showers'],
- ['boots','Hiking boots','sho',1200,1,1,c=>c.P.has('hike')],
- ['snowboots','Insulated waterproof boots','sho',1500,1,1,c=>c.snow||(c.freezing&&!c.P.has('hike'))],
- ['sportshoes','Training or competition shoes','sho',700,c=>c.P.has('competition')?1:2,1,c=>c.P.has('competition')||c.F.has('gym')],
- ['slippers','Indoor slippers','sho',200,3,1,c=>c.stay==='family'||c.stay==='apartment'],
+ ['p','passport','Passport (6+ months validity left)','docs',40,1,1,c=>c.intl,'Required for every traveller, babies included'],
+ ['p','visa','Visa or entry approval','docs',10,1,1,c=>c.intl,'Check the entry rules for each nationality'],
+ ['p','passcopy','Passport copy and spare photos','docs',10,2,1,c=>c.intl,'Speeds up a replacement if lost'],
+ ['p','idcard','National ID card','docs',10,1,1,c=>!c.intl&&c.grown,'Hotels and domestic flights ask for it'],
+ ['p','wallet','Wallet','docs',120,1,1,c=>c.F.has('money')],
+ ['p','cards','Two payment cards on different networks','docs',10,1,1,c=>c.F.has('money'),'A backup if one card is blocked'],
+ ['p','pocketcard','Contact card in their pocket (guardian phone, hotel address)','docs',5,1,1,c=>c.minor&&!c.baby,'If they get separated from the group'],
+ ['p','bizcards','Business cards','docs',60,2,1,c=>c.biz],
+ ['p','eventdocs','Event registration, invitation or entry pass','docs',10,1,1,c=>has(c.P,'conference','competition','wedding')],
+ ['p','studentdocs','Student ID, admission letter and transcripts','docs',30,1,1,c=>c.P.has('study')],
+ ['s','tickets','Tickets and boarding passes for everyone (offline copy)','docs',0,1,1,true,'Saved offline in case there is no signal'],
+ ['s','bookings','Accommodation confirmations and addresses','docs',0,1,1,c=>c.stay!=='family','Show the address to taxi drivers'],
+ ['s','insurance','Travel insurance policy covering everyone','docs',0,1,1,c=>c.intl,'Medical bills abroad can be large'],
+ ['s','cash',c=>'Local cash'+(c.currency?' ('+c.currency+')':''),'docs',20,1,1,c=>c.intl,'For taxis, markets and tips on arrival'],
+ ['s','license','Driving licence for each driver','docs',10,1,1,c=>c.T.has('car')&&c.na>0],
+ ['s','idp','International Driving Permit for each driver','docs',10,1,1,c=>c.T.has('car')&&c.intl&&c.na>0,'Many countries require it with the licence'],
+ ['s','minordocs','Birth certificates or guardianship papers for the children','docs',20,1,1,c=>c.minors>0&&c.na>0&&c.intl,'Some borders ask for proof of guardianship'],
+ ['s','unaccompanied','Unaccompanied-minor forms and a signed parental consent letter','docs',20,1,1,c=>c.minors>0&&c.na===0,'Airlines and borders require these when no adult travels'],
+ ['s','emergency','Emergency contacts on paper','docs',5,2,1,true,'In case phones die'],
+ ['s','pen','Pen for arrival forms','docs',10,2,1,c=>c.intl&&c.flight],
+ // clothing (per traveller)
+ ['p','underwear','Underwear','clo',W(60),1,c=>c.cd+1,c=>!c.baby,'One spare beyond the days covered'],
+ ['p','babyoutfits','Bodysuits and baby outfits','clo',W(150),1,c=>c.cd+3,c=>c.baby,'Spares for spills and nappy leaks'],
+ ['p','socks','Socks (pairs)','clo',W(50),1,c=>c.cd+(c.P.has('hike')?2:0),true],
+ ['p','tops','Casual tops / T-shirts','clo',W(150),1,c=>c.bizOnly?Math.ceil(c.cd/2):Math.ceil(c.cd*c.wm)+(c.child?1:0),c=>!c.baby],
+ ['p','bizshirt','Business shirts or blouses','clo',W(200),1,c=>c.bizOnly?c.cd:Math.ceil(c.cd/2),c=>c.biz],
+ ['p','suit','Suit or blazer','clo',W(900),1,1,c=>c.biz],
+ ['p','smartbottoms','Smart trousers or skirts','clo',W(400),1,c=>Math.max(1,Math.ceil(c.cd/3)),c=>c.biz],
+ ['p','bottoms','Casual trousers or jeans','clo',W(600),1,c=>c.hot?1:Math.max(1,Math.ceil(c.cd*c.wm/3)),c=>!c.baby&&(!c.bizOnly||c.d>3)],
+ ['p','shorts','Shorts or light skirts','clo',W(200),1,c=>Math.max(1,Math.ceil(c.cd*c.wm/3)),c=>c.warm&&!c.bizOnly&&!c.baby],
+ ['p','dinner','Smart-casual outfit for evenings out','clo',W(400),c=>c.wm>1?2:3,c=>c.wm>1?2:1,c=>!c.baby&&!c.bizOnly&&has(c.P,'leisure','city','cruise','family','beach')],
+ ['p','formal','Formal outfit for the event','clo',W(800),1,1,c=>c.P.has('wedding')],
+ ['p','tie','Tie, scarf or statement accessories','clo',100,3,1,c=>c.grown&&(c.biz||c.P.has('wedding'))],
+ ['p','sleepwear','Sleepwear','clo',W(250),1,c=>c.d>5||c.baby?2:1,true],
+ ['p','gymwear','Workout outfits','clo',W(250),2,c=>Math.max(1,Math.ceil(c.cd/3)),c=>c.F.has('gym')],
+ ['p','swim',c=>c.baby?'Swim nappies and swimsuit':'Swimwear','clo',W(150),c=>c.P.has('beach')?1:2,c=>c.P.has('beach')?2:1,c=>has(c.P,'beach','cruise')||c.F.has('swim')||c.T.has('cruise')],
+ ['p','layer','Light sweater or cardigan','clo',W(350),2,1,c=>!c.hot||c.flight,'For air-conditioning, planes and cool evenings'],
+ ['p','fleece','Fleece or warm mid-layer','clo',W(400),1,1,c=>c.cool||has(c.P,'hike','ski','camping')],
+ ['p','coat',c=>c.baby?'Warm snowsuit or pram suit':'Warm insulated coat','clo',W(1200),1,1,c=>c.cold||c.P.has('ski'),'Wear it on travel day to save weight',{wear:true}],
+ ['p','shell','Waterproof rain jacket','clo',W(300),c=>c.wet||has(c.P,'hike','camping')?1:2,1,c=>c.rain||has(c.P,'hike','camping','ski')],
+ ['p','thermals','Thermal base layers (top and bottom)','clo',W(200),1,2,c=>c.freezing||c.P.has('ski')],
+ ['p','beanie','Warm hat','clo',80,1,1,c=>c.cold||c.P.has('ski')],
+ ['p','gloves',c=>c.baby?'Mittens':'Gloves','clo',80,1,1,c=>c.cold&&!c.P.has('ski')],
+ ['p','scarf','Scarf or neck gaiter','clo',W(150),2,1,c=>c.cold&&!c.baby],
+ ['p','sunhat','Sun hat or cap','clo',80,c=>c.minor||has(c.P,'beach','hike')?1:2,1,c=>c.hot||c.uv||has(c.P,'beach','hike')],
+ ['p','teamkit','Team kit or competition uniform','clo',W(300),1,2,c=>c.P.has('competition')],
+ ['p','modest','Modest outfit and a cover-up scarf','clo',W(200),1,1,c=>c.P.has('religious')&&!c.baby,'Shoulders and knees covered at holy sites'],
+ ['p','belt','Belt','clo',150,2,1,c=>c.grown&&(c.biz||!c.hot)],
+ ['p','compression','Compression socks','clo',60,2,1,c=>c.longhaul&&c.adult,'Reduce leg swelling on flights over 6 hours'],
+ // shoes (per traveller)
+ ['p','walkshoes','Comfortable walking shoes','sho',W(800),1,1,c=>!c.baby,'Wear them on travel day',{wear:true}],
+ ['p','dressshoes','Dress shoes','sho',W(900),1,1,c=>!c.baby&&(c.biz||c.P.has('wedding'))],
+ ['p','sandals','Sandals or flip-flops','sho',W(250),c=>c.P.has('beach')||c.stay==='hostel'?1:2,1,c=>!c.baby&&(c.warm||c.P.has('beach')||c.stay==='hostel'||c.stay==='camping'),'Also for shared showers'],
+ ['p','boots','Hiking boots','sho',W(1200),1,1,c=>c.P.has('hike')&&!c.baby],
+ ['p','snowboots','Insulated waterproof boots','sho',W(1500),1,1,c=>!c.baby&&(c.snow||(c.freezing&&!c.P.has('hike')))],
+ ['p','sportshoes','Training or competition shoes','sho',W(700),c=>c.P.has('competition')?1:2,1,c=>c.P.has('competition')||c.F.has('gym')],
+ ['p','slippers','Indoor slippers','sho',W(200),3,1,c=>!c.baby&&(c.stay==='family'||c.stay==='apartment')],
  // toiletries & grooming
- ['liquidsbag','Clear 1 L resealable liquids bag','toi',20,c=>c.cabin?1:2,1,c=>c.flight,'Security limit: containers up to 100 ml each'],
- ['teeth','Toothbrush, toothpaste and floss','toi',120,1,1,true],
- ['deo','Deodorant','toi',100,1,1,true],
- ['shampoo',c=>'Shampoo and conditioner'+(c.cabin?' (≤100 ml)':''),'toi',200,c=>c.stay==='hotel'?3:2,1,true,c=>c.stay==='hotel'?'Most hotels provide these':''],
- ['bodywash',c=>'Body wash or soap bar'+(c.cabin?' (≤100 ml)':''),'toi',150,2,1,c=>c.stay!=='hotel'],
- ['skincare','Cleanser and moisturiser','toi',150,c=>c.groom==='basic'?2:1,1,true],
- ['routine','Rest of your skincare routine (serums, masks)','toi',350,2,1,c=>c.groom!=='basic'],
- ['sunscreen','Sunscreen SPF 50','toi',150,c=>c.hot||c.uv||has(c.P,'beach','ski','hike')?1:2,1,c=>c.warm||c.uv||has(c.P,'beach','ski','hike')],
- ['lipbalm','Lip balm with SPF','toi',15,2,1,c=>c.cold||c.uv||c.P.has('ski')||c.longhaul],
- ['razor','Razor and shaving kit','toi',150,2,1,c=>c.F.has('shave'),c=>c.cabin?'Cartridge or electric razors only in cabin bags':''],
- ['makeup','Makeup kit','toi',c=>c.groom==='makeup-full'?800:300,c=>c.groom==='makeup-full'?1:2,1,c=>c.groom.startsWith('makeup')],
- ['remover','Makeup remover and cotton pads','toi',100,2,1,c=>c.groom.startsWith('makeup')],
- ['brush','Hairbrush or comb','toi',60,2,1,true],
- ['hairbits','Hair ties, clips and styling products','toi',100,2,1,c=>c.hair==='long'],
- ['hairtools','Hair dryer or styling tool','toi',600,3,1,c=>c.F.has('styling'),c=>'Check it is dual-voltage'+(c.voltage?' ('+c.voltage+' there)':'')],
- ['period','Period products','toi',200,1,1,c=>c.F.has('period')],
- ['contacts','Contact lenses and solution','toi',150,1,1,c=>c.F.has('contacts')],
- ['glasses',c=>c.F.has('glasses')?'Glasses and case':'Backup glasses','toi',100,c=>c.F.has('glasses')?1:2,1,c=>c.F.has('glasses')||c.F.has('contacts')],
- ['sunglasses','Sunglasses','toi',50,c=>c.uv||c.snow||c.P.has('ski')?1:2,1,c=>c.warm||c.uv||c.snow||has(c.P,'beach','ski')],
- ['nails','Nail clippers and tweezers','toi',30,3,1,c=>c.d>=5],
- ['repellent','Insect repellent','toi',120,c=>(c.hot&&c.humid)||c.P.has('camping')?1:2,1,c=>(c.warm&&c.humid)||has(c.P,'camping','hike')],
- ['aftersun','After-sun gel','toi',150,3,1,c=>c.P.has('beach')],
- ['sanitiser','Hand sanitiser','toi',50,2,1,true],
- ['wipes','Tissues and wet wipes','toi',100,2,1,true],
- ['perfume','Perfume or cologne (travel size)','toi',80,3,1,c=>c.biz||c.P.has('wedding')||c.wm>1],
- ['laundrykit','Travel laundry sheets','toi',60,2,1,c=>c.laundry,'For rinsing clothes in a sink'],
- ['towel','Quick-dry towel','toi',300,c=>c.stay==='hostel'||c.stay==='camping'?1:3,1,c=>c.stay==='hostel'||c.stay==='camping'||c.P.has('backpack')],
+ ['p','teeth','Toothbrush','toi',30,1,1,true],
+ ['p','deo','Deodorant','toi',100,1,1,c=>c.grown],
+ ['p','skincare','Cleanser and moisturiser','toi',150,c=>c.groom==='basic'?2:1,1,c=>c.grown||c.groom!=='basic'],
+ ['p','routine','Rest of the skincare routine (serums, masks)','toi',350,2,1,c=>c.groom!=='basic'],
+ ['p','lipbalm','Lip balm with SPF','toi',15,2,1,c=>!c.baby&&(c.cold||c.uv||c.P.has('ski')||c.longhaul)],
+ ['p','razor','Razor and shaving kit','toi',150,2,1,c=>c.F.has('shave'),c=>c.cabin?'Cartridge or electric razors only in cabin bags':''],
+ ['p','makeup','Makeup kit','toi',c=>c.groom==='makeup-full'?800:300,c=>c.groom==='makeup-full'?1:2,1,c=>c.groom.startsWith('makeup')],
+ ['p','remover','Makeup remover and cotton pads','toi',100,2,1,c=>c.groom.startsWith('makeup')],
+ ['p','hairbits','Hair ties, clips and styling products','toi',100,2,1,c=>c.hair==='long'],
+ ['p','hairtools','Hair dryer or styling tool','toi',600,3,1,c=>c.F.has('styling'),c=>'Check it is dual-voltage'+(c.voltage?' ('+c.voltage+' there)':'')],
+ ['p','period','Period products','toi',200,1,1,c=>c.F.has('period')],
+ ['p','contacts','Contact lenses and solution','toi',150,1,1,c=>c.F.has('contacts')],
+ ['p','glasses',c=>c.F.has('glasses')?'Glasses and case':'Backup glasses','toi',100,c=>c.F.has('glasses')?1:2,1,c=>c.F.has('glasses')||c.F.has('contacts')],
+ ['p','sunglasses','Sunglasses','toi',50,c=>c.uv||c.snow||c.P.has('ski')?1:2,1,c=>!c.baby&&(c.warm||c.uv||c.snow||has(c.P,'beach','ski'))],
+ ['p','liquidsbag','Clear 1 L resealable liquids bag','toi',20,c=>c.cabin?1:2,1,c=>c.flight&&c.grown,'Security limit: containers up to 100 ml each'],
+ ['p','perfume','Perfume or cologne (travel size)','toi',80,3,1,c=>c.grown&&(c.biz||c.P.has('wedding')||c.wm>1)],
+ ['p','towel','Quick-dry towel','toi',W(300),c=>c.stay==='hostel'||c.stay==='camping'?1:3,1,c=>c.stay==='hostel'||c.stay==='camping'||c.P.has('backpack')],
+ ['s','toothpaste','Toothpaste and floss','toi',100,1,c=>Math.ceil(c.n/4),true],
+ ['s','shampoo',c=>'Shampoo and conditioner'+(c.cabin?' (≤100 ml)':''),'toi',200,c=>c.stay==='hotel'?3:2,c=>Math.ceil(c.n/3),true,c=>c.stay==='hotel'?'Most hotels provide these':''],
+ ['s','bodywash',c=>'Body wash or soap'+(c.cabin?' (≤100 ml)':''),'toi',150,2,c=>Math.ceil(c.n/3),c=>c.stay!=='hotel'],
+ ['s','brush','Hairbrush or comb','toi',60,2,c=>Math.ceil(c.n/2),true],
+ ['s','sunscreen','Sunscreen SPF 50','toi',150,c=>c.hot||c.uv||c.minors>0||has(c.P,'beach','ski','hike')?1:2,c=>Math.ceil(c.n/2),c=>c.warm||c.uv||has(c.P,'beach','ski','hike')],
+ ['s','repellent','Insect repellent','toi',120,c=>(c.hot&&c.humid)||c.P.has('camping')?1:2,c=>Math.ceil(c.n/3),c=>(c.warm&&c.humid)||has(c.P,'camping','hike')],
+ ['s','aftersun','After-sun gel','toi',150,3,1,c=>c.P.has('beach')],
+ ['s','nails','Nail clippers and tweezers','toi',30,3,1,c=>c.d>=5||c.minors>0],
+ ['s','sanitiser','Hand sanitiser','toi',50,2,c=>Math.ceil(c.n/3),true],
+ ['s','wipes','Tissues and wet wipes','toi',100,2,c=>Math.ceil(c.n/3),true],
+ ['s','laundrykit','Travel laundry sheets','toi',60,2,1,c=>c.laundry,'For rinsing clothes in a sink'],
  // health
- ['rx','Prescription medicine and a copy of the prescription','med',100,1,1,c=>c.F.has('meds'),'Hand luggage, plus 3 days extra for delays'],
- ['pain','Painkillers and fever reducer','med',50,1,1,true],
- ['firstaid','First-aid kit (plasters, antiseptic, bandage)','med',150,c=>has(c.P,'hike','camping')?1:2,1,true],
- ['stomach','Anti-diarrhoea tablets and rehydration salts','med',50,2,1,c=>c.intl],
- ['motion','Motion sickness tablets','med',20,c=>c.F.has('motion')?1:2,1,c=>c.F.has('motion')||c.T.has('cruise')],
- ['allergy','Antihistamines','med',20,3,1,true],
- ['blister','Blister plasters','med',30,2,1,c=>has(c.P,'hike','city','leisure','backpack')],
- ['electrolytes','Electrolyte sachets','med',60,2,1,c=>c.hot||has(c.P,'competition','hike')],
- ['sleepkit','Earplugs and eye mask','med',30,c=>c.F.has('sleeper')?1:2,1,c=>c.F.has('sleeper')||c.longhaul||c.stay==='hostel'],
- ['masks','Face masks','med',30,3,1,c=>c.flight],
- ['kidmeds',"Children's fever medicine and thermometer",'med',120,1,1,kids],
+ ['p','rx','Prescription medicine and a copy of the prescription','med',100,1,1,c=>c.F.has('meds'),'Hand luggage, plus 3 days extra for delays'],
+ ['p','motion','Motion sickness tablets or bands','med',20,1,1,c=>c.F.has('motion')],
+ ['p','sleepkit','Earplugs and eye mask','med',30,c=>c.F.has('sleeper')?1:2,1,c=>!c.baby&&(c.F.has('sleeper')||c.longhaul||c.stay==='hostel')],
+ ['p','masks','Face masks','med',30,3,1,c=>c.flight&&!c.baby],
+ ['s','pain','Painkillers and fever reducer (adult doses)','med',50,1,1,c=>c.grownN>0],
+ ['s','kidmeds',"Children's fever medicine and a thermometer",'med',120,1,1,c=>c.minors-c.nt>0],
+ ['s','firstaid','First-aid kit (plasters, antiseptic, bandage)','med',150,c=>has(c.P,'hike','camping')||c.minors>0?1:2,1,true],
+ ['s','stomach','Anti-diarrhoea tablets and rehydration salts','med',50,2,1,c=>c.intl],
+ ['s','seasick','Motion sickness tablets for the boat','med',20,2,1,c=>c.T.has('cruise')],
+ ['s','allergy','Antihistamines','med',20,3,1,true],
+ ['s','blister','Blister plasters','med',30,2,1,c=>has(c.P,'hike','city','leisure','backpack')],
+ ['s','electrolytes','Electrolyte sachets','med',60,2,c=>Math.ceil(c.n/2),c=>c.hot||has(c.P,'competition','hike')],
  // electronics
- ['phone','Phone and charging cable','ele',250,1,1,true],
- ['adapter',c=>'Travel adapter'+(c.plug?' ('+c.plug+')':''),'ele',150,1,1,c=>c.intl,c=>c.voltage?'Mains power there is '+c.voltage:''],
- ['powerbank','Power bank','ele',300,2,1,true,c=>c.flight?'Lithium batteries must go in hand luggage':''],
- ['charger','Multi-port USB charger','ele',150,2,1,c=>c.F.has('laptop')||c.F.has('photo')||kids(c)||c.style==='prepared'],
- ['headphones',c=>c.longhaul?'Noise-cancelling headphones':'Earbuds or headphones','ele',c=>c.longhaul?250:60,2,1,true],
- ['laptop','Laptop and charger','ele',2000,1,1,c=>c.F.has('laptop')||has(c.P,'remote','study')],
- ['hdmi','Presentation adapter (HDMI / USB-C) and clicker','ele',150,2,1,c=>has(c.P,'business','conference','study')],
- ['usb','USB drive with backups of key files','ele',20,2,1,c=>has(c.P,'business','conference','study','competition')],
- ['ereader','E-reader or a book','ele',250,c=>c.F.has('reading')?2:3,1,c=>c.F.has('reading')||c.longhaul],
- ['camera','Camera and lenses','ele',1200,2,1,c=>c.F.has('photo')],
- ['camacc','Spare camera batteries and memory cards','ele',150,1,1,c=>c.F.has('photo')],
- ['tripod','Travel tripod','ele',900,3,1,c=>c.F.has('photo')],
- ['gaming','Handheld console or controller','ele',500,3,1,c=>c.F.has('gaming')],
- ['watchcharger','Smartwatch charger','ele',50,1,1,c=>c.F.has('watch')],
- ['esim','Local SIM or eSIM, set up before you leave','ele',0,2,1,c=>c.intl],
- ['tracker','Bluetooth tracker inside the checked bag','ele',15,3,1,c=>!c.cabin&&c.flight],
- ['kidtablet',"Kids' tablet with downloaded shows and headphones",'ele',450,2,1,c=>c.kids==='children'],
+ ['p','phone','Phone and charging cable','ele',250,1,1,c=>c.F.has('phone')],
+ ['p','esim','Local SIM or eSIM, set up before leaving','ele',0,2,1,c=>c.intl&&c.F.has('phone')],
+ ['p','headphones',c=>c.longhaul?'Noise-cancelling headphones':'Earbuds or headphones','ele',c=>c.longhaul?250:60,2,1,c=>!c.baby&&(c.grown||c.longhaul||c.F.has('gaming'))],
+ ['p','laptop','Laptop and charger','ele',2000,1,1,c=>c.F.has('laptop')||(c.grown&&has(c.P,'remote','study'))],
+ ['p','ereader','E-reader or a book','ele',250,c=>c.F.has('reading')?2:3,1,c=>c.F.has('reading')||(c.longhaul&&c.grown)],
+ ['p','camera','Camera and lenses','ele',1200,2,1,c=>c.F.has('photo')],
+ ['p','camacc','Spare camera batteries and memory cards','ele',150,1,1,c=>c.F.has('photo')],
+ ['p','tripod','Travel tripod','ele',900,3,1,c=>c.F.has('photo')],
+ ['p','gaming','Handheld console or controller','ele',500,3,1,c=>c.F.has('gaming')],
+ ['p','watchcharger','Smartwatch charger','ele',50,1,1,c=>c.F.has('watch')],
+ ['p','tablet','Tablet with downloaded shows and headphones','ele',450,2,1,c=>c.child],
+ ['s','adapter',c=>'Travel adapter'+(c.plug?' ('+c.plug+')':''),'ele',150,1,c=>Math.max(1,Math.ceil(c.devices/3)),c=>c.intl,c=>c.voltage?'Mains power there is '+c.voltage:''],
+ ['s','powerbank','Power bank','ele',300,2,c=>Math.max(1,Math.ceil(c.devices/2)),c=>c.devices>0,c=>c.flight?'Lithium batteries must go in hand luggage':''],
+ ['s','charger','Multi-port USB charger','ele',150,2,1,c=>c.devices>1||c.style==='prepared'],
+ ['s','hdmi','Presentation adapter (HDMI / USB-C) and clicker','ele',150,2,1,c=>has(c.P,'business','conference','study')],
+ ['s','usb','USB drive with backups of key files','ele',20,2,1,c=>has(c.P,'business','conference','study','competition')],
+ ['s','tracker','Bluetooth tracker inside each checked bag','ele',15,3,c=>c.seats,c=>!c.cabin&&c.flight],
  // work & study
- ['notebook','Notebook and pens','wrk',300,2,1,c=>has(c.P,'business','conference','study')],
- ['folder','Printed documents in a folder','wrk',250,2,1,c=>c.P.has('business')],
- ['studymat','Course materials and textbooks','wrk',1000,2,1,c=>c.P.has('study')],
- ['examkit','Exam kit (calculator, pencils, eraser)','wrk',200,1,1,c=>c.P.has('study')],
- ['badge','Lanyard or badge holder','wrk',20,3,1,c=>c.P.has('conference')],
- ['desk','Laptop stand and portable mouse','wrk',400,3,1,c=>c.P.has('remote')],
+ ['p','notebook','Notebook and pens','wrk',300,2,1,c=>has(c.P,'business','conference','study')],
+ ['p','studymat','Course materials and textbooks','wrk',1000,2,1,c=>c.P.has('study')],
+ ['p','examkit','Exam kit (calculator, pencils, eraser)','wrk',200,1,1,c=>c.P.has('study')],
+ ['p','badge','Lanyard or badge holder','wrk',20,3,1,c=>c.P.has('conference')],
+ ['p','desk','Laptop stand and portable mouse','wrk',400,3,1,c=>c.P.has('remote')&&c.grown],
+ ['s','folder','Printed documents in a folder','wrk',250,2,1,c=>c.P.has('business')],
  // activities & gear
- ['daypack','Daypack','act',400,c=>has(c.P,'hike','leisure','city','backpack')?1:2,1,true],
- ['bottle','Reusable water bottle','act',200,c=>c.hot||c.P.has('hike')?1:2,1,true,c=>c.flight?'Empty it before security':''],
- ['umbrella','Compact umbrella','act',350,c=>c.wet?1:2,1,c=>c.rain],
- ['poles','Trekking poles','act',500,2,1,c=>c.P.has('hike')],
- ['headlamp','Headlamp and spare batteries','act',100,1,1,c=>has(c.P,'hike','camping')],
- ['tent','Tent','act',2500,1,1,c=>c.P.has('camping')],
- ['sleepbag','Sleeping bag','act',1500,1,1,c=>c.P.has('camping')],
- ['mat','Sleeping mat','act',700,1,1,c=>c.P.has('camping')],
- ['stove','Camp stove and cookware','act',900,2,1,c=>c.P.has('camping'),c=>c.flight?'Gas canisters cannot fly; buy fuel there':''],
- ['goggles','Ski goggles','act',250,1,1,c=>c.P.has('ski')],
- ['skigloves','Waterproof ski gloves','act',200,1,1,c=>c.P.has('ski')],
- ['skisocks','Ski socks (pairs)','act',80,1,c=>Math.min(c.d,4),c=>c.P.has('ski')],
- ['beachtowel','Beach towel or sarong','act',400,2,1,c=>c.P.has('beach')],
- ['snorkel','Snorkel mask','act',400,3,1,c=>c.P.has('beach')],
- ['drybag','Dry bag for phone and valuables','act',100,c=>c.P.has('beach')?2:3,1,c=>c.P.has('beach')||c.T.has('cruise')||c.wet],
- ['equipment','Your competition equipment (cue, racket, keyboard…)','act',1500,1,1,c=>c.P.has('competition'),'Check the airline rules for sports equipment'],
- ['spares','Spare parts and a repair kit for your equipment','act',200,2,1,c=>c.P.has('competition')],
- ['rules','Printed schedule, rules and venue map','act',20,2,1,c=>c.P.has('competition')],
- ['gifts','Small gifts for hosts','act',500,2,1,c=>c.F.has('gifts')||c.stay==='family'],
- ['prayer','Prayer or faith items','act',300,2,1,c=>c.P.has('religious')],
- ['coffee','Coffee or tea kit','act',300,3,1,c=>c.F.has('coffee')],
- // children
- ['kidclothes',"Children's outfits",'kid',250,1,c=>(c.cd+2)*c.kn,kids,'Two spare outfits per child for spills'],
- ['kidpj',"Children's sleepwear",'kid',150,1,c=>c.kn,kids],
- ['kidshoes',"Children's shoes",'kid',400,1,c=>c.kn,kids,'Worn on travel day',{wear:true}],
- ['comfort','Comfort toy or blanket','kid',200,1,c=>c.kn,kids],
- ['kidsnacks',"Kids' snacks and a spill-proof cup",'kid',400,1,1,kids],
- ['kidgames','Small games, books and colouring','kid',400,2,1,c=>c.kids==='children'],
- ['diapers','Diapers (first 3 days)','kid',40,1,c=>Math.min(c.d,3)*6*c.kn,baby,'Buy the rest at the destination'],
- ['babywipes','Baby wipes','kid',300,1,c=>Math.ceil(c.d/4),baby],
- ['feeding','Bottles, formula or feeding kit','kid',600,1,1,baby],
- ['stroller','Travel stroller','kid',6000,2,1,baby,'Most airlines check it free at the gate',{free:true}],
- ['carrier','Baby carrier','kid',600,2,1,baby],
- ['changemat','Portable changing mat','kid',200,2,1,baby],
+ ['p','daypack',c=>c.child?'Small backpack':'Daypack','act',c=>c.child?250:400,c=>has(c.P,'hike','leisure','city','backpack')?1:2,1,c=>!c.baby],
+ ['p','bottle','Reusable water bottle','act',200,c=>c.hot||c.P.has('hike')||c.child?1:2,1,c=>!c.baby,c=>c.flight?'Empty it before security':''],
+ ['p','poles','Trekking poles','act',500,2,1,c=>c.P.has('hike')&&c.grown],
+ ['p','headlamp','Headlamp and spare batteries','act',100,1,1,c=>!c.baby&&has(c.P,'hike','camping')],
+ ['p','sleepbag','Sleeping bag','act',W(1500),1,1,c=>c.P.has('camping')],
+ ['p','mat','Sleeping mat','act',W(700),1,1,c=>c.P.has('camping')],
+ ['p','goggles','Ski goggles','act',250,1,1,c=>c.P.has('ski')],
+ ['p','skigloves','Waterproof ski gloves','act',200,1,1,c=>c.P.has('ski')],
+ ['p','skisocks','Ski socks (pairs)','act',80,1,c=>Math.min(c.d,4),c=>c.P.has('ski')],
+ ['p','beachtowel','Beach towel or sarong','act',W(400),2,1,c=>c.P.has('beach')],
+ ['p','snorkel','Snorkel mask','act',400,3,1,c=>c.P.has('beach')&&!c.baby],
+ ['p','equipment','Competition equipment (cue, racket, keyboard…)','act',1500,1,1,c=>c.P.has('competition'),'Check the airline rules for sports equipment'],
+ ['p','spares','Spare parts and a repair kit for the equipment','act',200,2,1,c=>c.P.has('competition')],
+ ['p','prayer','Prayer or faith items','act',300,2,1,c=>c.P.has('religious')&&c.grown],
+ ['p','coffee','Coffee or tea kit','act',300,3,1,c=>c.F.has('coffee')],
+ ['s','umbrella','Compact umbrella','act',350,c=>c.wet?1:2,c=>Math.ceil(c.n/2),c=>c.rain],
+ ['s','tent','Tent','act',2500,1,c=>Math.ceil(c.n/3),c=>c.P.has('camping')],
+ ['s','stove','Camp stove and cookware','act',900,2,1,c=>c.P.has('camping'),c=>c.flight?'Gas canisters cannot fly; buy fuel there':''],
+ ['s','drybag','Dry bag for phones and valuables','act',100,c=>c.P.has('beach')?2:3,1,c=>c.P.has('beach')||c.T.has('cruise')||c.wet],
+ ['s','rules','Printed schedule, rules and venue map','act',20,2,1,c=>c.P.has('competition')],
+ ['s','gifts','Small gifts for hosts','act',500,2,1,c=>c.gifts||c.stay==='family'],
+ // babies & children
+ ['p','diapers','Nappies (first 3 days)','kid',40,1,c=>Math.min(c.d,3)*6,c=>c.baby,'Buy the rest at the destination'],
+ ['p','babywipes','Baby wipes','kid',300,1,c=>Math.ceil(c.d/4),c=>c.baby],
+ ['p','feeding','Bottles, formula or feeding kit','kid',600,1,1,c=>c.baby],
+ ['p','stroller','Travel stroller','kid',6000,2,1,c=>c.baby,'Most airlines check it free at the gate',{free:true}],
+ ['p','carrier','Baby carrier','kid',600,2,1,c=>c.baby],
+ ['p','comfort','Comfort toy or blanket','kid',200,1,1,c=>c.baby||c.child],
+ ['p','kidgames','Small games, books and colouring','kid',400,2,1,c=>c.child],
+ ['s','changemat','Portable changing mat','kid',200,2,1,c=>c.nb>0],
+ ['s','kidsnacks',"Children's snacks and spill-proof cups",'kid',400,1,1,c=>c.nb+c.nk>0],
  // comfort & organisation
- ['cubes','Packing cubes','com',300,2,1,c=>c.d>=3],
- ['laundrybag','Laundry bag for worn clothes','com',50,2,1,c=>c.d>=3],
- ['lock','Luggage lock (TSA-approved)','com',80,2,1,c=>c.flight],
- ['luggagetag','Luggage tag with your contact details','com',20,2,1,c=>c.flight||!c.cabin],
- ['pillow','Neck pillow','com',300,2,1,c=>c.longhaul||c.T.has('bus')],
- ['snacks','Snacks for the journey','com',300,2,1,c=>c.longhaul||c.T.has('car')||c.P.has('competition')],
- ['zipbags','A few zip bags','com',30,2,1,true,'For wet swimwear, leaks and receipts'],
- ['foldbag','Foldable bag for souvenirs','com',150,3,1,c=>has(c.P,'leisure','city','family','backpack')],
+ ['p','cubes','Packing cubes','com',W(300),2,1,c=>c.d>=3&&!c.baby],
+ ['p','pillow','Neck pillow','com',300,2,1,c=>!c.baby&&(c.longhaul||c.T.has('bus'))],
+ ['s','laundrybag','Laundry bag for worn clothes','com',50,2,c=>Math.ceil(c.n/3),c=>c.d>=3],
+ ['s','lock','Luggage lock (TSA-approved) for each bag','com',80,2,c=>c.seats,c=>c.flight&&c.seats>0],
+ ['s','luggagetag','Luggage tag with contact details for each bag','com',20,2,c=>c.seats,c=>(c.flight||!c.cabin)&&c.seats>0],
+ ['s','snacks','Snacks for the journey','com',300,2,c=>Math.ceil(c.n/2),c=>c.longhaul||c.T.has('car')||c.P.has('competition')],
+ ['s','zipbags','A few zip bags','com',30,2,1,true,'For wet swimwear, leaks and receipts'],
+ ['s','foldbag','Foldable bag for souvenirs','com',150,3,1,c=>has(c.P,'leisure','city','family','backpack')],
 ];
 
 /* ================= state ================= */
-const KEY='packing-tag-v1';
+const KEY='packing-tag-v2';
+let pidSeq=0;
+const newPerson=(age,i)=>({pid:'t'+Date.now().toString(36)+(pidSeq++),name:'',age,
+  wardrobe:'some',grooming:'basic',hair:'short',needs:age==='adult'?['phone','money']:age==='teen'?['phone']:[],skip:[]});
 const defaults=()=>({
-  v:1, example:true, view:'plan', savedAt:0,
+  v:2, example:true, view:'plan', savedAt:0,
+  people:[{...newPerson('adult'),name:'Adult 1',needs:['phone','money','laptop']},{...newPerson('adult'),name:'Adult 2',needs:['phone','money'],hair:'long',grooming:'skincare'},{...newPerson('child'),name:'Child 1'}],
   trip:{dest:'Tokyo, Japan',home:'Hanoi, Vietnam',start:'2026-11-20',end:'2026-11-26',intl:true,
-    low:9,high:17,rain:'some',snow:false,humidity:'moderate',uv:'low',
-    purpose:['business','city'],transport:['flight'],stay:'hotel',luggage:'chk23',kg:15,laundry:false,
-    style:'balanced',wardrobe:'some',grooming:'basic',hair:'short',prefs:['laptop','shave'],kids:'none',kidsn:1,
+    low:9,high:17,rain:'some',snow:false,humidity:'moderate',uv:'moderate',
+    purpose:['leisure','city'],transport:['flight'],stay:'hotel',gifts:false,luggage:'chk23',kg:40,laundry:false,style:'balanced',
     climate:{for:'Tokyo, Japan|2026-11-20|2026-11-26',code:'TYO',homeCode:'HAN',plug:'Type A/B',voltage:'100 V',currency:'JPY',
-      summary:'Example values for late November: cool, mostly clear days with occasional showers.',tips:[],extras:[]}},
-  ov:{}, custom:[], confirmed:null, packed:{}, hidePacked:false
+      source:'Example values',summary:'Cool, mostly clear late-November days with occasional showers.',lowC:9,highC:17,rainPct:25,humidityPct:63,uvIndex:3,tips:[],extras:[]}},
+  ov:{}, custom:[], confirmed:null, packed:{}, hidePacked:false, packWho:'all'
 });
-function merge(s){const d=defaults();return {...d,...s,trip:{...d.trip,...(s.trip||{})}};}
+function merge(s){const d=defaults();return {...d,...s,trip:{...d.trip,...(s.trip||{})},people:Array.isArray(s.people)&&s.people.length?s.people:d.people};}
 let state=defaults();
 try{const raw=localStorage.getItem(KEY); if(raw) state=merge(JSON.parse(raw));}catch(e){}
 
@@ -432,57 +475,96 @@ const code=s=>String(s||'').replace(/[^A-Za-z]/g,'').slice(0,3).toUpperCase()||'
 const MON=['JAN','FEB','MAR','APR','MAY','JUN','JUL','AUG','SEP','OCT','NOV','DEC'];
 const fmtD=s=>{const d=new Date(s+'T00:00');return isNaN(d)?'—':d.getDate()+' '+MON[d.getMonth()];};
 const climateKey=t=>t.dest+'|'+t.start+'|'+t.end;
-
-function lug(t){
-  if(t.luggage!=='custom') return LUG[t.luggage]||LUG.chk23;
-  const k=Math.max(1,+t.kg||10); return {label:'Custom '+k+' kg',kg:k,tare:+(k*.12).toFixed(1),cabin:k<=10};
+const label=(k,v)=>OPT[k].find(o=>o[0]===v)?.[1]||v;
+const pname=(p,i)=>p.name?.trim()||label('age',p.age).split(' ')[0]+' '+(i+1);
+function groupSummary(){
+  const n={adult:0,teen:0,child:0,baby:0}; state.people.forEach(p=>n[p.age]++);
+  const w={adult:['adult','adults'],teen:['teen','teens'],child:['child','children'],baby:['baby','babies']};
+  return Object.keys(n).filter(k=>n[k]).map(k=>n[k]+' '+w[k][n[k]>1?1:0]).join(' · ')||'Nobody yet';
 }
-function ctx(t){
+
+function lug(t,seats){
+  if(t.luggage!=='custom'){const L=LUG[t.luggage]||LUG.chk23; return {...L,capKg:(L.kg-L.tare)*seats,tareKg:L.tare*seats};}
+  const k=Math.max(1,+t.kg||10); return {label:'Custom '+k+' kg total',kg:k,capKg:k*.88,tareKg:+(k*.12).toFixed(1),cabin:k/Math.max(1,seats)<=10};
+}
+function groupCtx(t){
   const s=Date.parse(t.start), e=Date.parse(t.end);
   const n=s&&e&&e>=s?Math.round((e-s)/864e5):0, d=n+1;
-  const P=new Set(t.purpose), T=new Set(t.transport), F=new Set(t.prefs);
-  const casual=['leisure','city','beach','hike','ski','camping','study','competition','family','backpack','cruise','religious','remote','wedding'];
-  const biz=P.has('business')||P.has('conference');
+  const P=new Set(t.purpose), T=new Set(t.transport);
   const cap={light:3,balanced:5,prepared:7}[t.style]||5;
+  const ages={adult:0,teen:0,child:0,baby:0}; state.people.forEach(p=>ages[p.age]++);
+  const seats=state.people.length-ages.baby;
   const lo=+t.low, hi=+t.high, cl=t.climate||{};
-  return {n,d,cd:Math.max(1,t.laundry?Math.min(d,cap):d),wm:{few:.75,some:1,lots:1.35}[t.wardrobe]||1,
-    P,T,F,biz,bizOnly:biz&&!casual.some(k=>P.has(k)),
+  const devices=state.people.filter(p=>p.needs.includes('phone')).length+state.people.filter(p=>p.needs.includes('laptop')).length+state.people.filter(p=>p.needs.includes('photo')).length;
+  return {nights:n,d,cd:Math.max(1,t.laundry?Math.min(d,cap):d),P,T,
+    n:state.people.length,na:ages.adult,nt:ages.teen,nk:ages.child,nb:ages.baby,minors:ages.teen+ages.child+ages.baby,grownN:ages.adult+ages.teen,seats,devices,
     hot:hi>=28,warm:hi>=22,cool:lo<12,cold:lo<5,freezing:lo<=0,
     rain:t.rain!=='dry',wet:t.rain==='wet',snow:!!t.snow,humid:t.humidity==='high',uv:t.uv==='high'||t.uv==='extreme',
-    intl:!!t.intl,flight:T.has('flight')||T.has('longhaul'),longhaul:T.has('longhaul'),cabin:!!lug(t).cabin,
-    stay:t.stay,kids:t.kids,kn:Math.max(1,+t.kidsn||1),groom:t.grooming||'basic',hair:t.hair,style:t.style,laundry:!!t.laundry,
-    plug:cl.plug,voltage:cl.voltage,currency:cl.currency};
+    intl:!!t.intl,flight:T.has('flight')||T.has('longhaul'),longhaul:T.has('longhaul'),cabin:!!lug(t,Math.max(1,seats)).cabin,
+    stay:t.stay,style:t.style,laundry:!!t.laundry,gifts:!!t.gifts,plug:cl.plug,voltage:cl.voltage,currency:cl.currency};
+}
+function personCtx(g,p){
+  const P=new Set([...g.P].filter(x=>!(p.skip||[]).includes(x)));
+  const casual=['leisure','city','beach','hike','ski','camping','study','competition','family','backpack','cruise','religious','remote','wedding'];
+  const biz=P.has('business')||P.has('conference');
+  const a=p.age;
+  return {...g,P,F:new Set(p.needs||[]),biz,bizOnly:biz&&!casual.some(k=>P.has(k)),
+    adult:a==='adult',teen:a==='teen',child:a==='child',baby:a==='baby',grown:a==='adult'||a==='teen',minor:a!=='adult',
+    wf:{adult:1,teen:.9,child:.6,baby:.35}[a]||1,wm:{few:.75,some:1,lots:1.35}[p.wardrobe]||1,groom:p.grooming||'basic',hair:p.hair||'short'};
 }
 
-/* Build the list and fit it into the weight allowance:
-   essentials (and anything you forced on) first, then recommended, then optional, while weight remains. */
+/* Build the list and fit it into the group's weight allowance:
+   essentials (and anything forced on) first, then recommended, then optional, while weight remains. */
 function build(){
-  const t=state.trip, c=ctx(t);
-  const list=[];
-  for(const [id,n,cat,g,p,q,cond,why,o] of C){
-    if(!(cond===true||cond(c))) continue;
-    list.push({id,name:R(n,c),cat,g:R(g,c),p:R(p,c),q:Math.max(1,Math.round(R(q,c))),why:R(why,c)||'',wear:!!o?.wear,free:!!o?.free});
+  const t=state.trip, g=groupCtx(t), list=[];
+  const people=state.people.map((p,i)=>({p,i,name:pname(p,i),c:personCtx(g,p)}));
+  for(const [sc,id,n,cat,gr,pr,q,cond,why,o] of C){
+    const ok=c=>cond===true||cond(c), ov=state.ov[id]||{};
+    if(sc==='s'){
+      if(!ok(g)) continue;
+      const qq=ov.q||Math.max(1,Math.round(R(q,g)));
+      list.push({id,name:R(n,g),cat,p:R(pr,g),q:qq,why:R(why,g)||'',wear:!!o?.wear,free:!!o?.free,who:null,unit:R(gr,g),w:R(gr,g)*qq});
+    }else{
+      const who=[]; let first=null, p=3, w=0;
+      for(const x of people){ if(!ok(x.c)) continue;
+        const qq=Math.max(1,Math.round(R(q,x.c))+(ov.d||0)), u=R(gr,x.c);
+        who.push({pid:x.p.pid,name:x.name,q:qq}); w+=u*qq; p=Math.min(p,R(pr,x.c)); first??=x.c; }
+      if(!who.length) continue;
+      list.push({id,name:R(n,first),cat,p,q:who.reduce((a,x)=>a+x.q,0),why:R(why,first)||'',wear:!!o?.wear,free:!!o?.free,who,w});
+    }
   }
-  (t.climate?.for===climateKey(t)?t.climate.extras||[]:[]).forEach(x=>list.push({id:'x-'+slug(x.name),name:x.name,cat:'ext',g:200,p:2,q:1,why:x.why||''}));
-  state.custom.forEach(x=>list.push({...x,cat:'own',p:1,why:''}));
-  for(const it of list){const o=state.ov[it.id]; if(o?.q) it.q=o.q; it.w=it.wear||it.free?0:it.g*it.q;}
-  const L=lug(t), cap=Math.round((L.kg-L.tare)*1000);
+  (t.climate?.for===climateKey(t)?t.climate.extras||[]:[]).forEach(x=>list.push({id:'x-'+slug(x.name),name:x.name,cat:'ext',p:2,q:1,why:x.why||'',who:null,w:200}));
+  state.custom.forEach(x=>list.push({id:x.id,name:x.name,cat:'own',realCat:x.realCat,p:1,q:state.ov[x.id]?.q||1,why:'',who:null,w:(x.g||0)*(state.ov[x.id]?.q||1)}));
+  for(const it of list) if(it.wear||it.free){ it.wornW=it.wear?it.w:0; it.w=0; }
+  const L=lug(t,g.seats), cap=Math.round(L.capKg*1000);
   let used=0;
   for(const it of list){const o=state.ov[it.id]||{};
     if(o.on===false) it.st='off'; else if(o.on===true||it.p===1){it.st='on';used+=it.w;}}
   for(const p of [2,3]) for(const it of list) if(!it.st&&it.p===p){
     if(!it.w||used+it.w<=cap){it.st='on';used+=it.w;} else it.st='nofit';}
-  const worn=list.filter(i=>i.st==='on'&&i.wear).reduce((a,i)=>a+i.g*i.q,0);
-  return {c,L,cap,used,worn,list};
+  return {g,L,cap,used,worn:list.filter(i=>i.st==='on').reduce((a,i)=>a+(i.wornW||0),0),list,people};
 }
 
 /* ================= form ================= */
-function chips(k,multi,cls=''){
+function chips(k,multi,cls='',name){
+  const nm=name||'f-'+k;
   return `<div class="chips ${cls}" role="group">`+OPT[k].map(([v,l])=>
-    `<label><input type="${multi?'checkbox':'radio'}" name="f-${k}" id="f-${k}-${v}" value="${v}" data-k="${k}"${multi?' data-multi':''}><span>${esc(l)}</span></label>`).join('')+'</div>';
+    `<label><input type="${multi?'checkbox':'radio'}" name="${nm}" id="${nm}-${v}" value="${v}" data-k="${k}"${multi?' data-multi':''}><span>${esc(l)}</span></label>`).join('')+'</div>';
 }
+const sel=(k,id,attrs)=>`<select id="${id}" ${attrs}>`+OPT[k].map(([v,l])=>`<option value="${v}">${esc(l)}</option>`).join('')+'</select>';
 function buildForm(){
   $('#trip').innerHTML=`
+  <fieldset><legend>Who is travelling</legend>
+    <div class="people" id="people"></div>
+    <div class="addrow"><span class="label">Add</span>
+      <button type="button" class="btn ghost sm" data-add="adult">+ Adult</button>
+      <button type="button" class="btn ghost sm" data-add="teen">+ Teen</button>
+      <button type="button" class="btn ghost sm" data-add="child">+ Child</button>
+      <button type="button" class="btn ghost sm" data-add="baby">+ Baby</button>
+      <span class="count" id="peopleCount"></span>
+    </div>
+  </fieldset>
+
   <fieldset><legend>Where and when</legend>
     <div class="row2">
       <div class="field"><label class="label" for="f-home">From</label><input type="text" id="f-home" data-k="home" placeholder="City, country"></div>
@@ -493,66 +575,83 @@ function buildForm(){
       <div class="field"><label class="label" for="f-end">Return</label><input type="date" id="f-end" data-k="end"></div>
     </div>
     <div class="err" id="dateErr" hidden>The return date is before the departure date.</div>
-    <label class="check"><input type="checkbox" id="f-intl" data-k="intl"> Crossing a border (passport, adapter, local cash)</label>
+    <label class="check"><input type="checkbox" id="f-intl" data-k="intl"> Crossing a border (passports, adapter, local cash)</label>
   </fieldset>
 
   <fieldset><legend>Weather there</legend>
     <div style="display:flex;gap:10px;align-items:center;flex-wrap:wrap">
-      <button type="button" class="btn" id="lookup">Look up typical weather</button>
-      <span class="hint" id="lookupMsg"></span>
+      <button type="button" class="btn sm" id="lookup">Look up again</button>
+      <span class="hint" id="lookupMsg">Looked up automatically from the destination and dates.</span>
     </div>
     <div class="climate" id="climate"></div>
-    <div class="row2">
-      <div class="field"><label class="label" for="f-low">Night low °C</label><input type="number" id="f-low" data-k="low" step="1" min="-50" max="50"></div>
-      <div class="field"><label class="label" for="f-high">Day high °C</label><input type="number" id="f-high" data-k="high" step="1" min="-50" max="55"></div>
-    </div>
-    <div class="field"><span class="label">Rain</span>${chips('rain')}</div>
-    <div class="field"><span class="label">Humidity</span>${chips('humidity')}</div>
-    <div class="field"><span class="label">Sun / UV</span>${chips('uv')}</div>
-    <label class="check"><input type="checkbox" id="f-snow" data-k="snow"> Snow or ice likely</label>
+    <details class="adjust" id="adjust"><summary>Adjust the weather by hand</summary>
+      <div class="row2">
+        <div class="field"><label class="label" for="f-low">Night low °C</label><input type="number" id="f-low" data-k="low" step="1" min="-50" max="50"></div>
+        <div class="field"><label class="label" for="f-high">Day high °C</label><input type="number" id="f-high" data-k="high" step="1" min="-50" max="55"></div>
+      </div>
+      <div class="field"><span class="label">Rain</span>${chips('rain')}</div>
+      <div class="field"><span class="label">Humidity</span>${chips('humidity')}</div>
+      <div class="field"><span class="label">Sun / UV</span>${chips('uv')}</div>
+      <label class="check"><input type="checkbox" id="f-snow" data-k="snow"> Snow or ice likely</label>
+    </details>
   </fieldset>
 
   <fieldset><legend>Purpose of the trip</legend>
-    <span class="hint">Pick all that apply.</span>${chips('purpose',true)}
+    <span class="hint">Pick all that apply. Each traveller can opt out of any of them above.</span>${chips('purpose',true)}
   </fieldset>
 
   <fieldset><legend>Getting there and staying</legend>
     <div class="field"><span class="label">Transport</span>${chips('transport',true)}</div>
     <div class="field"><span class="label">Where you sleep</span>${chips('stay')}</div>
+    <label class="check"><input type="checkbox" id="f-gifts" data-k="gifts"> Bringing gifts for hosts</label>
   </fieldset>
 
   <fieldset><legend>Luggage allowance</legend>
-    ${chips("luggage",false,"lug")}
-    <div class="field" id="customKg" hidden><label class="label" for="f-kg">Total limit in kg (all bags)</label><input type="number" id="f-kg" data-k="kg" min="1" max="100" step="0.5"></div>
-    <label class="check"><input type="checkbox" id="f-laundry" data-k="laundry"> I can do laundry during the trip</label>
+    <span class="hint">Per traveller with a seat. Babies on a lap are not counted; infant allowances vary by airline.</span>
+    ${chips('luggage',false,'lug')}
+    <div class="field" id="customKg" hidden><label class="label" for="f-kg">Total limit for the whole group (kg)</label><input type="number" id="f-kg" data-k="kg" min="1" max="300" step="0.5"></div>
+    <label class="check"><input type="checkbox" id="f-laundry" data-k="laundry"> Laundry is possible during the trip</label>
     <div class="field"><span class="label">Packing style</span>${chips('style')}</div>
-  </fieldset>
-
-  <fieldset><legend>About you</legend>
-    <div class="field"><span class="label">Wardrobe</span>${chips('wardrobe')}</div>
-    <div class="field"><span class="label">Grooming and makeup</span>${chips('grooming')}</div>
-    <div class="field"><span class="label">Hair</span>${chips('hair')}</div>
-    <div class="field"><span class="label">Habits and needs</span>${chips('prefs',true)}</div>
-    <div class="field"><span class="label">Travelling with children</span>${chips('kids')}</div>
-    <div class="field" id="kidsN" hidden><label class="label" for="f-kidsn">How many children</label><input type="number" id="f-kidsn" data-k="kidsn" min="1" max="8" step="1" style="max-width:120px"></div>
   </fieldset>`;
 }
-OPT.luggage=Object.entries(LUG).map(([k,v])=>[k,v.label]);
-
+function renderPeople(){
+  const purposes=state.trip.purpose;
+  $('#people').innerHTML=state.people.map((p,i)=>{
+    const id='p-'+p.pid;
+    return `<div class="person" data-pid="${p.pid}">
+      <div class="phead"><input type="text" id="${id}-name" data-pf="name" value="${esc(p.name)}" placeholder="${esc(pname({...p,name:''},i))}" aria-label="Traveller name">
+        <button type="button" class="xbtn" data-remove="${p.pid}"${state.people.length<2?' disabled':''}>Remove</button></div>
+      ${chips('age',false,'sm',id+'-age').replace(/data-k="age"/g,'data-pf="age"')}
+      <div class="row3">${sel('wardrobe',id+'-wardrobe','data-pf="wardrobe" aria-label="Wardrobe"')}${sel('grooming',id+'-grooming','data-pf="grooming" aria-label="Grooming"')}${sel('hair',id+'-hair','data-pf="hair" aria-label="Hair"')}</div>
+      <details><summary>Needs and habits · <span class="count">${p.needs.length} selected</span></summary>
+        ${chips('needs',true,'sm',id+'-needs').replace(/data-k="needs"/g,'data-pf="needs"')}</details>
+      ${purposes.length?`<div class="field"><span class="label">Joins on this trip</span><div class="chips sm">${purposes.map(v=>
+        `<label><input type="checkbox" id="${id}-join-${v}" value="${v}" data-pf="join"${(p.skip||[]).includes(v)?'':' checked'}><span>${esc(label('purpose',v))}</span></label>`).join('')}</div></div>`:''}
+    </div>`;}).join('');
+  state.people.forEach(p=>{
+    const id='p-'+p.pid;
+    $(`#${id}-age-${p.age}`).checked=true;
+    $(`#${id}-wardrobe`).value=p.wardrobe; $(`#${id}-grooming`).value=p.grooming; $(`#${id}-hair`).value=p.hair;
+    p.needs.forEach(n=>{const el=$(`#${id}-needs-${n}`); if(el) el.checked=true;});
+  });
+  $('#peopleCount').textContent=groupSummary();
+}
 function fillForm(){
   const t=state.trip;
   for(const el of $$('[data-k]',$('#trip'))){
+    if(el.closest('#people')) continue;
     const k=el.dataset.k, v=t[k];
     if(el.type==='checkbox'&&el.hasAttribute('data-multi')) el.checked=(v||[]).includes(el.value);
     else if(el.type==='checkbox') el.checked=!!v;
     else if(el.type==='radio') el.checked=v===el.value;
     else el.value=v??'';
   }
-  syncFormBits();
+  renderPeople(); syncFormBits();
 }
 function readForm(){
   const t=state.trip, multi={};
   for(const el of $$('[data-k]',$('#trip'))){
+    if(el.closest('#people')) continue;
     const k=el.dataset.k;
     if(el.type==='checkbox'&&el.hasAttribute('data-multi')){(multi[k]??=[]); if(el.checked) multi[k].push(el.value);}
     else if(el.type==='checkbox') t[k]=el.checked;
@@ -564,7 +663,6 @@ function readForm(){
 function syncFormBits(){
   const t=state.trip;
   $('#customKg').hidden=t.luggage!=='custom';
-  $('#kidsN').hidden=t.kids==='none';
   $('#dateErr').hidden=!(t.start&&t.end&&t.end<t.start);
 }
 
@@ -573,46 +671,60 @@ function renderHeader(b){
   const t=state.trip, cl=t.climate||{}, fresh=cl.for===climateKey(t);
   const home=fresh&&cl.homeCode?cl.homeCode:code(t.home), dest=fresh&&cl.code?cl.code:code(t.dest);
   $('#route').innerHTML=`<span>${esc(home)}</span><span class="arrow" aria-label="to">→</span><span>${esc(dest)}</span>`;
-  const purp=t.purpose.map(p=>OPT.purpose.find(o=>o[0]===p)?.[1]).filter(Boolean);
-  const meta=[['Dates',fmtD(t.start)+' – '+fmtD(t.end)],['Nights',b.c.n||'Day trip'],['Weather',`${t.low}° / ${t.high}°C`],
-    ['Purpose',purp.length?purp.slice(0,2).join(', ')+(purp.length>2?' +'+(purp.length-2):''):'Not set'],['Bags',b.L.label]];
+  const purp=t.purpose.map(p=>label('purpose',p));
+  const meta=[['Dates',fmtD(t.start)+' – '+fmtD(t.end)],['Nights',b.g.nights||'Day trip'],['Travellers',groupSummary()],['Weather',`${t.low}° / ${t.high}°C`],
+    ['Purpose',purp.length?purp.slice(0,2).join(', ')+(purp.length>2?' +'+(purp.length-2):''):'Not set']];
   $('#tagmeta').innerHTML=meta.map(([k,v])=>`<div><span class="label">${k}</span><b>${esc(v)}</b></div>`).join('');
   $('#exampleNote').hidden=!state.example;
-  const ratio=b.used/b.cap, g=$('#gauge');
+  const ratio=b.cap?b.used/b.cap:2, g=$('#gauge');
   $('#kgUsed').textContent=kg(b.used);
   $('#kgCap').textContent='/ '+kg(b.cap)+' kg packable';
   $('#gaugeFill').style.width=Math.min(100,ratio*100)+'%';
-  const step=b.cap>25000?5000:1000; $('#ticks').style.backgroundSize=(step/b.cap*100)+'% 100%';
+  const step=b.cap>60000?10000:b.cap>25000?5000:1000; $('#ticks').style.backgroundSize=(b.cap?step/b.cap*100:100)+'% 100%';
   g.className='gauge'+(ratio>1?' over':ratio>.9?' warn':'');
   const out=b.list.filter(i=>i.st==='nofit').length;
-  $('#scaleNote').innerHTML=(ratio>1
-    ?`<span class="state-over">Essentials alone are ${kg(b.used-b.cap)} kg over.</span> Turn on laundry, pick fewer outfits, or add a bag.`
-    :`<span class="state-ok">${kg(b.cap-b.used)} kg spare.</span>`+(out?` ${out} lower-priority item${out>1?'s':''} left out to stay under the limit.`:''))
-    +` Bags weigh about ${b.L.tare} kg empty`+(b.worn?`; ${kg(b.worn)} kg is worn on travel day.`:'.');
+  const allowance=t.luggage==='custom'?b.L.label:`${b.g.seats} × ${b.L.label}`;
+  $('#scaleNote').innerHTML=(b.g.seats===0&&t.luggage!=='custom'?'<span class="state-over">Nobody has a seat allowance.</span> Set a custom total. '
+    :ratio>1?`<span class="state-over">Essentials alone are ${kg(b.used-b.cap)} kg over.</span> Turn on laundry, pick fewer outfits, or add a bag. `
+    :`<span class="state-ok">${kg(b.cap-b.used)} kg spare.</span>`+(out?` ${out} lower-priority item${out>1?'s':''} left out to stay under the limit. `:' '))
+    +`Allowance: ${esc(allowance)}, minus about ${b.L.tareKg.toFixed(1)} kg of empty bags`+(b.worn?`; ${kg(b.worn)} kg is worn on travel day.`:'.');
 }
+const uvName=i=>i<3?'Low':i<6?'Moderate':i<8?'High':i<11?'Very high':'Extreme';
 function renderClimate(){
   const t=state.trip, cl=t.climate||{}, fresh=cl.for===climateKey(t);
-  if(!cl.summary){ $('#climate').innerHTML='<span class="hint">No weather yet. Look it up, or set the values below yourself.</span>'; return; }
-  $('#climate').innerHTML=(fresh?'':'<span class="err">These values are for a previous destination or dates. Look up again.</span>')+
-    `<div><strong>${esc(cl.place||t.dest)}</strong> · ${esc(cl.summary)}</div>`+
+  if(!cl.summary&&cl.lowC==null){ $('#climate').innerHTML='<span class="hint">Enter a destination and dates to look up the weather.</span>'; return; }
+  const n=v=>Number.isFinite(+v)&&v!==''&&v!=null;
+  $('#climate').innerHTML=(fresh?'':'<span class="err">These values are for a previous destination or dates. Updating…</span>')+
+    `<div><strong>${esc(cl.place||t.dest)}</strong>${cl.source?` <span class="hint">· ${esc(cl.source)}</span>`:''}</div>`+
+    `<div class="wx">
+      <div><span class="label">Temperature</span><b>${n(cl.lowC)?Math.round(cl.lowC)+'–'+Math.round(cl.highC)+'°C':'—'}</b><small>night low – day high</small></div>
+      <div><span class="label">Rain</span><b>${label('rain',t.rain)}</b><small>${n(cl.rainPct)?Math.round(cl.rainPct)+'% '+(cl.forecast?'chance':'of days'):'&nbsp;'}</small></div>
+      <div><span class="label">Humidity</span><b>${label('humidity',t.humidity)}</b><small>${n(cl.humidityPct)?Math.round(cl.humidityPct)+'% average':'&nbsp;'}</small></div>
+      <div><span class="label">Sun / UV</span><b>${n(cl.uvIndex)?uvName(cl.uvIndex):label('uv',t.uv).split(' (')[0]}</b><small>${n(cl.uvIndex)?'UV index '+(+cl.uvIndex).toFixed(0)+' max':'&nbsp;'}</small></div>
+      <div><span class="label">Snow</span><b>${t.snow?'Likely':'Unlikely'}</b><small>&nbsp;</small></div>
+    </div>`+
+    (cl.summary?`<div>${esc(cl.summary)}</div>`:'')+
     `<div class="facts">${cl.plug?`<span>Plug ${esc(cl.plug)}</span>`:''}${cl.voltage?`<span>${esc(cl.voltage)}</span>`:''}${cl.currency?`<span>Cash ${esc(cl.currency)}</span>`:''}</div>`+
     (cl.tips?.length?`<ul>${cl.tips.map(x=>`<li>${esc(x)}</li>`).join('')}</ul>`:'');
 }
+const whoText=it=>it.who?(it.who.length===state.people.length&&new Set(it.who.map(w=>w.q)).size===1&&it.who.length>1
+  ?`Everyone × ${it.who[0].q}`:it.who.map(w=>`${w.name}${w.q>1?' × '+w.q:''}`).join(' · ')):'';
 function renderReview(b){
   const groups={};
   b.list.forEach(it=>(groups[it.cat]??=[]).push(it));
   let html='';
-  for(const [cat,label] of Object.entries(CATS)){
+  for(const [cat,lab] of Object.entries(CATS)){
     const items=groups[cat];
     if(!items&&cat!=='own') continue;
-    const w=(items||[]).filter(i=>i.st==='on').reduce((a,i)=>a+i.w,0);
-    html+=`<div class="group"><h3><span>${label}</span><span class="mono">${(items||[]).filter(i=>i.st==='on').length} items · ${kg(w)} kg</span></h3>`;
+    const on=(items||[]).filter(i=>i.st==='on');
+    html+=`<div class="group"><h3><span>${lab}</span><span class="mono">${on.length} items · ${kg(on.reduce((a,i)=>a+i.w,0))} kg</span></h3>`;
     for(const it of items||[]){
       const tag=it.st==='nofit'?'<span class="flag">No room · tick to add</span>':it.wear&&it.st==='on'?'<span class="wear">Wear</span>':it.free&&it.st==='on'?'<span class="wear">Gate check</span>':'';
+      const scope=it.who?`<span class="who">${esc(whoText(it))}</span>`:(state.people.length>1&&cat!=='own'&&cat!=='ext'?'<span class="shared">Shared</span> ':'');
       html+=`<div class="item ${it.st}">
         <input type="checkbox" id="inc-${it.id}" data-inc="${it.id}" ${it.st==='on'?'checked':''}>
-        <label for="inc-${it.id}"><span class="name">${esc(it.name)}</span> ${tag}${it.why?`<span class="why">${esc(it.why)}</span>`:''}${cat==='own'?` <button type="button" class="del" data-del="${it.id}">Remove</button>`:''}</label>
-        <span class="qty"><button type="button" data-q="${it.id}" data-d="-1" aria-label="Fewer">−</button><output>${it.q}</output><button type="button" data-q="${it.id}" data-d="1" aria-label="More">+</button></span>
+        <label for="inc-${it.id}"><span class="name">${esc(it.name)}</span> ${tag} ${it.who?'':scope}${it.who?scope:''}${it.why?`<span class="why">${esc(it.why)}</span>`:''}${cat==='own'?` <button type="button" class="del" data-del="${it.id}">Remove</button>`:''}</label>
+        <span class="qty" title="${it.who?'Changes the count for each person':'Changes the total'}"><button type="button" data-q="${it.id}" data-d="-1" aria-label="Fewer">−</button><output>${it.q}</output><button type="button" data-q="${it.id}" data-d="1" aria-label="More">+</button></span>
         <span class="wt">${it.wear||it.free?'—':kg(it.w)+' kg'}</span>
         <span class="pri p${it.p}">${PRI[it.p]}</span>
       </div>`;
@@ -626,22 +738,39 @@ function renderReview(b){
   }
   $('#review').innerHTML=html;
 }
+
+/* pack view: shared items get one tick; per-traveller items get one tick per person (key id@pid) */
+const keysOf=i=>i.who?i.who.map(w=>i.id+'@'+w.pid):[i.id];
 function renderPack(){
   const list=state.confirmed||[];
   if(!list.length){$('#packList').innerHTML='<div class="empty">Confirm your list on the Plan tab to start ticking items off.</div>';return;}
-  const done=list.filter(i=>state.packed[i.id]).length;
-  $('#progLabel').textContent=`${done} of ${list.length} packed`;
-  $('#progBar').style.width=(done/list.length*100)+'%';
+  const pw=$('#packWho'), whoMap=new Map(); list.forEach(i=>i.who?.forEach(w=>whoMap.set(w.pid,w.name)));
+  pw.innerHTML='<option value="all">Everyone</option><option value="shared">Shared items</option>'+[...whoMap].map(([k,v])=>`<option value="${k}">${esc(v)}</option>`).join('');
+  if(![...pw.options].some(o=>o.value===state.packWho)) state.packWho='all';
+  pw.value=state.packWho;
+  const allKeys=list.flatMap(keysOf), done=allKeys.filter(k=>state.packed[k]).length;
+  $('#progLabel').textContent=`${done} of ${allKeys.length} ticks done`;
+  $('#progBar').style.width=(done/allKeys.length*100)+'%';
   $('#hidePacked').checked=!!state.hidePacked;
   const t=state.trip;
-  $('#packNote').textContent=`${t.dest||'Your trip'} · ${fmtD(t.start)} – ${fmtD(t.end)}. Ticks are saved as you go.`+(done===list.length?' Everything is packed. Have a good trip.':'');
-  const groups={}; list.forEach(i=>(groups[i.cat]??=[]).push(i));
+  $('#packNote').textContent=`${t.dest||'Your trip'} · ${fmtD(t.start)} – ${fmtD(t.end)} · ${groupSummary()}. Ticks are saved as you go.`+(done===allKeys.length?' Everything is packed. Have a good trip.':'');
+  const f=state.packWho;
+  const visible=i=>f==='all'||(f==='shared'?!i.who:!!i.who?.some(w=>w.pid===f));
+  const groups={}; list.filter(visible).forEach(i=>(groups[i.cat]??=[]).push(i));
   $('#packList').innerHTML=Object.entries(CATS).filter(([k])=>groups[k]).map(([k,l])=>{
-    const items=groups[k].filter(i=>!(state.hidePacked&&state.packed[i.id]));
-    if(!items.length) return '';
-    return `<div class="group"><h3><span>${l}</span><span class="mono">${groups[k].filter(i=>state.packed[i.id]).length}/${groups[k].length}</span></h3>`+
-      items.map(i=>`<label class="pk${state.packed[i.id]?' done':''}"><input type="checkbox" id="pk-${i.id}" data-pk="${i.id}"${state.packed[i.id]?' checked':''}><span>${esc(i.name)}${i.wear?' <span class="wear">Wear</span>':''}</span><span class="q">× ${i.q}</span></label>`).join('')+'</div>';
-  }).join('');
+    const rows=groups[k].map(i=>{
+      const who=i.who&&f!=='all'&&f!=='shared'?i.who.filter(w=>w.pid===f):i.who;
+      const ks=who?who.map(w=>i.id+'@'+w.pid):[i.id], allDone=ks.every(x=>state.packed[x]);
+      if(state.hidePacked&&allDone) return '';
+      if(!who) return `<div class="pk${allDone?' done':''}"><div class="line"><label><input type="checkbox" id="pk-${i.id}" data-pk="${i.id}"${allDone?' checked':''}><span class="nm">${esc(i.name)}${state.people.length>1?' <span class="shared">Shared</span>':''}</span></label><span class="q">× ${i.q}</span></div></div>`;
+      if(who.length===1) { const x=i.id+'@'+who[0].pid; return `<div class="pk${allDone?' done':''}"><div class="line"><label><input type="checkbox" id="pk-${x}" data-pk="${x}"${allDone?' checked':''}><span class="nm">${esc(i.name)}${i.wear?' <span class="wear">Wear</span>':''}${f==='all'&&state.people.length>1?` <span class="shared">${esc(who[0].name)}</span>`:''}</span></label><span class="q">× ${who[0].q}</span></div></div>`; }
+      return `<div class="pk${allDone?' done':''}"><div class="line"><span class="nm">${esc(i.name)}${i.wear?' <span class="wear">Wear</span>':''}</span><span class="q">× ${who.reduce((a,w)=>a+w.q,0)}</span></div>
+        <div class="ticks">${who.map(w=>{const x=i.id+'@'+w.pid;return `<label class="${state.packed[x]?'on':''}"><input type="checkbox" id="pk-${x}" data-pk="${x}"${state.packed[x]?' checked':''}>${esc(w.name)}${w.q>1?' × '+w.q:''}</label>`;}).join('')}</div></div>`;
+    }).join('');
+    if(!rows) return '';
+    const ks=groups[k].flatMap(keysOf);
+    return `<div class="group"><h3><span>${l}</span><span class="mono">${ks.filter(x=>state.packed[x]).length}/${ks.length}</span></h3>${rows}</div>`;
+  }).join('')||'<div class="empty">Nothing left to show with these filters.</div>';
 }
 let last;
 function render(){
@@ -654,7 +783,7 @@ function render(){
   pack?renderPack():renderReview(b);
 }
 
-/* ================= saving (device + signed-in account) ================= */
+/* ================= saving (device + signed-in Claude account when available) ================= */
 let dbDoc=null, writing=false, pending=false, saveT;
 const setSync=s=>$('#sync').textContent=s;
 async function flush(){
@@ -674,7 +803,7 @@ const use=n=>window.claude?.use?window.claude.use(n).catch(()=>null):Promise.res
   const [db,user]=await Promise.all([use('db'),use('user')]);
   if(!db||!user) return;
   const id=await user.id(); if(!id) return;
-  dbDoc=db.collection('data/users/'+id).doc('packing');
+  dbDoc=db.collection('data/users/'+id).doc('packing-v2');
   try{
     const snap=await dbDoc.get();
     if(snap.exists){const d=snap.data(); if((d.savedAt||0)>(state.savedAt||0)){state=merge(JSON.parse(d.json)); fillForm(); render();}}
@@ -683,86 +812,108 @@ const use=n=>window.claude?.use?window.claude.use(n).catch(()=>null):Promise.res
   }catch(e){}
 })();
 
-/* ================= weather lookup via Claude ================= */
+/* ================= weather lookup =================
+   Inside Claude: ask Claude for climate normals (the artifact cannot reach weather APIs).
+   Standalone: Open-Meteo live forecast if the trip starts within 15 days, else the same dates in the previous 3 years. */
+const classify=x=>({
+  rain:x.rainPct<20?'dry':x.rainPct<45?'some':'wet',
+  humidity:x.humidityPct>=75?'high':x.humidityPct<45?'low':'moderate',
+  uv:x.uvIndex<3?'low':x.uvIndex<6?'moderate':x.uvIndex<8?'high':'extreme'});
+let lookupSeq=0;
 async function lookup(){
-  const t=state.trip, msg=$('#lookupMsg'), btn=$('#lookup');
-  if(!t.dest||!t.start||!t.end){msg.textContent='Enter a destination and both dates first.';return;}
-  const sample=window.claude?await use('sample'):null;
-  btn.disabled=true; msg.textContent='Looking up typical weather for '+t.dest+'…';
-  if(!sample){
-    try{applyClimate(await openMeteo(t)); msg.textContent='Filled in from the same dates in the last 3 years. Adjust it if you know better.';}
-    catch(e){msg.textContent=e?.code==='not_found'?'Could not find "'+t.dest+'". Try just the city name.':'Could not get the weather. Set the values below yourself.';}
-    finally{btn.disabled=false;}
-    return;
-  }
-  const prompt=`You are a travel climate assistant. Trip from "${t.home||'unknown'}" to "${t.dest}", ${t.start} to ${t.end}.
-Use climate normals for those dates (not a live forecast). Reply with only a JSON object:
+  const t=state.trip, msg=$('#lookupMsg'), btn=$('#lookup'), seq=++lookupSeq;
+  if(!t.dest||!t.start||!t.end||t.end<t.start){msg.textContent='Enter a destination and both dates to look up the weather.';return;}
+  btn.disabled=true; msg.textContent='Looking up weather for '+t.dest+'…';
+  try{
+    const sample=window.claude?await use('sample'):null;
+    let r;
+    if(sample) r=await askClaude(sample,t);
+    else if(window.claude){ msg.textContent='Weather lookup needs a signed-in Claude viewer. Adjust the weather by hand below.'; $('#adjust').open=true; return; }
+    else r=await openMeteo(t);
+    if(seq!==lookupSeq) return;
+    applyClimate(r);
+    msg.textContent=r.forecast?'Live forecast filled in.':'Typical weather for these dates filled in.';
+  }catch(e){
+    if(seq!==lookupSeq) return;
+    msg.textContent=e?.code==='not_found'?'Could not find "'+t.dest+'". Try just the city name.'
+      :e?.code==='not_granted'?'Weather lookup was not allowed. Adjust the weather by hand below.'
+      :e?.code==='rate_limited'?'Too many lookups just now. Try again in a minute.'
+      :'Could not get the weather. Try again, or adjust it by hand below.';
+  }finally{ if(seq===lookupSeq) btn.disabled=false; }
+}
+async function askClaude(sample,t){
+  return sample.json(`You are a travel climate assistant. Trip from "${t.home||'unknown'}" to "${t.dest}", ${t.start} to ${t.end}.
+Use climate normals for those dates and that place (not a live forecast). Reply with only a JSON object:
 {"place": normalised destination "City, Country",
- "code": 3-letter IATA code of the destination's main airport or city,
- "homeCode": same for the origin, or "",
+ "code": 3-letter IATA code of the destination's main airport or city, "homeCode": same for the origin, or "",
  "international": true if the trip crosses a national border,
- "lowC": typical night low in °C (integer), "highC": typical day high in °C (integer),
- "rain": "dry" | "some" | "wet", "snow": true|false,
- "humidity": "low" | "moderate" | "high", "uv": "low" | "moderate" | "high" | "extreme",
+ "lowC": typical night low °C, "highC": typical day high °C,
+ "rainPct": typical % of days with at least 1 mm of rain, "humidityPct": typical mean relative humidity %,
+ "uvIndex": typical daily maximum UV index, "snow": true if snow or ice is likely,
  "summary": one short sentence on the typical weather for those dates,
  "plug": plug types e.g. "Type A/B", "voltage": e.g. "100 V", "currency": ISO code e.g. "JPY",
  "tips": up to 3 short practical packing tips specific to this place and season,
- "extras": up to 5 objects {"name": short item to pack, "why": under 12 words} that are specific to this destination and not generic travel items}`;
-  try{
-    applyClimate(await sample.json(prompt,{modelTier:'default'}));
-    msg.textContent='Typical weather filled in. Adjust it if you know better.';
-  }catch(e){
-    msg.textContent=e?.code==='not_granted'?'Weather lookup was not allowed. Set the values below yourself.'
-      :e?.code==='rate_limited'?'Too many lookups just now. Try again in a minute.'
-      :'Could not get the weather. Try again, or set the values below yourself.';
-  }finally{btn.disabled=false;}
+ "extras": up to 5 objects {"name": short item to pack, "why": under 12 words} specific to this destination, not generic travel items}`,{modelTier:'default'})
+    .then(r=>({...r,source:'Climate normals from Claude'}));
 }
-function applyClimate(r){
-    const t=state.trip;
-    const pick=(v,ok,d)=>ok.includes(v)?v:d, num=(v,d)=>Number.isFinite(+v)?Math.round(+v):d;
-    Object.assign(t,{low:num(r.lowC,t.low),high:num(r.highC,t.high),rain:pick(r.rain,['dry','some','wet'],t.rain),snow:!!r.snow,
-      humidity:pick(r.humidity,['low','moderate','high'],t.humidity),uv:pick(r.uv,['low','moderate','high','extreme'],t.uv),
-      intl:typeof r.international==='boolean'?r.international:t.intl});
-    t.climate={for:climateKey(t),place:String(r.place||t.dest),code:String(r.code||'').slice(0,4).toUpperCase(),homeCode:String(r.homeCode||'').slice(0,4).toUpperCase(),
-      summary:String(r.summary||''),plug:String(r.plug||''),voltage:String(r.voltage||''),currency:String(r.currency||''),
-      tips:(Array.isArray(r.tips)?r.tips:[]).slice(0,3).map(String),
-      extras:(Array.isArray(r.extras)?r.extras:[]).slice(0,5).filter(x=>x&&x.name).map(x=>({name:String(x.name),why:String(x.why||'')}))};
-    state.example=false;
-    fillForm(); render(); save();
-}
-// Standalone fallback (no Claude): Open-Meteo geocoding + ERA5 history for the same dates in the 3 previous years.
-// ponytail: past-weather average, not a forecast; no plug/currency data here, add a country table if wanted.
 async function openMeteo(t){
-  const geo=async q=>q?(await (await fetch('https://geocoding-api.open-meteo.com/v1/search?count=1&name='+encodeURIComponent(q.split(',')[0].trim()))).json()).results?.[0]:null;
-  const [d,h]=await Promise.all([geo(t.dest),geo(t.home)]);
+  const getJson=async u=>{const r=await fetch(u); const j=await r.json(); if(!r.ok||j.error) throw new Error(j.reason||r.status); return j;};
+  const geo=async q=>q?(await getJson('https://geocoding-api.open-meteo.com/v1/search?count=1&name='+encodeURIComponent(q.split(',')[0].trim()))).results?.[0]:null;
+  const [d,h]=await Promise.all([geo(t.dest),geo(t.home).catch(()=>null)]);
   if(!d) throw {code:'not_found'};
-  const days=Math.min(31,Math.max(1,Math.round((Date.parse(t.end)-Date.parse(t.start))/864e5)+1));
-  const shift=(s,k)=>(+s.slice(0,4)-k)+s.slice(4).replace('-02-29','-02-28');
-  const y=+t.start.slice(0,4), yrs=[1,2,3];
-  const runs=await Promise.all(yrs.map(async k=>{
-    const s=shift(t.start,k), e=new Date(Date.parse(s)+(days-1)*864e5).toISOString().slice(0,10);
-    const r=await fetch(`https://archive-api.open-meteo.com/v1/archive?latitude=${d.latitude}&longitude=${d.longitude}&start_date=${s}&end_date=${e}&daily=temperature_2m_max,temperature_2m_min,precipitation_sum,snowfall_sum,relative_humidity_2m_mean,shortwave_radiation_sum&timezone=auto`);
-    if(!r.ok) throw new Error('archive '+r.status); return (await r.json()).daily;
-  }));
+  const vars='temperature_2m_max,temperature_2m_min,precipitation_sum,snowfall_sum,relative_humidity_2m_mean,uv_index_max';
+  const iso=ms=>new Date(ms).toISOString().slice(0,10);
+  const today=iso(Date.now()), horizon=iso(Date.now()+15*864e5);
+  const days=Math.min(31,Math.round((Date.parse(t.end)-Date.parse(t.start))/864e5)+1);
+  const loc=`latitude=${d.latitude}&longitude=${d.longitude}&timezone=auto`;
+  let runs, forecast=false, source;
+  if(t.start>=today&&t.start<=horizon){
+    const end=t.end<horizon?t.end:horizon;
+    runs=[(await getJson(`https://api.open-meteo.com/v1/forecast?${loc}&start_date=${t.start}&end_date=${end}&daily=${vars},precipitation_probability_max`)).daily];
+    forecast=true; source=`Forecast for ${fmtD(t.start)} – ${fmtD(end)}`+(end<t.end?' (later days not forecast yet)':'');
+  }else{
+    const y=+t.start.slice(0,4), shift=k=>(y-k)+t.start.slice(4).replace('-02-29','-02-28');
+    const res=await Promise.allSettled([1,2,3].map(k=>{const s=shift(k);
+      return getJson(`https://historical-forecast-api.open-meteo.com/v1/forecast?${loc}&start_date=${s}&end_date=${iso(Date.parse(s)+(days-1)*864e5)}&daily=${vars}`).then(j=>({y:y-k,d:j.daily}));}));
+    const ok=res.filter(r=>r.status==='fulfilled').map(r=>r.value);
+    if(!ok.length) throw new Error('no data');
+    runs=ok.map(o=>o.d); source='Same dates in '+ok.map(o=>o.y).sort().join(', ');
+  }
   const all=k=>runs.flatMap(r=>r[k]||[]).filter(v=>v!=null);
   const avg=a=>a.length?a.reduce((x,y)=>x+y,0)/a.length:NaN;
-  const frac=(a,f)=>a.length?a.filter(f).length/a.length:0;
-  const wet=frac(all('precipitation_sum'),v=>v>=1), hum=avg(all('relative_humidity_2m_mean')), sun=avg(all('shortwave_radiation_sum'));
-  const lowC=avg(all('temperature_2m_min')), highC=avg(all('temperature_2m_max'));
-  const rain=wet<.2?'dry':wet<.45?'some':'wet';
+  const pct=(a,f)=>a.length?100*a.filter(f).length/a.length:NaN;
+  const rainPct=forecast&&all('precipitation_probability_max').length?avg(all('precipitation_probability_max')):pct(all('precipitation_sum'),v=>v>=1);
   return {place:d.name+(d.country?', '+d.country:''),code:code(d.name),homeCode:h?code(h.name):'',
-    international:h?h.country_code!==d.country_code:t.intl,lowC,highC,rain,snow:frac(all('snowfall_sum'),v=>v>.5)>.1,
-    humidity:hum>75?'high':hum<45?'low':'moderate',uv:sun>26?'extreme':sun>20?'high':sun<12?'low':'moderate',
-    summary:`Same dates in ${yrs.map(k=>y-k).reverse().join(', ')}: ${Math.round(lowC)}–${Math.round(highC)}°C, rain on about ${Math.round(wet*100)}% of days.`,
-    plug:'',voltage:'',currency:'',tips:[],extras:[]};
+    international:h?h.country_code!==d.country_code:t.intl,
+    lowC:avg(all('temperature_2m_min')),highC:avg(all('temperature_2m_max')),rainPct,
+    humidityPct:avg(all('relative_humidity_2m_mean')),uvIndex:avg(all('uv_index_max')),
+    snow:pct(all('snowfall_sum'),v=>v>.5)>(forecast?0:10),forecast,source,summary:'',plug:'',voltage:'',currency:'',tips:[],extras:[]};
 }
+function applyClimate(r){
+  const t=state.trip, num=(v,d)=>Number.isFinite(+v)&&v!==null&&v!==''?+v:d;
+  const x={lowC:num(r.lowC,t.low),highC:num(r.highC,t.high),rainPct:num(r.rainPct,NaN),humidityPct:num(r.humidityPct,NaN),uvIndex:num(r.uvIndex,NaN)};
+  const k=classify(x);
+  Object.assign(t,{low:Math.round(x.lowC),high:Math.round(x.highC),snow:!!r.snow,
+    rain:Number.isFinite(x.rainPct)?k.rain:t.rain,humidity:Number.isFinite(x.humidityPct)?k.humidity:t.humidity,uv:Number.isFinite(x.uvIndex)?k.uv:t.uv,
+    intl:typeof r.international==='boolean'?r.international:t.intl});
+  t.climate={for:climateKey(t),place:String(r.place||t.dest),code:String(r.code||'').slice(0,4).toUpperCase(),homeCode:String(r.homeCode||'').slice(0,4).toUpperCase(),
+    source:String(r.source||''),forecast:!!r.forecast,summary:String(r.summary||''),...x,
+    plug:String(r.plug||''),voltage:String(r.voltage||''),currency:String(r.currency||''),
+    tips:(Array.isArray(r.tips)?r.tips:[]).slice(0,3).map(String),
+    extras:(Array.isArray(r.extras)?r.extras:[]).slice(0,5).filter(x=>x&&x.name).map(x=>({name:String(x.name),why:String(x.why||'')}))};
+  state.example=false;
+  fillForm(); render(); save();
+}
+let autoT;
+function autoLookup(){ clearTimeout(autoT); autoT=setTimeout(()=>{const t=state.trip; if(t.climate?.for!==climateKey(t)) lookup();},1200); }
 
 /* ================= export ================= */
+const lineFor=i=>`${i.name}${i.who?' — '+whoText(i):(i.q>1?' × '+i.q:'')}`;
 function asText(){
   const t=state.trip, list=state.confirmed||[];
   const groups={}; list.forEach(i=>(groups[i.cat]??=[]).push(i));
-  return `PACKING LIST · ${t.dest} · ${fmtD(t.start)} – ${fmtD(t.end)}\n`+Object.entries(CATS).filter(([k])=>groups[k]).map(([k,l])=>
-    `\n${l.toUpperCase()}\n`+groups[k].map(i=>`[${state.packed[i.id]?'x':' '}] ${i.name}${i.q>1?' × '+i.q:''}`).join('\n')).join('\n');
+  return `PACKING LIST · ${t.dest} · ${fmtD(t.start)} – ${fmtD(t.end)} · ${groupSummary()}\n`+Object.entries(CATS).filter(([k])=>groups[k]).map(([k,l])=>
+    `\n${l.toUpperCase()}\n`+groups[k].map(i=>`[${keysOf(i).every(x=>state.packed[x])?'x':' '}] ${lineFor(i)}`).join('\n')).join('\n');
 }
 function printable(){
   const t=state.trip, list=state.confirmed||[];
@@ -770,52 +921,88 @@ function printable(){
   return `<!doctype html><html><head><meta charset="utf-8"><title>Packing list · ${esc(t.dest)}</title><style>
 body{font:13px/1.45 Arial,sans-serif;color:#111;margin:18mm}h1{font-size:22px;margin:0}p{margin:4px 0 14px;color:#444}
 .cols{columns:2;column-gap:10mm}.g{break-inside:avoid;margin-bottom:10px}h2{font-size:13px;text-transform:uppercase;letter-spacing:.08em;border-bottom:1.5px solid #111;padding-bottom:2px;margin:0 0 4px}
-.i{display:flex;gap:8px;padding:3px 0;border-bottom:1px dotted #bbb}.b{width:11px;height:11px;border:1.5px solid #111;flex:none;margin-top:2px}.q{margin-left:auto;color:#555}
-@page{margin:0}</style></head><body><h1>Packing list · ${esc(t.dest)}</h1><p>${fmtD(t.start)} – ${fmtD(t.end)} · ${list.length} items · ${esc(lug(t).label)}</p><div class="cols">`+
-  Object.entries(CATS).filter(([k])=>groups[k]).map(([k,l])=>`<div class="g"><h2>${l}</h2>`+groups[k].map(i=>`<div class="i"><span class="b"></span><span>${esc(i.name)}</span><span class="q">${i.q>1?'× '+i.q:''}</span></div>`).join('')+'</div>').join('')+
+.i{padding:3px 0;border-bottom:1px dotted #bbb}.i>div{display:flex;gap:8px}.b{width:11px;height:11px;border:1.5px solid #111;flex:none;margin-top:2px;display:inline-block}.q{margin-left:auto;color:#555}
+.w{display:flex;flex-wrap:wrap;gap:4px 12px;padding:2px 0 0 19px;color:#333;font-size:12px}.w span{display:inline-flex;gap:5px;align-items:center}.w .b{width:9px;height:9px;margin:0}
+@page{margin:0}</style></head><body><h1>Packing list · ${esc(t.dest)}</h1><p>${fmtD(t.start)} – ${fmtD(t.end)} · ${esc(groupSummary())} · ${list.length} items</p><div class="cols">`+
+  Object.entries(CATS).filter(([k])=>groups[k]).map(([k,l])=>`<div class="g"><h2>${l}</h2>`+groups[k].map(i=>
+    i.who&&i.who.length>1
+      ?`<div class="i"><div><span>${esc(i.name)}</span><span class="q">× ${i.q}</span></div><div class="w">${i.who.map(w=>`<span><span class="b"></span>${esc(w.name)}${w.q>1?' × '+w.q:''}</span>`).join('')}</div></div>`
+      :`<div class="i"><div><span class="b"></span><span>${esc(i.name)}${i.who?' ('+esc(i.who[0].name)+')':''}</span><span class="q">${i.q>1?'× '+i.q:''}</span></div></div>`).join('')+'</div>').join('')+
   `</div><script>window.onload=function(){window.print()}<\/script></body></html>`;
 }
 
 /* ================= events ================= */
 buildForm(); fillForm(); render();
+if(state.trip.climate?.for!==climateKey(state.trip)) autoLookup();
 
-$('#trip').addEventListener('input',()=>{readForm(); state.example=false; syncFormBits(); render(); save();});
+$('#trip').addEventListener('input',e=>{
+  if(e.target.closest('#people')) return;
+  const before=state.trip.purpose.join();
+  readForm(); state.example=false; syncFormBits();
+  if(state.trip.purpose.join()!==before) renderPeople();
+  render(); save();
+  if(['dest','start','end','home'].includes(e.target.dataset.k)) autoLookup();
+});
 $('#trip').addEventListener('submit',e=>e.preventDefault());
 $('#lookup').addEventListener('click',lookup);
 
+// travellers
+$('#trip').addEventListener('click',e=>{
+  const add=e.target.closest('[data-add]'), rm=e.target.closest('[data-remove]');
+  if(add){ const age=add.dataset.add, n=state.people.filter(p=>p.age===age).length+1;
+    state.people.push({...newPerson(age),name:label('age',age).split(' ')[0]+' '+n}); state.example=false; renderPeople(); render(); save();
+    $$('.person').at(-1)?.querySelector('input[type=text]')?.focus(); }
+  if(rm&&state.people.length>1){ state.people=state.people.filter(p=>p.pid!==rm.dataset.remove); state.example=false; renderPeople(); render(); save(); }
+});
+$('#trip').addEventListener('input',e=>{
+  const card=e.target.closest('.person'); if(!card) return;
+  const p=state.people.find(x=>x.pid===card.dataset.pid), f=e.target.dataset.pf; if(!p||!f) return;
+  if(f==='name') p.name=e.target.value;
+  else if(f==='age'){ if(e.target.checked) p.age=e.target.value; $('#peopleCount').textContent=groupSummary(); }
+  else if(f==='needs'){ p.needs=$$('[data-pf="needs"]:checked',card).map(x=>x.value); card.querySelector('summary .count').textContent=p.needs.length+' selected'; }
+  else if(f==='join') p.skip=$$('[data-pf="join"]',card).filter(x=>!x.checked).map(x=>x.value);
+  else p[f]=e.target.value;
+  state.example=false; render(); save();
+});
+
+// review list
 $('#review').addEventListener('change',e=>{
   const id=e.target.dataset.inc; if(!id) return;
   (state.ov[id]??={}).on=e.target.checked; render(); save();
 });
 $('#review').addEventListener('click',e=>{
   const q=e.target.closest('[data-q]'), del=e.target.closest('[data-del]');
-  if(q){const it=last.list.find(i=>i.id===q.dataset.q); const o=(state.ov[it.id]??={}); o.q=Math.max(1,it.q+ +q.dataset.d); render(); save();}
+  if(q){const it=last.list.find(i=>i.id===q.dataset.q), o=(state.ov[it.id]??={}), d=+q.dataset.d;
+    if(it.who){ const minQ=Math.min(...it.who.map(w=>w.q)); if(d<0&&minQ<=1) return; o.d=(o.d||0)+d; }
+    else o.q=Math.max(1,it.q+d);
+    render(); save();}
   if(del){e.preventDefault(); state.custom=state.custom.filter(x=>x.id!==del.dataset.del); render(); save();}
 });
 $('#review').addEventListener('submit',e=>{
   e.preventDefault();
   const name=$('#own-name').value.trim(); if(!name) return;
   const cat=$('#own-cat').value, g=Math.max(0,+$('#own-g').value||0);
-  const item={id:'u-'+Date.now().toString(36),name,g,q:1};
-  if(cat==='own') state.custom.push(item); else state.custom.push({...item,realCat:cat});
+  state.custom.push({id:'u-'+Date.now().toString(36),name,g,realCat:cat==='own'?null:cat});
   render(); save(); $('#own-name')?.focus();
 });
 $('#resetOv').addEventListener('click',()=>{state.ov={}; render(); save();});
 $('#confirm').addEventListener('click',()=>{
-  state.confirmed=last.list.filter(i=>i.st==='on').map(i=>({id:i.id,name:i.name,cat:i.realCat||i.cat,q:i.q,wear:i.wear}));
-  const ids=new Set(state.confirmed.map(i=>i.id));
-  for(const k in state.packed) if(!ids.has(k)) delete state.packed[k];
+  state.confirmed=last.list.filter(i=>i.st==='on').map(i=>({id:i.id,name:i.name,cat:i.realCat||i.cat,q:i.q,wear:i.wear,who:i.who}));
+  const keys=new Set(state.confirmed.flatMap(keysOf));
+  for(const k in state.packed) if(!keys.has(k)) delete state.packed[k];
   state.view='pack'; render(); save(); window.scrollTo({top:0});
 });
 $('#tabPlan').addEventListener('click',()=>{state.view='plan'; render(); save();});
 $('#tabPack').addEventListener('click',()=>{if(!state.confirmed) return; state.view='pack'; render(); save();});
+
+// pack view
 $('#packList').addEventListener('change',e=>{
-  const id=e.target.dataset.pk; if(!id) return;
-  if(e.target.checked) state.packed[id]=true; else delete state.packed[id];
+  const k=e.target.dataset.pk; if(!k) return;
+  if(e.target.checked) state.packed[k]=true; else delete state.packed[k];
   renderPack(); save();
 });
+$('#packWho').addEventListener('change',e=>{state.packWho=e.target.value; renderPack(); save();});
 $('#hidePacked').addEventListener('change',e=>{state.hidePacked=e.target.checked; renderPack(); save();});
-
 let untickArmed;
 $('#untick').addEventListener('click',e=>{
   const b=e.currentTarget;
@@ -829,8 +1016,8 @@ $('#copyText').addEventListener('click',e=>{
   try{navigator.clipboard.writeText(txt).then(()=>done('Copied'),()=>fallback());}catch(err){fallback();}
   function fallback(){const ta=document.createElement('textarea');ta.value=txt;ta.style.cssText='width:100%;height:200px;margin-top:10px';$('#packNote').after(ta);ta.select();done('Select and copy the text below');}
 });
-const dlReady=use('downloads');
 // Inside Claude the frame cannot print, so offer a printable file; standalone, just print.
+const dlReady=use('downloads');
 dlReady.then(d=>{if(!d){ if(window.claude) $('#dlPrint').hidden=true; else $('#dlPrint').textContent='Print list'; }});
 $('#dlPrint').addEventListener('click',async e=>{
   const b=e.currentTarget, d=await dlReady;
