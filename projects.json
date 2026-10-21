@@ -15,6 +15,11 @@
     "description": "Worksheet 6 trang cho Nam Anh & Ngọc Linh — quay phim LEGO stop motion Hè 2026. In ra, làm thật, tự cải thiện.",
     "hidden": false
   },
+  "packing-tag": {
+    "label": "Packing Tag Planner",
+    "description": "Enter your destination, dates, purpose, luggage limit and habits; get a packing list fitted to your weight allowance, then tick items off or print it.",
+    "hidden": false
+  },
   "links": [
     {
       "label": "Leadership Skills Inventory",
