@@ -1,0 +1,155 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Ước Mơ Của Em</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:wght@400;500;600;800&display=swap">
+<style>
+/* Layout: sunrise header; a password card until unlocked; then kid tabs, the child's photo as "now",
+   and a grid of 20 "future" video cards; tapping a card opens it large with a download link. */
+:root{
+  --bg:#FFF8EF; --surface:#FFFFFF; --sunk:#FBEBD8; --ink:#2A1B12; --muted:#7A6455; --line:#EED9C2;
+  --accent:#E8572A; --accent-ink:#FFFFFF; --sky:#2C6E8F; --r:16px;
+  --f:"Be Vietnam Pro",system-ui,-apple-system,"Segoe UI",sans-serif;
+}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){
+  --bg:#17110D; --surface:#221912; --sunk:#2E2219; --ink:#F6EADF; --muted:#BFA894; --line:#3D2E22;
+  --accent:#FF7A4A; --accent-ink:#1E0E06; --sky:#7FC0E0; color-scheme:dark}}
+:root[data-theme="dark"]{
+  --bg:#17110D; --surface:#221912; --sunk:#2E2219; --ink:#F6EADF; --muted:#BFA894; --line:#3D2E22;
+  --accent:#FF7A4A; --accent-ink:#1E0E06; --sky:#7FC0E0; color-scheme:dark}
+[hidden]{display:none!important}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--ink);font:400 16px/1.5 var(--f)}
+.wrap{max-width:1180px;margin:0 auto;padding:24px max(16px,env(safe-area-inset-left,0px)) 56px}
+header{display:flex;gap:16px;align-items:flex-end;justify-content:space-between;flex-wrap:wrap;margin-bottom:24px}
+h1{font-weight:800;font-size:clamp(32px,6vw,56px);line-height:1;margin:0;letter-spacing:-.02em}
+h1 span{color:var(--accent)}
+.sub{color:var(--muted);margin:8px 0 0;max-width:46ch}
+button,input{font:inherit;color:inherit}
+:focus-visible{outline:3px solid var(--accent);outline-offset:2px}
+.card{background:var(--surface);border:1px solid var(--line);border-radius:var(--r)}
+.login{max-width:380px;margin:12vh auto 0;padding:28px;display:grid;gap:12px}
+.login input{padding:12px 14px;border:1px solid var(--line);border-radius:10px;background:var(--bg)}
+.btn{padding:12px 18px;border:0;border-radius:10px;background:var(--accent);color:var(--accent-ink);font-weight:600;cursor:pointer}
+.err{color:#C4302B;min-height:1.5em;margin:0;font-size:14px}
+.tabs{display:flex;gap:8px;flex-wrap:wrap}
+.tab{padding:10px 18px;border-radius:999px;border:1px solid var(--line);background:var(--surface);cursor:pointer;font-weight:600}
+.tab[aria-selected="true"]{background:var(--ink);color:var(--bg);border-color:var(--ink)}
+.now{display:flex;gap:16px;align-items:center;padding:14px;margin:20px 0}
+.now img{width:88px;height:88px;object-fit:cover;border-radius:12px}
+.now b{display:block;font-size:20px}
+.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:16px}
+.job{padding:0;overflow:hidden;cursor:pointer;text-align:left;display:flex;flex-direction:column}
+.job video{width:100%;aspect-ratio:3/4;object-fit:cover;background:var(--sunk);display:block}
+.job .t{padding:10px 12px 12px}
+.job .vi{font-weight:600;display:block}
+.job .en{color:var(--muted);font-size:13px}
+.empty{color:var(--muted);padding:32px 0}
+dialog{border:0;padding:0;border-radius:var(--r);background:var(--surface);color:var(--ink);max-width:min(92vw,520px);width:100%}
+dialog::backdrop{background:rgb(0 0 0 / .7)}
+dialog video{width:100%;display:block;aspect-ratio:3/4;background:#000}
+.dlg{display:flex;justify-content:space-between;align-items:center;gap:12px;padding:12px 14px;flex-wrap:wrap}
+.dlg a{color:var(--sky);font-weight:600}
+.x{border:0;background:var(--sunk);border-radius:8px;padding:8px 12px;cursor:pointer}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <div>
+      <h1>Ước mơ <span>của em</span></h1>
+      <p class="sub">Lớn lên em muốn làm nghề gì? Mỗi video là một phiên bản tương lai do AI tạo ra, hoàn toàn trên máy tính cá nhân.</p>
+    </div>
+  </header>
+
+  <form class="card login" id="login">
+    <label for="pw"><b>Mật khẩu</b> · Password</label>
+    <input id="pw" type="password" autocomplete="current-password" required>
+    <button class="btn">Xem video</button>
+    <p class="err" id="err" role="alert"></p>
+  </form>
+
+  <main id="gallery" hidden>
+    <div class="tabs" role="tablist" id="tabs"></div>
+    <div class="card now" id="now"><img id="nowImg" alt=""><div><span class="sub">Bây giờ · Now</span><b id="nowName"></b></div></div>
+    <div class="grid" id="grid"></div>
+    <p class="empty" id="empty" hidden>Chưa có video nào. Chạy <code>futureme.py upload</code> trên máy Mac để đưa video lên.</p>
+  </main>
+</div>
+
+<dialog id="dlg">
+  <video id="big" controls playsinline autoplay loop></video>
+  <div class="dlg"><b id="bigTitle"></b><span><a id="dl" download>Tải về</a> &nbsp; <button class="x" id="close">Đóng</button></span></div>
+</dialog>
+
+<script>
+const API = '/api/future-me/';
+const $ = id => document.getElementById(id);
+let jobs = {}, items = [], kid = null;
+
+async function load() {
+  const r = await fetch(API + 'list');
+  if (r.status === 401) return false;
+  if (!r.ok) { $('err').textContent = (await r.json()).error; return false; }
+  items = await r.json();
+  $('login').hidden = true; $('gallery').hidden = false;
+  const kids = [...new Set(items.map(i => i.kid))];
+  $('empty').hidden = kids.length > 0;
+  $('tabs').innerHTML = '';
+  kids.forEach(k => {
+    const b = document.createElement('button');
+    b.className = 'tab'; b.role = 'tab'; b.textContent = pretty(k);
+    b.onclick = () => show(k); $('tabs').append(b);
+  });
+  if (kids.length) show(kids[0]);
+  return true;
+}
+
+const pretty = k => k.split('-').map(w => w[0].toUpperCase() + w.slice(1)).join(' ');
+
+function show(k) {
+  kid = k;
+  [...$('tabs').children].forEach(b => b.setAttribute('aria-selected', b.textContent === pretty(k)));
+  $('nowName').textContent = pretty(k);
+  $('nowImg').src = API + `file/${k}__child.jpg`;
+  $('now').hidden = false; $('nowImg').onerror = () => $('now').hidden = true;
+  const order = Object.keys(jobs);
+  const mine = items.filter(i => i.kid === k).sort((a, b) => order.indexOf(a.job) - order.indexOf(b.job));
+  $('grid').innerHTML = '';
+  mine.forEach(i => {
+    const j = jobs[i.job] || { vi: i.job, en: '' };
+    const c = document.createElement('button');
+    c.className = 'card job';
+    c.innerHTML = `<video muted loop playsinline preload="metadata"></video><span class="t"><span class="vi"></span><span class="en"></span></span>`;
+    const v = c.querySelector('video');
+    v.src = API + i.video; if (i.poster) v.poster = API + i.poster;
+    c.querySelector('.vi').textContent = j.vi; c.querySelector('.en').textContent = j.en;
+    c.onmouseenter = () => v.play().catch(() => {}); c.onmouseleave = () => v.pause();
+    c.onclick = () => open(i, j);
+    $('grid').append(c);
+  });
+}
+
+function open(i, j) {
+  $('big').src = API + i.video;
+  $('bigTitle').textContent = `${pretty(i.kid)} · ${j.vi}`;
+  $('dl').href = API + i.video; $('dl').download = `${i.kid}__${i.job}.mp4`;
+  $('dlg').showModal();
+}
+$('close').onclick = () => $('dlg').close();
+$('dlg').onclose = () => $('big').pause();
+
+$('login').onsubmit = async e => {
+  e.preventDefault(); $('err').textContent = '';
+  const r = await fetch(API + 'login', { method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify({ password: $('pw').value }) });
+  if (!r.ok) { $('err').textContent = r.status === 401 ? 'Sai mật khẩu' : (await r.json()).error; return; }
+  load();
+};
+
+fetch('professions.json').then(r => r.json()).then(list => { list.forEach(j => jobs[j.id] = j); load(); });
+</script>
+</body>
+</html>

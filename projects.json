@@ -20,6 +20,11 @@
     "description": "Set up any mix of travellers, get a packing list fitted to your luggage allowance and the destination's weather, then tick items off per person or print it.",
     "hidden": false
   },
+  "future-me": {
+    "label": "Ước Mơ Của Em · Future Me",
+    "description": "Kids' dream jobs: each child's adult self, generated fully on a MacBook, as a 5-second video. Password protected.",
+    "hidden": false
+  },
   "links": [
     {
       "label": "Leadership Skills Inventory",
