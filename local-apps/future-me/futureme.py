@@ -37,14 +37,21 @@ def prompt_for(job, gender, glasses, custom=None):
             f"Photorealistic photo, waist-up, looking at the camera, natural light, sharp focus.")
 
 
-_klein = None
-def portrait(photo, job, gender, glasses, seed=7, quantize=8, steps=4, custom=None, size=(W, H)):
-    global _klein
-    if _klein is None:
+# Pre-quantized 4-bit builds from the mflux team: small downloads, fit a 16 GB Mac.
+MODELS = {
+    "4b": ("mflux-community/flux2-klein-4b-mflux-q4", "flux2_klein_4b"),  # 4.6 GB, Apache-2.0
+    "9b": ("mflux-community/flux2-klein-9b-mflux-q4", "flux2_klein_9b"),  # 9.5 GB, non-commercial licence
+}
+_klein, _klein_key = None, None
+def portrait(photo, job, gender, glasses, seed=7, model="4b", steps=4, custom=None, size=(W, H)):
+    global _klein, _klein_key
+    if _klein_key != model:
         from mflux.models.common.config import ModelConfig
         from mflux.models.flux2.variants import Flux2KleinEdit
-        _klein = Flux2KleinEdit(quantize=quantize, model_path=os.environ.get("KLEIN_PATH"),
-                                model_config=ModelConfig.flux2_klein_4b())
+        repo, cfg = MODELS[model]
+        _klein = None
+        _klein = Flux2KleinEdit(model_path=os.environ.get("KLEIN_PATH", repo), model_config=getattr(ModelConfig, cfg)())
+        _klein_key = model
     img = _klein.generate_image(seed=seed, prompt=prompt_for(job, gender, glasses, custom),
                                 image_paths=[str(photo)], num_inference_steps=steps,
                                 width=size[0], height=size[1])
@@ -103,14 +110,14 @@ def ai_video(image_path, job, out, seed=7, model="dgrauet/ltx-2.3-mlx-q4"):
 
 def free_portrait_model():
     """16 GB Mac: klein (~8 GB at q8) and LTX-2 int4 (~12 GB) must not be resident together."""
-    global _klein
-    _klein = None
+    global _klein, _klein_key
+    _klein, _klein_key = None, None
     import gc; gc.collect()
     import mlx.core as mx; mx.clear_cache()
 
 
 def make(photo, name, gender, job, glasses=False, motion="parallax", out_dir="out", seed=7, custom=None,
-         stages=("portrait", "video")):
+         stages=("portrait", "video"), model="4b"):
     out = Path(out_dir); out.mkdir(parents=True, exist_ok=True)
     name = slug(name)
     stem = out / f"{name}__{job}"
@@ -120,7 +127,7 @@ def make(photo, name, gender, job, glasses=False, motion="parallax", out_dir="ou
         ImageOps.fit(ImageOps.exif_transpose(Image.open(photo)).convert("RGB"), (384, 384)).save(child, quality=88)
     # resumable: existing files are kept, so rerun after a crash/sleep
     if "portrait" in stages and not jpg.exists():
-        portrait(photo, job, gender, glasses, seed=seed, custom=custom).save(jpg, quality=92)
+        portrait(photo, job, gender, glasses, seed=seed, model=model, custom=custom).save(jpg, quality=92)
         print("portrait", jpg, flush=True)
     if "video" not in stages or mp4.exists():
         return mp4
@@ -150,22 +157,25 @@ def main():
     m.add_argument("--glasses", action="store_true")
     b = sub.add_parser("batch"); b.add_argument("--csv", required=True)
     for s in (m, b):
-        s.add_argument("--motion", choices=["parallax", "ai"], default="parallax")
+        s.add_argument("--motion", choices=["parallax", "ai", "none"], default="parallax",
+                       help="none = portraits only (fastest way to judge likeness)")
         s.add_argument("--out", default="out"); s.add_argument("--seed", type=int, default=7)
+        s.add_argument("--model", choices=["4b", "9b"], default="4b")
     u = sub.add_parser("upload"); u.add_argument("--out", default="out")
     u.add_argument("--url", required=True); u.add_argument("--password", required=True)
     a = p.parse_args()
     if a.cmd == "make":
-        make(a.photo, a.name, a.gender, a.job, a.glasses, a.motion, a.out, a.seed)
+        make(a.photo, a.name, a.gender, a.job, a.glasses, a.motion, a.out, a.seed,
+             stages=("portrait",) if a.motion == "none" else ("portrait", "video"), model=a.model)
     elif a.cmd == "batch":
         rows = list(csv.DictReader(open(a.csv, encoding="utf-8")))
         base = Path(a.csv).parent
         # kids.csv: photo,name,gender,glasses,jobs  (jobs: "bac-si ca-si" or blank = all 20)
         todo = [(base / r["photo"], r["name"], r["gender"], job, r.get("glasses", "").lower() in ("1", "yes", "true"))
                 for r in rows for job in ((r.get("jobs") or "").split() or JOBS)]
-        for stage in ("portrait", "video"):
+        for stage in ("portrait",) if a.motion == "none" else ("portrait", "video"):
             for photo, name, gender, job, glasses in todo:
-                make(photo, name, gender, job, glasses, a.motion, a.out, a.seed, stages=(stage,))
+                make(photo, name, gender, job, glasses, a.motion, a.out, a.seed, stages=(stage,), model=a.model)
             free_portrait_model()
     else:
         upload(a.out, a.url, a.password)

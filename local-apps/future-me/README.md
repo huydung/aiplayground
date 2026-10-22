@@ -4,7 +4,8 @@ Kid photo + dream job → a photo of their adult self in that job → a 5-second
 
 | Step | Model | Licence | Notes |
 |---|---|---|---|
-| Adult portrait | FLUX.2 klein 4B (reference edit) via [mflux](https://github.com/mflux-community/mflux) | Apache-2.0 | ~15 GB download once; run at 8-bit (`quantize=8`) |
+| Adult portrait | FLUX.2 klein 4B (reference edit) via [mflux](https://github.com/mflux-community/mflux), pre-quantized 4-bit | Apache-2.0 | 4.6 GB download once |
+| Adult portrait, `--model 9b` | FLUX.2 klein 9B, pre-quantized 4-bit | non-commercial | 9.5 GB; usually more realistic, slower |
 | Motion, `parallax` (default) | Depth Anything V2 Small + 2.5D camera move | Apache-2.0 | seconds per clip, always works |
 | Motion, `ai` (optional) | LTX-2.3 int4 via [ltx-2-mlx](https://github.com/dgrauet/ltx-2-mlx) | see model card | ~12 GB; listed for 16 GB Macs; slow, run overnight |
 
@@ -24,7 +25,15 @@ python test_futureme.py           # 10-second check of the plumbing, prints "ok"
 python futureme.py make --photo kids/an.jpg --name "An" --gender boy --glasses --job bac-si
 # -> out/an__bac-si.jpg (portrait) and out/an__bac-si.mp4 (5 s video)
 ```
-The first run downloads the models. Time this first clip: it tells you how long the batch will take.
+The first run downloads the model. Time this first clip: it tells you how long the batch will take.
+
+Portraits only (fastest way to judge realism and likeness) and a 4B vs 9B comparison:
+
+```sh
+python futureme.py batch --csv kids/kids.csv --motion none --model 4b --out out-4b
+python futureme.py batch --csv kids/kids.csv --motion none --model 9b --out out-9b
+```
+Low on disk? Put the model cache on an external drive first: `export HF_HOME=/Volumes/<drive>/hf`.
 
 Or the classroom UI (webcam or upload, dropdown of the 20 jobs, "other" free text, download button):
 
