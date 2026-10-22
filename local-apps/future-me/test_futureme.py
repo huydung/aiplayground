@@ -25,4 +25,5 @@ with tempfile.TemporaryDirectory() as d:
     fm.main()  # rerun must resume, not regenerate
     assert calls == ["bac-si", "ca-si"], calls
     assert "glasses" in fm.prompt_for("bac-si", "boy", True) and "woman" in fm.prompt_for("ca-si", "girl", False)
+assert fm.slug("Ngọc Linh") == "ngoc-linh" and fm.slug("Đức") == "duc"
 print("ok")

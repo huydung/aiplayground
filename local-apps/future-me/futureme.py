@@ -20,6 +20,13 @@ W, H, FPS, SECONDS = 576, 768, 24, 5  # 3:4 portrait; dims divisible by 64 for L
 ADULT = {"boy": "man", "girl": "woman"}
 
 
+def slug(name):
+    """'Ngọc Linh' -> 'ngoc-linh' (file names and gallery tabs)."""
+    import re, unicodedata
+    s = unicodedata.normalize("NFKD", name.replace("đ", "d").replace("Đ", "D")).encode("ascii", "ignore").decode()
+    return re.sub(r"[^a-z0-9]+", "-", s.lower()).strip("-") or "be"
+
+
 def prompt_for(job, gender, glasses, custom=None):
     who = ADULT[gender]
     scene = custom or JOBS[job]["scene"]
@@ -105,6 +112,7 @@ def free_portrait_model():
 def make(photo, name, gender, job, glasses=False, motion="parallax", out_dir="out", seed=7, custom=None,
          stages=("portrait", "video")):
     out = Path(out_dir); out.mkdir(parents=True, exist_ok=True)
+    name = slug(name)
     stem = out / f"{name}__{job}"
     jpg, mp4 = stem.with_suffix(".jpg"), stem.with_suffix(".mp4")
     child = out / f"{name}__child.jpg"  # "now" photo shown next to the futures in the gallery

@@ -13,7 +13,7 @@ def run(photo, name, gender, glasses, job, custom, motion, seed):
         raise gr.Error("Chọn ảnh của bé trước · Add a photo first")
     if job == "khac" and not custom.strip():
         raise gr.Error("Gõ mô tả nghề · Describe the job")
-    slug = "".join(c if c.isascii() and c.isalnum() else "-" for c in (name or "be").lower()).strip("-") or "be"
+    slug = fm.slug(name or "be")
     for ext in (".jpg", ".mp4"):  # the UI always regenerates (batch mode is the one that resumes)
         Path("out", f"{slug}__{job}{ext}").unlink(missing_ok=True)
     mp4 = fm.make(photo, slug, gender, job, glasses, motion, "out", int(seed),
