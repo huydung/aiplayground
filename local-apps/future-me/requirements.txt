@@ -1,0 +1,5 @@
+mflux==0.23.0
+# Pillow 13 fails to import on Python 3.13 (lazy-import syntax); 12.3 is what mflux 0.23 needs
+pillow>=12.3,<13
+imageio-ffmpeg
+gradio

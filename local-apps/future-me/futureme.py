@@ -70,13 +70,13 @@ def parallax_frames(img, depth, n=FPS * SECONDS, shift=0.035, zoom=0.06):
         dy = 0.4 * shift * h * np.sin(np.pi * t) * (near - 0.5)
         mx = cx + (xs - cx) / s - dx
         my = cy + (ys - cy) / s - dy
-        yield cv2.remap(src, mx, my, cv2.INTER_LINEAR, borderMode=cv2.BORDER_REFLECT)
+        yield cv2.remap(src, mx.astype(np.float32), my.astype(np.float32), cv2.INTER_LINEAR, borderMode=cv2.BORDER_REFLECT)
 
 
 def write_mp4(frames, path, fps=FPS):
     import imageio_ffmpeg
     w = imageio_ffmpeg.write_frames(str(path), (W, H), fps=fps, codec="libx264", quality=8,
-                                    output_params=["-pix_fmt", "yuv420p", "-movflags", "+faststart"],
+                                    pix_fmt_out="yuv420p", output_params=["-movflags", "+faststart"],
                                     macro_block_size=16)
     w.send(None)
     for f in frames:

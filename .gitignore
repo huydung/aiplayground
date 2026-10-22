@@ -26,3 +26,9 @@ data/
 projects/.DS_Store
 .DS_Store
 ~$*
+
+# Future Me: kids photos and generated media never go in git
+local-apps/future-me/kids/
+local-apps/future-me/out/
+local-apps/future-me/.venv/
+__pycache__/
