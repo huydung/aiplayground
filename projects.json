@@ -25,6 +25,11 @@
     "description": "Kids' dream jobs: each child's adult self, generated fully on a MacBook, as a 5-second video. Password protected.",
     "hidden": false
   },
+  "mai-nay-em-lon": {
+    "label": "Mai này em lớn · Ba vòng tròn",
+    "description": "Buổi chia sẻ nghề nghiệp cho lớp 2: thích gì, giỏi gì, giúp được ai. Trình chiếu tương tác.",
+    "hidden": true
+  },
   "links": [
     {
       "label": "Leadership Skills Inventory",

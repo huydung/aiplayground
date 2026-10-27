@@ -1,0 +1,612 @@
+<title>Mai này em lớn</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@600;700;800&family=Nunito:wght@500;700;800;900&display=swap">
+<style>
+/* Layout: a fixed 1920x1080 stage scaled to the screen (letterboxed). Left 1160px = three-circle model; right 760px = narration panel.
+   Slide content appears as a card over a blurred model. Single bright look on purpose (classroom projector). */
+:root {
+  --paper: #FFF8EC; --ink: #1F2A44; --muted: #4A5568; --line: #E9DFCC; --card: #FFFFFF; --soft: #FFF3E0;
+  --like: #E8622C; --good: #2563C9; --help: #BD0129; --deep: #8E011F; --cream: #F8F7D0; --sun: #FFD66B; --green: #2F9E44;
+  --display: 'Baloo 2', 'Nunito', system-ui, sans-serif;
+  --body: 'Nunito', system-ui, sans-serif;
+  color-scheme: light;
+}
+[hidden] { display: none !important; }
+html, body { height: 100%; }
+body { background: #14192B; color: var(--ink); font-family: var(--body); overflow: hidden; }
+.vp { position: fixed; inset: 0; }
+#stage { position: absolute; left: 50%; top: 50%; width: 1920px; height: 1080px; transform-origin: 0 0; background: var(--paper); overflow: hidden; }
+#left { position: absolute; left: 0; top: 0; width: 1160px; height: 1080px; }
+#left svg { position: absolute; inset: 0; width: 1160px; height: 1080px; }
+#drawing { position: absolute; left: 90px; top: 150px; width: 980px; height: 840px; border-radius: 44px; background: var(--card); border: 5px dashed #9A5B00; display: flex; align-items: center; justify-content: center; opacity: 0; transform: scale(.92); transition: opacity .5s, transform .5s; }
+#drawing.on { opacity: 1; transform: none; }
+#drawing img { width: 100%; height: 100%; object-fit: contain; border-radius: 40px; background: var(--card); }
+#drawing p { font: 800 40px var(--body); color: var(--muted); }
+#right { position: absolute; left: 1160px; top: 0; width: 760px; height: 1080px; box-sizing: border-box; padding: 150px 64px 120px 40px; display: flex; flex-direction: column; gap: 28px; }
+.eyebrow { margin: 0; font: 900 26px var(--body); letter-spacing: .04em; text-transform: uppercase; color: var(--help); }
+.who { margin: 0; font: 800 28px var(--body); color: var(--muted); }
+.cap { margin: 0; font: 800 48px/1.3 var(--body); text-wrap: pretty; }
+.cap b { color: var(--help); }
+.ask { margin: 0; align-self: flex-start; font: 800 34px/1.3 var(--body); background: var(--sun); border-radius: 28px; padding: 18px 26px; }
+.ask b { color: var(--deep); }
+.clue { display: flex; align-items: center; gap: 22px; padding: 22px 30px; border-radius: 30px; font: 800 42px/1.25 var(--body); opacity: 0; transform: translateY(18px); transition: opacity .45s, transform .45s; }
+.clue.on { opacity: 1; transform: none; }
+.clue .e { font-size: 56px; }
+.kname { margin: 0; font: 800 110px/1 var(--display); color: var(--help); }
+.krow { display: flex; align-items: center; gap: 28px; }
+.kport { width: 230px; height: 230px; border-radius: 50%; object-fit: cover; border: 10px solid var(--card); box-shadow: 0 12px 40px rgba(31,42,68,.25); background: var(--sun); display: flex; align-items: center; justify-content: center; font: 800 26px var(--body); color: var(--muted); text-align: center; flex: none; }
+.lbl { font-family: var(--display); font-weight: 800; font-size: 42px; paint-order: stroke; stroke: var(--paper); stroke-width: 9px; stroke-linejoin: round; transition: opacity .5s; }
+.it text { text-anchor: middle; dominant-baseline: central; }
+.it .nm { font: 800 21px var(--body); fill: #1F2A44; paint-order: stroke; stroke: rgba(255,248,236,.9); stroke-width: 6px; }
+/* HUD */
+.chap { position: absolute; left: 44px; top: 36px; font: 900 28px var(--body); color: var(--ink); background: var(--card); border: 4px solid var(--line); border-radius: 999px; padding: 10px 26px; z-index: 5; }
+.score { position: absolute; right: 40px; top: 32px; display: flex; gap: 14px; z-index: 30; }
+.team { display: flex; align-items: center; gap: 8px; border-radius: 999px; padding: 6px 8px 6px 20px; font: 900 30px var(--body); border: 4px solid; background: var(--card); }
+.team.a { border-color: var(--green); color: #237A34; }
+.team.b { border-color: var(--good); color: #1D4FA3; }
+.team button { font: 900 30px var(--body); border: 0; border-radius: 999px; width: 54px; height: 54px; cursor: pointer; color: #fff; }
+.team.a button { background: var(--green); }
+.team.b button { background: var(--good); }
+.team button.minus { width: 40px; height: 40px; font-size: 24px; opacity: .55; }
+.bar { position: absolute; left: 0; bottom: 0; height: 10px; background: var(--help); transition: width .4s; z-index: 30; }
+.logo { position: absolute; left: 40px; bottom: 30px; height: 52px; z-index: 30; }
+.tools { position: absolute; right: 36px; bottom: 28px; display: flex; gap: 10px; z-index: 40; }
+.tools button { font: 900 28px var(--body); width: 66px; height: 66px; border-radius: 50%; border: 3px solid var(--line); background: rgba(255,255,255,.85); color: var(--ink); cursor: pointer; }
+/* card overlay */
+#veil { position: absolute; inset: 0; background: rgba(31,42,68,.45); backdrop-filter: blur(8px); opacity: 0; pointer-events: none; transition: opacity .45s; z-index: 10; }
+#veil.on { opacity: 1; pointer-events: auto; }
+#card { position: absolute; left: 110px; top: 110px; width: 1700px; height: 860px; box-sizing: border-box; border-radius: 56px; background: var(--paper); padding: 72px 96px; display: flex; flex-direction: column; gap: 34px; justify-content: center; opacity: 0; transform: translateY(30px) scale(.97); transition: opacity .45s, transform .45s; z-index: 20; pointer-events: none; box-shadow: 0 30px 80px rgba(0,0,0,.25); }
+#card.on { opacity: 1; transform: none; pointer-events: auto; }
+#card.red { background: var(--deep); color: #fff; }
+#card.full { left: 0; top: 0; width: 1920px; height: 1080px; border-radius: 0; padding: 110px 150px; }
+.ct { margin: 0; font: 800 96px/1.05 var(--display); text-wrap: balance; }
+.ct.xl { font-size: 170px; }
+.cs { margin: 0; font: 800 50px/1.3 var(--body); text-wrap: pretty; }
+.cs b, .ct b { color: var(--help); }
+#card.red .cs b, #card.red .ct b { color: var(--sun); }
+.cm { margin: 0; font: 700 38px/1.4 var(--body); color: var(--muted); }
+#card.red .cm { color: var(--cream); }
+.f { opacity: 0; transform: translateY(20px); transition: opacity .45s, transform .45s; }
+.f.on { opacity: 1; transform: none; }
+.row { display: flex; gap: 30px; align-items: stretch; }
+.box { flex: 1; border-radius: 36px; padding: 34px 40px; display: flex; flex-direction: column; gap: 12px; }
+.box h3 { margin: 0; font: 800 54px/1.1 var(--display); }
+.box p { margin: 0; font: 700 34px/1.35 var(--body); }
+.big { font-size: 110px; line-height: 1; }
+.chips { display: flex; flex-wrap: wrap; gap: 16px; }
+.chip { font: 800 38px var(--body); background: var(--card); border: 4px solid var(--line); border-radius: 999px; padding: 12px 28px; }
+.imgslot { border-radius: 40px; background: var(--card); border: 5px dashed var(--good); display: flex; align-items: center; justify-content: center; font: 800 34px var(--body); color: var(--muted); overflow: hidden; flex: none; }
+.imgslot img { width: 100%; height: 100%; object-fit: cover; }
+.loop { display: flex; align-items: center; gap: 22px; }
+.loop .box { background: var(--card); text-align: center; align-items: center; }
+.arrow { font: 900 70px var(--body); color: var(--help); }
+.collage { display: grid; grid-template-columns: repeat(10, 1fr); gap: 14px; }
+.collage div { aspect-ratio: 1; border-radius: 22px; background: #A3122F; overflow: hidden; display: flex; align-items: center; justify-content: center; font: 800 22px var(--body); color: var(--cream); text-align: center; padding: 4px; }
+.collage img { width: 100%; height: 100%; object-fit: cover; }
+.grid4 { display: grid; grid-template-columns: repeat(4, 1fr); gap: 18px; }
+.subj { border-radius: 28px; padding: 18px 24px; display: flex; flex-direction: column; gap: 4px; }
+.subj b { font: 800 36px var(--body); }
+.subj span { font: 700 26px/1.3 var(--body); color: var(--muted); }
+/* notes, blackout, settings */
+#notes { position: absolute; left: 0; right: 0; bottom: 10px; background: rgba(20,25,43,.92); color: #fff; font: 700 26px/1.4 var(--body); padding: 18px 40px 18px 240px; z-index: 35; }
+#black { position: absolute; inset: 0; background: #000; z-index: 60; }
+#set { position: absolute; inset: 60px 120px; background: var(--card); border-radius: 40px; z-index: 70; box-shadow: 0 30px 80px rgba(0,0,0,.4); padding: 48px 56px; display: grid; grid-template-columns: 1fr 1fr; gap: 28px 40px; overflow: auto; font: 700 24px/1.4 var(--body); }
+#set h2 { margin: 0; font: 800 44px var(--display); grid-column: 1 / -1; display: flex; justify-content: space-between; align-items: center; }
+#set label { font: 900 26px var(--body); display: block; margin-bottom: 6px; }
+#set p { margin: 0 0 8px; color: var(--muted); font-size: 22px; }
+#set textarea { width: 100%; box-sizing: border-box; height: 300px; font: 700 22px/1.5 var(--body); border: 3px solid var(--line); border-radius: 18px; padding: 12px; background: var(--card); color: var(--ink); }
+#set .btn { font: 900 24px var(--body); border: 3px solid var(--ink); border-radius: 16px; padding: 12px 22px; background: var(--ink); color: var(--paper); cursor: pointer; }
+#set .btn.ghost { background: var(--card); color: var(--ink); }
+#set .jump { display: flex; flex-wrap: wrap; gap: 10px; }
+#set .jump button { font: 800 22px var(--body); border: 3px solid var(--line); border-radius: 999px; padding: 8px 18px; background: var(--card); cursor: pointer; color: var(--ink); }
+#imgStat { color: var(--green); font-weight: 900; }
+button:focus-visible, textarea:focus-visible, input:focus-visible { outline: 5px solid var(--sun); outline-offset: 2px; }
+@media (prefers-reduced-motion: reduce) { .f, .clue, #card, #veil, #drawing { transition: none; } }
+</style>
+
+<div class="vp" id="vp">
+<div id="stage">
+  <div id="left">
+    <svg id="svg" viewBox="0 0 1160 1080" role="img" aria-label="Ba vòng tròn: Thích, Giỏi, Giúp mọi người">
+      <g id="gC"></g><g id="gI"></g><g id="gL"></g>
+      <g id="star" opacity="0" pointer-events="none" style="transition: opacity .5s">
+        <rect id="starBg" height="72" rx="36" fill="#FFD66B" stroke="#1F2A44" stroke-width="4"/>
+        <text id="starTx" y="37" text-anchor="middle" dominant-baseline="central" style="font: 800 36px 'Baloo 2', 'Nunito', sans-serif" fill="#1F2A44"></text>
+      </g>
+    </svg>
+    <div id="drawing"><p>🖍️</p></div>
+  </div>
+  <div id="right"></div>
+  <div class="chap" id="chap"></div>
+  <div class="score" id="score">
+    <div class="team a"><span>🌿 <span id="sa">0</span></span><button type="button" class="minus" id="ma" aria-label="Bớt điểm Nhóm Xanh Lá Cây">−</button><button type="button" id="pa" aria-label="Thêm điểm Nhóm Xanh Lá Cây">+</button></div>
+    <div class="team b"><span>🌤️ <span id="sb">0</span></span><button type="button" class="minus" id="mb" aria-label="Bớt điểm Nhóm Xanh Da Trời">−</button><button type="button" id="pb" aria-label="Thêm điểm Nhóm Xanh Da Trời">+</button></div>
+  </div>
+  <div id="veil"></div>
+  <div id="card"></div>
+  <img class="logo" alt="HDI" src="data:image/png;base64,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">
+  <div class="tools">
+    <button type="button" id="bSet" aria-label="Cài đặt">⚙️</button>
+    <button type="button" id="bFs" aria-label="Toàn màn hình">⛶</button>
+    <button type="button" id="bPrev" aria-label="Lùi">◀</button>
+    <button type="button" id="bNext" aria-label="Tiếp">▶</button>
+  </div>
+  <div id="notes" hidden></div>
+  <div class="bar" id="bar"></div>
+  <div id="black" hidden></div>
+  <div id="set" hidden>
+    <h2>⚙️ Cài đặt <button type="button" class="btn" id="setClose">Đóng ✕</button></h2>
+    <div>
+      <label for="kidsTx">Học sinh (mỗi dòng một bạn, theo thứ tự xuất hiện)</label>
+      <p>Tên; Thích; Giỏi; Sau này làm; Giúp. Nhiều mục cách nhau bằng dấu phẩy, có thể thêm biểu tượng ở đầu. Ví dụ: Ngọc Linh; 🎨 Vẽ; 📖 Đọc to; Cô giáo; 💡 Hiểu biết</p>
+      <textarea id="kidsTx"></textarea>
+    </div>
+    <div>
+      <label for="imgIn">Ảnh</label>
+      <p>Chọn cùng lúc tất cả ảnh. Đặt tên theo số thứ tự dòng: 01-ve (tranh vẽ), 01-nay (ảnh bây giờ), 01-2041 (ảnh năm 2041). Ảnh của chú: chu-nho, chu-game. Ảnh lưu trong trình duyệt của máy này.</p>
+      <input type="file" id="imgIn" multiple accept="image/*">
+      <p id="imgStat"></p>
+      <label>Đi nhanh tới</label>
+      <div class="jump" id="jump"></div>
+    </div>
+    <div>
+      <label for="topTx">Sở thích, kỹ năng, môn học (cho câu hỏi thêm)</label>
+      <textarea id="topTx"></textarea>
+    </div>
+    <div>
+      <label for="helpTx">Cách giúp mọi người</label>
+      <textarea id="helpTx"></textarea>
+    </div>
+    <div style="grid-column: 1 / -1; display: flex; gap: 14px; align-items: center; flex-wrap: wrap">
+      <button type="button" class="btn" id="setSave">Lưu</button>
+      <button type="button" class="btn ghost" id="setReset">Về mặc định</button>
+      <button type="button" class="btn ghost" id="scoreReset">Xoá điểm</button>
+      <span id="setMsg" aria-live="polite"></span>
+    </div>
+    <p style="grid-column: 1 / -1">Phím: ▶ / PageDown / → tiếp · ◀ / PageUp / ← lùi · N ghi chú · B màn hình đen · F toàn màn hình</p>
+  </div>
+</div>
+</div>
+
+<script>
+// ===== dictionaries: every emoji used once =====
+const T0 = {
+  bong: '⚽ Bóng đá', chay: '🏃 Chạy', ve: '🎨 Vẽ', hat: '🎤 Hát', lego: '🧩 Xếp hình', doc: '📚 Đọc sách', nau: '🍳 Nấu ăn',
+  khoa: '🔬 Thí nghiệm', piano: '🎹 Piano', boi: '🏊 Bơi', anh: '📷 Chụp ảnh', ke: '🗣️ Giải thích', toan: '🔢 Toán', maytinh: '💻 Máy tính',
+  game: '🎮 Chơi game', khoe: '🏋️ Khoẻ mạnh', donnha: '🧹 Việc nhà', chamsoc: '🤗 Quan tâm', nghe: '👂 Lắng nghe', trong: '🌱 Trồng cây', nhay: '💃 Nhảy',
+  tv: '📖 Tiếng Việt', tienganh: '🔤 Tiếng Anh', tnxh: '🌍 Tự nhiên & Xã hội', dongkich: '🎭 Đóng kịch', chienthuat: '🧠 Chiến thuật', lamnhom: '👫 Làm việc nhóm',
+};
+const H0 = {
+  suckhoe: '🩺 Sức khoẻ', niemvui: '😊 Niềm vui', antoan: '🛡️ An toàn', hieubiet: '💡 Hiểu biết', nodu: '🍲 No đủ', gannhau: '🫶 Gần nhau',
+  moitruong: '🌳 Môi trường', giadinh: '🏠 Gia đình', nhacua: '🏗️ Nhà cửa, đường sá', dilai: '🚌 Đi lại dễ dàng', dongvat: '🐾 Bảo vệ động vật', cuocsongdep: '🌸 Cuộc sống đẹp hơn',
+};
+const J0 = { nongdan: '👨‍🌾 Bác nông dân', laocong: '🧽 Cô lao công', bacsi: '👩‍⚕️ Bác sĩ', thodien: '🔌 Thợ điện', casi: '🧑‍🎤 Ca sĩ', lamgame: '👨‍💻 Người làm game' };
+const SCHOOL = new Set(['toan', 'tv', 'tienganh', 'tnxh']);
+const split = line => { const m = String(line).trim().match(/^(\S+)\s+(.+)$/); return m ? { e: m[1], n: m[2].trim() } : { e: '✨', n: String(line).trim() }; };
+const hasEmoji = s => /^\p{Extended_Pictographic}/u.test(s.trim());
+const slug = s => s.toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g, '').replace(/đ/g, 'd').replace(/[^a-z0-9]+/g, '-');
+let DYN = {};
+const look = k => split(DYN[k] || T0[k] || H0[k] || J0[k] || ('❓ ' + k));
+
+// ===== circle model =====
+const LW = 1160, LH = 1080, REG = { x0: 50, x1: 1110, y0: 140, y1: 990 }, SC = 1.45;
+const COL = { L: '#E8622C', G: '#2563C9', H: '#BD0129' };
+const NAME = { L: '❤️ Thích', G: '⭐ Giỏi', H: '🤝 Giúp mọi người' };
+const P = s => Object.fromEntries((s || '').split(',').filter(Boolean).map(x => { const [k, v] = x.split(':'); return [k.trim(), +v || 1]; }));
+const S = (like, good, help, use) => ({ L: P(like), G: P(good), H: P(help), U: (use || '').split(',').filter(Boolean) });
+const avg = o => { const v = Object.values(o); return v.length ? v.reduce((a, b) => a + b, 0) / v.length : 0; };
+const norm = (x, y) => { const d = Math.hypot(x, y) || 1; return [x / d, y / d]; };
+function layout(st, hide = []) {
+  const vis = { L: !hide.includes('L'), G: !hide.includes('G'), H: true };
+  const nL = Object.keys(st.L).length, nG = Object.keys(st.G).length, nH = Object.keys(st.H).length;
+  const rad = n => n ? Math.min(250, 64 + 44 * Math.sqrt(n)) : 54;
+  const rL = rad(nL), rG = rad(nG), rH = Math.min(330, 190 + 36 * Math.sqrt(nH));
+  const use = new Set(st.U);
+  const frac = o => { const k = Object.keys(o); return k.length ? k.filter(x => use.has(x)).length / k.length : 0; };
+  const dL = Math.max(10, rH + rL - rL * (0.12 + 1.2 * frac(st.L)));
+  const dG = Math.max(10, rH + rG - rG * (0.12 + 1.2 * frac(st.G)));
+  const shared = Object.keys(st.L).filter(k => k in st.G).length;
+  const s = nL && nG ? shared / Math.min(nL, nG) : 0;
+  const dLG = Math.max(6, rL + rG + 8 - Math.min(rL, rG) * (s ? 0.35 + 1.4 * s : 0));
+  let c = (dL * dL + dG * dG - dLG * dLG) / (2 * dL * dG); c = Math.max(-1, Math.min(1, c));
+  const th = Math.acos(c);
+  let L = { x: dL * Math.cos(Math.PI + th / 2), y: dL * Math.sin(Math.PI + th / 2), r: rL };
+  let G = { x: dG * Math.cos(Math.PI - th / 2), y: dG * Math.sin(Math.PI - th / 2), r: rG };
+  let H = { x: 0, y: 0, r: rH };
+  const shown = [H, vis.L && L, vis.G && G].filter(Boolean);
+  const xs = shown.flatMap(o => [o.x - o.r, o.x + o.r]), ys = shown.flatMap(o => [o.y - o.r, o.y + o.r]);
+  const bw = Math.max(...xs) - Math.min(...xs), bh = Math.max(...ys) - Math.min(...ys);
+  const k = Math.min(2, (REG.x1 - REG.x0) / bw, (REG.y1 - REG.y0) / bh);
+  const cx = (Math.max(...xs) + Math.min(...xs)) / 2, cy = (Math.max(...ys) + Math.min(...ys)) / 2;
+  const tx = (REG.x0 + REG.x1) / 2, ty = (REG.y0 + REG.y1) / 2;
+  const TR = o => ({ x: tx + (o.x - cx) * k, y: ty + (o.y - cy) * k, r: o.r * k });
+  L = TR(L); G = TR(G); H = TR(H);
+  L.a = nL ? 0.08 + 0.13 * avg(st.L) : 0.06; G.a = nG ? 0.08 + 0.13 * avg(st.G) : 0.06; H.a = nH ? 0.1 + 0.12 * avg(st.H) : 0.08;
+  L.v = +vis.L; G.v = +vis.G; H.v = 1;
+  const items = {}, groups = {}, kk = Math.sqrt(k);
+  const mLG = { x: (L.x + G.x) / 2, y: (L.y + G.y) / 2 };
+  for (const key of new Set([...Object.keys(st.L), ...Object.keys(st.G)])) {
+    const inL = key in st.L, inG = key in st.G, u = use.has(key);
+    const mem = [inL && L, inG && G, u && H].filter(Boolean);
+    let ax = mem.reduce((a, o) => a + o.x, 0) / mem.length, ay = mem.reduce((a, o) => a + o.y, 0) / mem.length;
+    if (!u) {
+      const [nx, ny] = norm(ax - H.x, ay - H.y), base = inL && inG ? Math.min(L.r, G.r) * .3 : (inL ? L : G).r * .35;
+      ax += nx * base; ay += ny * base;
+      if (inL && inG) { ax = ax * .5 + mLG.x * .5; ay = ay * .5 + mLG.y * .5; }
+    }
+    const sig = `${+inL}${+inG}${+u}`, i = (groups[sig] = (groups[sig] || 0) + 1) - 1;
+    const sp = 40 * SC * k * Math.sqrt(i), ang = i * 2.4;
+    const lvl = Math.max(st.L[key] || 0, st.G[key] || 0), t = look(key);
+    items['t:' + key] = { x: ax + Math.cos(ang) * sp, y: ay + Math.sin(ang) * sp, s: (22 + 6 * lvl) * SC * kk, e: t.e, n: (SCHOOL.has(key) ? '🏫 ' : '') + t.n };
+  }
+  const solo = !vis.L && !vis.G;
+  const [hx, hy] = solo ? [0, 0] : norm(H.x - mLG.x, H.y - mLG.y);
+  Object.keys(st.H).forEach((key, i) => {
+    const t = look(key), sp = (solo ? 58 : 44) * SC * k * Math.sqrt(i), ang = i * 2.4 + 1;
+    items['h:' + key] = { x: H.x + hx * H.r * .42 + Math.cos(ang) * sp, y: H.y + hy * H.r * .42 + Math.sin(ang) * sp, s: (22 + 6 * st.H[key]) * SC * kk, e: t.e, n: t.n };
+  });
+  return { L, G, H, items };
+}
+
+const NS = 'http://www.w3.org/2000/svg';
+const $ = id => document.getElementById(id);
+const gC = $('gC'), gI = $('gI'), gL = $('gL'), star = $('star'), starBg = $('starBg'), starTx = $('starTx');
+const reduce = matchMedia('(prefers-reduced-motion: reduce)').matches;
+const mk = (tag, attrs, parent) => { const e = document.createElementNS(NS, tag); for (const a in attrs) e.setAttribute(a, attrs[a]); parent.appendChild(e); return e; };
+const circ = {}, lab = {};
+for (const c of ['H', 'L', 'G']) {
+  circ[c] = mk('circle', { fill: COL[c], stroke: COL[c], 'stroke-width': c === 'H' ? 8 : 6, style: 'mix-blend-mode:multiply' }, gC);
+  lab[c] = mk('text', { class: 'lbl', fill: COL[c], 'text-anchor': 'middle' }, gL); lab[c].textContent = NAME[c];
+}
+let cur = null, from = null, goal = null, t0 = 0, starLabel = '';
+const itemEl = new Map();
+const snap = o => JSON.parse(JSON.stringify(o));
+function setGoal(lay, label) {
+  starLabel = label || '';
+  from = cur ? snap(cur) : snap(lay); goal = lay;
+  for (const key of Object.keys(goal.items)) if (!from.items[key]) from.items[key] = { ...goal.items[key], s: 1 };
+  for (const [key, el] of itemEl) if (!goal.items[key]) { el.style.transition = 'opacity .4s'; el.style.opacity = 0; itemEl.delete(key); setTimeout(() => el.remove(), 450); }
+  for (const key of Object.keys(goal.items)) {
+    let g = itemEl.get(key);
+    if (!g) { g = mk('g', { class: 'it' }, gI); mk('text', { class: 'em' }, g); mk('text', { class: 'nm' }, g); itemEl.set(key, g); }
+    g.children[0].textContent = goal.items[key].e; g.children[1].textContent = goal.items[key].n;
+  }
+  t0 = performance.now();
+  if (reduce) { cur = snap(goal); draw(); return; }
+  requestAnimationFrame(tick);
+}
+const ease = t => t < .5 ? 4 * t * t * t : 1 - Math.pow(-2 * t + 2, 3) / 2;
+const mix = (a, b, e) => a + (b - a) * e;
+function tick(now) {
+  const p = Math.min(1, (now - t0) / 1100), e = ease(p);
+  cur = { items: {} };
+  for (const c of ['L', 'G', 'H']) { cur[c] = {}; for (const f of ['x', 'y', 'r', 'a', 'v']) cur[c][f] = mix(from[c][f], goal[c][f], e); }
+  for (const key of Object.keys(goal.items)) { const f = from.items[key], g = goal.items[key]; cur.items[key] = { ...g, x: mix(f.x, g.x, e), y: mix(f.y, g.y, e), s: mix(f.s, g.s, e) }; }
+  draw();
+  if (p < 1) requestAnimationFrame(tick);
+}
+function draw() {
+  for (const c of ['H', 'L', 'G']) {
+    const o = cur[c];
+    circ[c].setAttribute('cx', o.x); circ[c].setAttribute('cy', o.y); circ[c].setAttribute('r', Math.max(1, o.r));
+    circ[c].setAttribute('fill-opacity', o.a * o.v); circ[c].setAttribute('stroke-opacity', (.3 + o.a * .8) * o.v);
+    const lx = c === 'H' ? o.x + o.r * .42 : o.x, ly = c === 'G' ? o.y + o.r + 50 : o.y - o.r - 20;
+    lab[c].setAttribute('x', Math.max(150, Math.min(LW - 150, lx))); lab[c].setAttribute('y', Math.max(118, Math.min(LH - 40, ly)));
+    lab[c].style.opacity = o.v;
+  }
+  for (const [key, g] of itemEl) {
+    const it = cur.items[key]; if (!it) continue;
+    g.setAttribute('transform', `translate(${it.x.toFixed(1)} ${it.y.toFixed(1)})`);
+    g.children[0].setAttribute('style', `font-size:${it.s.toFixed(1)}px`);
+    g.children[1].setAttribute('y', (it.s * .62 + 14).toFixed(1));
+  }
+  const { L: a, G: b, H: h } = cur; let sx = 0, sy = 0, n = 0, my = -1e9;
+  if (starLabel && a.v > .5 && b.v > .5) for (let x = h.x - h.r; x <= h.x + h.r; x += 12) for (let y = h.y - h.r; y <= h.y + h.r; y += 12)
+    if ((x - a.x) ** 2 + (y - a.y) ** 2 < a.r ** 2 && (x - b.x) ** 2 + (y - b.y) ** 2 < b.r ** 2 && (x - h.x) ** 2 + (y - h.y) ** 2 < h.r ** 2) { sx += x; sy += y; n++; my = Math.max(my, y); }
+  if (n >= 10) {
+    starTx.textContent = starLabel; const w = Math.max(280, starTx.getComputedTextLength() + 60);
+    starBg.setAttribute('width', w); starTx.setAttribute('x', w / 2);
+    const x = Math.max(10, Math.min(LW - w - 10, sx / n - w / 2)), y = Math.min(LH - 100, h.y + h.r * .62); // ponytail: badge sits low in the red circle, clear of the item cluster
+    star.setAttribute('transform', `translate(${x.toFixed(0)} ${y.toFixed(0)})`); star.setAttribute('opacity', 1);
+  } else star.setAttribute('opacity', 0);
+}
+
+// ===== kids + images =====
+const DEF_KIDS = 'Ngọc Linh; 🎨 Vẽ; 📖 Đọc to; Cô giáo; 💡 Hiểu biết';
+let KIDS = [], IMG = {};
+function topicKey(txt) {
+  const t = txt.trim(); if (!t) return null;
+  const p = hasEmoji(t) ? split(t) : { e: null, n: t };
+  const hit = Object.entries({ ...T0, ...H0 }).find(([, v]) => split(v).n.toLowerCase() === p.n.toLowerCase());
+  if (hit) return hit[0];
+  const key = 'k-' + slug(p.n); DYN[key] = (p.e || '✨') + ' ' + p.n.charAt(0).toUpperCase() + p.n.slice(1); return key;
+}
+function parseKids(text) {
+  return text.split('\n').map(l => l.split(';').map(x => x.trim())).filter(r => r[0]).map(([ten, thich = '', gioi = '', nghe = '', giup = ''], i) => {
+    const L = {}, G = {}, H = {};
+    thich.split(',').map(topicKey).filter(Boolean).forEach(k => L[k] = 2);
+    gioi.split(',').map(topicKey).filter(Boolean).forEach(k => G[k] = 2);
+    giup.split(',').map(topicKey).filter(Boolean).forEach(k => H[k] = 2);
+    const pretty = s => s.split(',').map(x => x.trim()).filter(Boolean).map(x => hasEmoji(x) ? x : x).join(', ');
+    return { i, no: String(i + 1).padStart(2, '0'), ten, thich: pretty(thich), gioi: pretty(gioi), nghe, st: { L, G, H, U: [...Object.keys(L), ...Object.keys(G)] } };
+  });
+}
+const DB = 'mai-nay-em-lon', STORE = 'img';
+function idb() { return new Promise((res, rej) => { const r = indexedDB.open(DB, 1); r.onupgradeneeded = () => r.result.createObjectStore(STORE); r.onsuccess = () => res(r.result); r.onerror = () => rej(r.error); }); }
+async function idbPut(key, blob) { const d = await idb(); return new Promise((res, rej) => { const tx = d.transaction(STORE, 'readwrite'); tx.objectStore(STORE).put(blob, key); tx.oncomplete = res; tx.onerror = () => rej(tx.error); }); }
+async function idbAll() {
+  const d = await idb(); return new Promise((res, rej) => {
+    const out = {}, tx = d.transaction(STORE, 'readonly'), cur = tx.objectStore(STORE).openCursor();
+    cur.onsuccess = () => { const c = cur.result; if (c) { out[c.key] = c.value; c.continue(); } else res(out); };
+    cur.onerror = () => rej(cur.error);
+  });
+}
+async function loadImages() {
+  try { const all = await idbAll(); for (const k in all) IMG[k] = URL.createObjectURL(all[k]); } catch (e) { /* storage blocked: images just stay as placeholders */ }
+}
+const img = (key, cls, alt) => IMG[key] ? `<img src="${IMG[key]}" alt="${alt || ''}" class="${cls || ''}">` : '';
+
+// ===== the session script =====
+const C = (id, html, opt = {}) => ({ kind: 'card', id, html, ...opt });
+const M = (st, cap, opt = {}) => ({ kind: 'model', st, cap, ...opt });
+const ICON_DO = '<svg viewBox="0 0 24 24" width="96" height="96" fill="none" stroke="#2563C9" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-label="Hành động"><circle cx="15" cy="4.5" r="2.2"/><path d="M13.5 8.5 10 14l4 2.5-1.5 5"/><path d="M10 14l-4.5-1"/><path d="M13.5 8.5l3.5 3 3.5-.5"/><path d="M8 21l2-4.5"/></svg>';
+const ICON_HELP = '<svg viewBox="0 0 24 24" width="96" height="96" fill="none" stroke="#BD0129" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-label="Giúp đỡ"><path d="M12 10.5S8.5 8.4 8.5 6a1.9 1.9 0 0 1 3.5-1 1.9 1.9 0 0 1 3.5 1c0 2.4-3.5 4.5-3.5 4.5z" fill="#BD0129"/><path d="M2 15h3l4 2.5h5a1.6 1.6 0 0 0 0-3.2h-3"/><path d="M14 17.5l4.6-2.8a1.6 1.6 0 0 1 2 2.4L15.5 21H5"/></svg>';
+const QUIZ = [
+  ['🍚', 'Ai đã giúp để con có bát cơm này?', '👨‍🌾 Bác nông dân trồng lúa, 👩‍🍳 cô cấp dưỡng nấu cơm', 'Giúp con ăn no, lớn khoẻ.', 'Gợi ý nếu các con quên bác nông dân: “Hạt gạo ở đâu ra?”'],
+  ['🚽', 'Ai đã giúp nhà vệ sinh luôn sạch sẽ?', '🧽 Cô lao công', 'Giúp các con sạch sẽ, khoẻ mạnh.', 'Hỏi thêm: “Nếu không có cô lao công một tuần thì sao?”'],
+  ['💊', 'Ai đã giúp con khỏi ốm?', '👩‍⚕️ Bác sĩ, dược sĩ', 'Giúp người bệnh mau khoẻ lại.', ''],
+  ['🔌', 'Chú thợ điện giúp mọi người thế nào?', 'Mang điện đến nhà và trường học', 'Có đèn để học, quạt mát, tivi để xem.', ''],
+  ['🧑‍🎤', 'Ca sĩ giúp mọi người thế nào?', '😊 Mang lại niềm vui', 'Bài hát làm mọi người vui hơn, bớt mệt, bớt buồn.', 'Làm người khác vui cũng là giúp người.'],
+  ['👨‍💻', 'Người làm game giúp mọi người thế nào?', '🫶 Giúp mọi người vui và gần nhau hơn', 'Như chú đấy! Cả nhà, bạn bè cùng chơi.', 'Nối với câu chuyện của chú.'],
+];
+const quizCard = (q, n) => `<div class="row" style="align-items:center;gap:70px">
+  <div class="box" style="flex:none;width:420px;height:420px;background:var(--card);align-items:center;justify-content:center"><span style="font-size:220px;line-height:1">${q[0]}</span></div>
+  <div style="flex:1;display:flex;flex-direction:column;gap:30px">
+    <p class="cm">${n < 3 ? 'Chiều 1 · ' + (n + 1) + '/3 · Đoán xem ai đã giúp' : 'Chiều 2 · ' + (n - 2) + '/3 · Họ giúp mọi người thế nào?'}</p>
+    <h2 class="ct">${q[1]}</h2>
+    <div class="box f" data-f="1" style="background:#DFF5E3"><h3>${q[2]}</h3><p style="color:var(--help);font-weight:800">${q[3]}</p></div>
+  </div></div>`;
+
+function build() {
+  const out = []; let ch = '';
+  const add = (o, notes) => out.push({ ch, notes: notes || '', ...o });
+  const frags = (id, html, n, opt, notes) => { for (let f = 0; f <= n; f++) add(C(id, html, { f, ...opt }), notes); };
+
+  ch = 'Mở đầu';
+  add(C('cover', `<p class="cm">Lớp 2B0 · Buổi sinh hoạt trải nghiệm · 9/11/2026</p><h1 class="ct xl" style="color:#fff">Mai này em lớn</h1><p class="cs" style="color:var(--sun)">Lớn lên, em giúp mọi người như thế nào?</p><p class="cm">Cùng chú Huy Dũng và cô Hương</p>`, { cls: 'red full' }), '00:00. Tín hiệu tập trung: “Lớp ơi!” – “Có!”. Chào các con.');
+  add(C('chu', `<div class="row" style="align-items:center;gap:70px"><div style="flex:1;display:flex;flex-direction:column;gap:28px"><p class="cm" style="color:var(--good)">Xin chào các con!</p><h2 class="ct">Chú là bố của bạn ___</h2><p class="cs">Chú làm quản lý, cùng mọi người làm ra <b>trò chơi điện tử</b>, để giúp mọi người được vui.</p></div><div class="imgslot" style="width:620px;height:620px">${img('chu-game', '', 'Trò chơi chú đã làm') || '[chu-game]'}</div></div>`), '01:00. Giới thiệu ngắn. Gieo sẵn ý: nghề là để giúp người.');
+  frags('nhom', `<h2 class="ct">Hôm nay lớp mình chia 2 nhóm!</h2>
+    <div class="row"><div class="box" style="background:#DFF5E3;border:6px solid var(--green)"><h3 style="color:#237A34">🌿 Nhóm Xanh Lá Cây</h3><p>10 bạn</p></div><div class="box" style="background:#DDEBFF;border:6px solid var(--good)"><h3 style="color:#1D4FA3">🌤️ Nhóm Xanh Da Trời</h3><p>10 bạn</p></div></div>
+    <div class="chips"><span class="chip">+1 Trả lời đúng</span><span class="chip">+1 Giúp bạn</span><span class="chip">+1 Đứng lên đọc phiếu</span><span class="chip">✋ Giơ tay mới được trả lời</span></div>
+    <p class="cs">Nhóm nhiều điểm hơn được <b>chọn túi quà trước</b>. Hai túi gần như nhau, ai cũng có quà!</p>`, 0, {}, '02:00. Cô Hương đã chia sẵn 2 nhóm. Bấm + ở góc phải để cộng điểm (máy cảm ứng).');
+  frags('dilam', `<h2 class="ct">Người lớn đi làm để làm gì?</h2>
+    <p class="cs f" data-f="1">Ai trả tiền cho bố mẹ? <b>Vì sao họ trả?</b></p>
+    <div class="loop f" data-f="2"><div class="box"><span class="big">👩‍🔧</span><p>Bố mẹ <b>giúp</b> người khác một việc</p></div><span class="arrow">➜</span><div class="box"><span class="big">💰</span><p>Người được giúp <b>cảm ơn</b> bằng tiền</p></div><span class="arrow">➜</span><div class="box"><span class="big">🛒</span><p>Nhà mình dùng tiền cảm ơn bác nông dân, cô lao công…</p></div></div>
+    <p class="cs f" data-f="3">Một người lớn trong nhà con làm gì? <b>Giúp ai?</b></p>`, 3, {}, '03:00. Nhận mọi câu trả lời, kể cả “kiếm tiền”. Hỏi “một người lớn trong nhà”, không gọi tên bạn nào. Chấp nhận “con không biết”.');
+
+  ch = '1 · Nghề nào cũng giúp người';
+  QUIZ.forEach((q, n) => {
+    if (n === 3) add(C('doichieu', `<span class="big">🔄</span><h2 class="ct">Đổi chiều!</h2><p class="cs">Chú cho các con một nghề. Các con đoán: <b>họ giúp mọi người thế nào?</b></p>`), 'Chuyển chiều trong 5 giây.');
+    frags('quiz' + n, quizCard(q, n), 1, {}, (q[4] ? q[4] + ' ' : '') + 'Để các con đoán, rồi bấm hiện đáp án. Đúng: +1 điểm.');
+  });
+  add(M(S('', '', 'nongdan:2,laocong:2,bacsi:2,thodien:2,casi:2,lamgame:2'), 'Người lớn nào đi làm cũng đang <b>giúp người khác</b>.', { hide: ['L', 'G'], ask: '🙋 Họ đã phải làm gì để làm tốt?' }), 'Để các con trả lời rồi mới bấm tiếp.');
+  add(M(S('', '', 'nongdan:2,laocong:2,bacsi:2,thodien:2,casi:2,lamgame:2'), 'Học và <b>luyện tập rất nhiều năm</b>. Bác sĩ đi học 12 năm, rồi học đại học thêm 6 năm!', { hide: ['L', 'G'] }));
+  frags('ai', `<h2 class="ct">Khi các con lớn lên…</h2>
+    <div class="box f" data-f="1" style="background:#DDEBFF;flex-direction:row;align-items:center;gap:30px"><span class="big">🤖</span><p class="cs">Máy móc và AI sẽ làm được rất nhiều việc.</p></div>
+    <div class="box f" data-f="2" style="background:#FFF0B8;flex-direction:row;align-items:center;gap:30px"><span class="big">✨</span><p class="cs">Sẽ có nghề mới, có nghề không còn nữa.</p></div>
+    <div class="box f" data-f="3" style="background:var(--card);border:6px solid var(--help);flex-direction:row;align-items:center;gap:30px"><span class="big">🫡</span><p class="cs">Nhưng giúp mọi người sống vui, khoẻ, an toàn thì <b>lúc nào cũng cần các con!</b></p></div>`, 3, {}, 'Nói chậm, đơn giản.');
+
+  ch = 'Ba vòng tròn';
+  const now1 = S('ve:1,bong:1', 'donnha:1', 'giadinh:1', 'donnha');
+  add(M(now1, 'Vòng đỏ là đích: <b>giúp mọi người</b>. Hai vòng nhỏ là điều em <b>thích</b> và điều em <b>giỏi</b>.', { who: 'Mỗi bạn lớp mình' }), 'Giới thiệu ba vòng. Chỉ vào từng vòng.');
+  add(M(S('ve:1,bong:1', 'donnha:1,chamsoc:1', 'giadinh:2', 'donnha,chamsoc'), 'Các con <b>đã giúp được</b> rồi: làm việc nhà 🧹, quan tâm khi mẹ mệt 🤗. Hai vòng đã chạm vòng đỏ!', { who: 'Mỗi bạn lớp mình' }), 'Hỏi: “Ở nhà con đã giúp bố mẹ việc gì?” (+1)');
+  add(M(S('ve:1,bong:1,hat:1,lego:1', 'donnha:1,chamsoc:1', 'giadinh:2', 'donnha,chamsoc'), 'Thích thêm nhiều điều ➜ vòng <b>to ra</b>.', { who: 'Mỗi bạn lớp mình' }));
+  add(M(S('ve:3,bong:3,hat:2,lego:3', 'donnha:2,chamsoc:2', 'giadinh:2', 'donnha,chamsoc'), 'Thích thật nhiều, luyện thật nhiều ➜ màu <b>đậm lên</b>.', { who: 'Mỗi bạn lớp mình' }));
+
+  ch = '2 · Hành trang';
+  add(M(S('bong:3', 'bong:2'), 'Cầu thủ giỏi nhất điều gì? <b>Đá bóng!</b>', { who: 'Một cầu thủ bóng đá', ask: '🙋 Chỉ vậy thôi có đủ không?' }));
+  add(M(S('bong:3', 'bong:3,khoe:2,chay:2'), 'Cần <b>khoẻ</b>, chạy thật nhanh.', { who: 'Một cầu thủ bóng đá' }));
+  add(M(S('bong:3', 'bong:3,khoe:2,chay:2,chienthuat:2,lamnhom:2,tnxh:2,tienganh:1'), 'Còn cần <b>chiến thuật</b>, làm việc nhóm, hiểu cơ thể và ăn uống, Tiếng Anh để đá ở nước ngoài.', { who: 'Một cầu thủ bóng đá', ask: '🎒 Kỹ năng chính thì dễ thấy, nhưng nghề nào cũng cần <b>rất nhiều thứ bên cạnh</b>.' }), 'Hỏi: “Cầu thủ còn cần giỏi gì nữa?” (+1 mỗi ý đúng)');
+  add(M(S('bong:3', 'bong:3,khoe:3,chay:3,chienthuat:2,lamnhom:2,tnxh:2,tienganh:1', 'niemvui:3', 'bong,khoe,chay,chienthuat,lamnhom,tnxh,tienganh'), 'Rồi mang <b>niềm vui</b> cho cả nước!', { who: 'Một cầu thủ bóng đá', star: '⭐ Cầu thủ' }));
+  add(C('balo', `<div class="row" style="align-items:center;gap:60px"><span style="font-size:260px;line-height:1">🎒</span><div style="display:flex;flex-direction:column;gap:26px"><h2 class="ct">Môn học như <b>dụng cụ trong balo</b>.</h2><p class="cs">Chưa biết lúc nào dùng, nhưng nghề nào cũng phải mang theo.</p></div></div>
+    <div class="chips"><span class="chip">🔢 Toán</span><span class="chip">📖 Tiếng Việt</span><span class="chip">🌍 Tự nhiên & Xã hội</span><span class="chip">🔤 Tiếng Anh</span><span class="chip">🖌️ Mỹ thuật</span><span class="chip">🎵 Âm nhạc</span><span class="chip">🤸 Thể dục</span></div>`), 'Không nói “môn nào cũng dùng hằng ngày”.');
+
+  ch = '3 · Luyện tập';
+  const pw = 'Bạn Minh · Nghệ sĩ piano';
+  add(M(S('game:2,boi:2', 'piano:1'), 'Hồi nhỏ, Minh <b>không thích</b> học piano. Minh thích chơi game và bơi.', { who: pw }));
+  add(M(S('game:2,boi:2', 'piano:2,toan:1'), 'Mẹ động viên, Minh vẫn tập mỗi ngày. <b>Toán</b> giúp Minh đếm nhịp, chia phách.', { who: pw }));
+  add(M(S('game:1,boi:2,piano:2', 'piano:3,nghe:2,toan:2,tienganh:1'), 'Chơi hay rồi thì <b>bắt đầu thích</b>. Piano bước sang vòng Thích.', { who: pw }));
+  add(M(S('boi:2,anh:2,piano:3', 'piano:3,nghe:3,toan:2,tienganh:2', 'niemvui:3,gannhau:1', 'piano,nghe,toan,tienganh'), 'Minh mang <b>niềm vui</b> cho khán giả khắp nơi.', { who: pw, star: '⭐ Nghệ sĩ piano' }));
+  frags('luyen', `<h2 class="ct xl" style="color:#fff">Chưa giỏi là vì… <span class="f" data-f="1" style="color:var(--sun)">chưa luyện!</span></h2>
+    <p class="cs f" data-f="2" style="color:var(--cream)">📚 Đi học là luyện cái đầu: biết đọc, biết tính, biết suy nghĩ.</p>
+    <p class="cs f" data-f="3" style="color:var(--cream)">💪 Càng giỏi, càng <b>giúp được nhiều người</b>.</p>`, 3, { cls: 'red' }, 'Để cả lớp hô “chưa luyện!” trước khi bấm. Khen sự luyện tập, không khen “con giỏi quá”.');
+
+  ch = '4 · Giữ đam mê';
+  const lw = 'Bạn Lan · Đầu bếp', hw = 'Bạn Huy · Kỹ sư phần mềm';
+  add(M(S('nau:2,bong:1', 'donnha:1'), 'Lan thích vào bếp <b>nấu cùng bà</b>.', { who: lw }));
+  add(M(S('nau:3,bong:1', 'nau:2,donnha:2,toan:1,tv:1', 'giadinh:1', 'nau'), 'Cuối tuần nào cũng nấu. <b>Toán</b> giúp Lan đong bột, chia phần; <b>Tiếng Việt</b> giúp Lan đọc công thức.', { who: lw }));
+  add(M(S('nau:3', 'nau:3,toan:2,tv:2,tnxh:2,chamsoc:2', 'nodu:3,niemvui:2,suckhoe:1', 'nau,chamsoc,toan,tnxh'), 'Lan mở quán ăn: sở thích <b>trở thành nghề</b>.', { who: lw, star: '⭐ Đầu bếp' }));
+  add(M(S('ve:3,hat:2', 'toan:2'), 'Huy thích vẽ và hát. Huy <b>giỏi Toán</b>.', { who: hw }));
+  add(M(S('ve:3,hat:3,maytinh:2', 'toan:3,maytinh:3,tienganh:2,ve:2,hat:2'), 'Huy làm phần mềm về <b>hình ảnh và âm thanh</b>. Nhờ thích vẽ và hát, Huy làm <b>tốt hơn hẳn</b> các lập trình viên khác.', { who: hw }));
+  add(M(S('ve:3,hat:3,maytinh:3', 'toan:3,maytinh:3,tienganh:2,ve:2,hat:2', 'niemvui:3,gannhau:2', 'toan,maytinh,tienganh,ve,hat'), 'Sở thích thành <b>siêu năng lực</b>, giúp Huy làm nghề giỏi hơn.', { who: hw, star: '⭐ Kỹ sư phần mềm' }));
+  add(M(S('boi:3,anh:3,piano:3', 'piano:3,nghe:3,toan:2,tienganh:2', 'niemvui:3,gannhau:1', 'piano,nghe,toan,tienganh'), 'Còn Minh: bơi và chụp ảnh <b>vẫn là sở thích riêng</b>, giữ cho Minh vui mỗi ngày.', { who: pw, star: '⭐ Nghệ sĩ piano' }));
+  add(C('dammee', `<h2 class="ct">Sở thích của em có thể…</h2>
+    <div class="row"><div class="box" style="background:#FFE3D3"><span class="big">🍳</span><h3>Thành nghề</h3><p>Như đầu bếp Lan</p></div><div class="box" style="background:#DDEBFF"><span class="big">⚡</span><h3>Thành siêu năng lực</h3><p>Như kỹ sư Huy</p></div><div class="box" style="background:#DFF5E3"><span class="big">🏖️</span><h3>Giữ cho mình vui</h3><p>Như Minh đi bơi</p></div></div>
+    <p class="cs">Hãy cứ <b>giữ những điều em thích</b>!</p>`), 'Hỏi: “Sở thích của con sẽ đi đường nào?”');
+
+  ch = '5 · Thử thật nhiều';
+  const many = 've:2,hat:1,bong:1,lego:2,doc:2,nau:1,khoa:2,nhay:1', tw = 'Một bạn chưa biết mình thích gì nhất';
+  add(M(S('ve:1', 'doc:1'), 'Có bạn chưa biết mình thích gì nhất. <b>Không sao cả!</b>', { who: tw }));
+  add(M(S(many, 'doc:1'), 'Thử thật nhiều thứ ➜ vòng Thích <b>to ra</b>.', { who: tw }));
+  add(M(S('ve:2,hat:1,bong:1,lego:3,doc:3,nau:1,khoa:3,nhay:1', 'khoa:2,doc:2,lego:2'), 'Chọn vài điều <b>đã có trong vòng Thích</b> để luyện.', { who: tw }));
+  add(M(S('ve:2,hat:1,bong:1,lego:3,doc:3,nau:1,khoa:3,nhay:1', 'khoa:3,doc:3,lego:2,toan:2', 'suckhoe:2,hieubiet:2', 'khoa,doc,toan'), 'Học giỏi ở lớp thì mai này em được chọn <b>nhiều đường hơn</b>.', { who: tw, star: '⭐ Nhà khoa học' }));
+
+  ch = 'Còn chú thì sao?';
+  frags('doan', `<div class="row" style="align-items:center;gap:70px"><div class="imgslot" style="width:620px;height:620px">${img('chu-nho', '', 'Chú hồi nhỏ') || '[chu-nho]'}</div><div style="flex:1;display:flex;flex-direction:column;gap:30px"><p class="cm">🔍 Đoán xem</p><h2 class="ct">Bạn nhỏ này là ai?</h2><p class="ct f" data-f="1" style="color:var(--help)">Chính là chú đấy!</p><p class="cs f" data-f="1">Chú cũng từng 7 tuổi như các con.</p></div></div>`, 1, {}, 'Để các con đoán vài giây rồi mới bấm.');
+  const cw = 'Chú Huy Dũng';
+  add(M(S('dongkich:3,ke:3', ''), 'Hồi nhỏ, chú thích <b>đóng kịch, kể chuyện</b>.', { who: cw }), 'Kể bằng lời của chính mình.');
+  add(M(S('dongkich:2,ke:3', 'ke:2', 'hieubiet:1', 'ke'), 'Lớn hơn, chú đi gia sư, muốn làm thầy giáo, thi sư phạm.', { who: cw }));
+  add(M(S('dongkich:2,ke:3,maytinh:2', 'ke:2,maytinh:2,toan:2', 'hieubiet:1', 'ke'), 'Rồi chú học máy tính, làm lập trình. Nhiều lần <b>chưa giỏi</b>, chú luyện tiếp.', { who: cw }), 'Kể một lần “chưa giỏi” thật.');
+  add(M(S('ke:3,maytinh:2,dongkich:1', 'ke:3,maytinh:3,toan:2,nghe:2', 'hieubiet:3,niemvui:2', 'ke,maytinh,nghe'), 'Bây giờ chú dạy các anh chị làm trò chơi. <b>Ai cũng từng là người mới bắt đầu.</b>', { who: cw, star: '⭐ Chú Huy Dũng' }));
+
+  ch = 'Hoàn thiện phiếu';
+  add(C('phieu', `<h2 class="ct">Hoàn thiện phiếu của em</h2><p class="cm">Chép 2 câu hỏi vào 2 ô có hình, rồi tự trả lời nhé:</p>
+    <div class="box" style="background:var(--card);flex-direction:row;align-items:center;gap:40px">${ICON_DO}<p class="ct" style="font-size:80px">Khi đó em sẽ làm gì?</p></div>
+    <div class="box" style="background:var(--card);flex-direction:row;align-items:center;gap:40px">${ICON_HELP}<p class="ct" style="font-size:80px">Em sẽ giúp ai, giúp thế nào?</p></div>
+    <p class="cs" style="color:var(--good)">Muốn đổi ước mơ cũng được! Giữ phiếu trên bàn nhé.</p>`), 'Khoảng 2,5 phút. Phát lại phiếu, đọc to từng câu hỏi. Cô Hương cùng đi hỗ trợ.');
+
+  ch = 'Bạn ấy là ai?';
+  add(C('luat', `<h2 class="ct">🔍 Trò chơi: Bạn ấy là ai?</h2>
+    <div class="grid4"><div class="subj" style="background:#FFE3D3"><b>1. ❤️ Thích…</b></div><div class="subj" style="background:#DDEBFF"><b>2. ⭐ Giỏi…</b></div><div class="subj" style="background:#DFF5E3"><b>3. 💼 Sau này làm…</b></div><div class="subj" style="background:#FFF0B8"><b>4. 🖍️ Tranh vẽ</b></div></div>
+    <p class="cs">Thấy tên mình? Đứng lên đọc phiếu: <b>+1 điểm cho nhóm!</b></p><p class="cs" style="color:var(--good)">Rồi cùng xem bạn ấy năm 2041!</p>`), '30 giây giải thích luật.');
+  KIDS.forEach(k => {
+    for (let h = 1; h <= 4; h++) add({ kind: 'kidHint', kid: k.i, show: h }, h === 4 ? 'Chưa ai đoán ra thì nói chữ cái đầu của tên.' : '');
+    add({ kind: 'kidReveal', kid: k.i }, 'Con đứng tại chỗ đọc 2 câu trả lời trên phiếu (+1).');
+    add({ kind: 'kidPhoto', kid: k.i }, 'Vỗ tay. Mang ảnh in đến tặng con khi chuyển sang bạn sau.');
+  });
+
+  ch = 'Kết thúc';
+  add(C('lop', `<h2 class="ct" style="color:#fff">Lớp 2B0 năm 2041</h2><div class="collage">${Array.from({ length: Math.max(20, KIDS.length) }, (_, i) => { const k = KIDS[i]; return `<div>${k ? (img(k.no + '-2041', '', k.ten) || k.ten) : ''}</div>`; }).join('')}</div><p class="cs" style="color:var(--sun)">20 bạn, 20 con đường, cùng giúp mọi người.</p>`, { cls: 'red full' }), 'Cả lớp vỗ tay thật to.');
+  add(C('hoc', `<h2 class="ct">🎯 Ước mơ của em cần học gì?</h2>
+    <div class="row"><div class="box" style="background:var(--card);border:5px solid var(--help)"><h3>🚀 Phi hành gia</h3><p>cần khoẻ và tính giỏi → <b>Thể dục, Toán</b></p></div><div class="box" style="background:var(--card);border:5px solid var(--help)"><h3>👩‍🏫 Cô giáo</h3><p>cần đọc to, kể chuyện hay → <b>Tiếng Việt</b></p></div></div>
+    <div class="grid4"><div class="subj" style="background:#DDEBFF"><b>🔢 Toán</b><span>kỹ sư, làm game, bán hàng</span></div><div class="subj" style="background:#FFE3D3"><b>📖 Tiếng Việt</b><span>cô giáo, nhà báo, luật sư</span></div><div class="subj" style="background:#DFF5E3"><b>🌍 TN & XH</b><span>bác sĩ, nông dân, nhà khoa học</span></div><div class="subj" style="background:#FFF0B8"><b>🔤 Tiếng Anh</b><span>phi công, hướng dẫn viên</span></div></div>
+    <p class="cs">Nói với bạn bên cạnh: <b>“Muốn làm ___, em cần ___, ở lớp em luyện môn ___.”</b></p>`), '1,5 phút. 20 giây nghĩ, 30 giây nói với bạn bên cạnh, gọi 2–3 con (+1).');
+  add(C('diem', `<h2 class="ct">Đếm điểm nào!</h2><div class="row"><div class="box" style="background:#DFF5E3;border:6px solid var(--green);align-items:center"><h3 style="color:#237A34">🌿 Nhóm Xanh Lá Cây</h3><p class="ct xl" id="fa">0</p></div><div class="box" style="background:#DDEBFF;border:6px solid var(--good);align-items:center"><h3 style="color:#1D4FA3">🌤️ Nhóm Xanh Da Trời</h3><p class="ct xl" id="fb">0</p></div></div><p class="cs">🎁 Nhóm thắng chọn túi quà trước. <b>Hai nhóm vỗ tay cho nhau!</b></p>`), 'Khen cả hai nhóm, nhất là những lần “giúp bạn”.');
+  add(C('end', `<h2 class="ct" style="color:#fff;font-size:84px;line-height:1.25">Mỗi bạn một con đường. Công việc có thể đổi, nhưng người lớn tốt luôn <span style="color:var(--cream)">chăm chỉ rèn luyện</span>, dùng điều mình thích và điều mình giỏi để <span style="color:var(--sun)">giúp người khác.</span></h2><p class="ct" style="color:var(--sun);font-size:76px">Cảm ơn các con!</p>`, { cls: 'red full' }), 'Đọc chậm. Chụp ảnh chung, mỗi con cầm ảnh của mình.');
+  return out;
+}
+
+// ===== rendering of steps =====
+let STEPS = [], at = 0, lastCard = '', lastModelKey = '';
+const right = $('right'), card = $('card'), veil = $('veil'), drawing = $('drawing');
+const clueBg = ['#FFE3D3', '#DDEBFF', '#DFF5E3', '#FFF0B8'];
+function showCard(step) {
+  if (lastCard !== step.id) {
+    card.className = ''; void card.offsetWidth;
+    card.innerHTML = step.html; card.className = (step.cls || '');
+    lastCard = step.id;
+    requestAnimationFrame(() => card.classList.add('on'));
+  } else card.classList.add('on');
+  card.querySelectorAll('[data-f]').forEach(el => el.classList.toggle('on', +el.dataset.f <= (step.f || 0)));
+  veil.classList.add('on');
+  updScore();
+}
+function hideCard() { card.classList.remove('on'); veil.classList.remove('on'); lastCard = ''; }
+function model(st, hide, label) {
+  const key = JSON.stringify([st, hide, label]);
+  if (key !== lastModelKey) { setGoal(layout(st, hide || []), label); lastModelKey = key; }
+}
+function render() {
+  const s = STEPS[at]; if (!s) return;
+  $('chap').textContent = s.ch;
+  $('bar').style.width = (100 * at / Math.max(1, STEPS.length - 1)) + '%';
+  $('notes').textContent = s.notes || '—';
+  drawing.classList.remove('on'); $('svg').style.opacity = 1;
+  if (s.kind === 'card') { showCard(s); return; }
+  hideCard();
+  if (s.kind === 'model') {
+    model(s.st, s.hide, s.star);
+    right.innerHTML = `${s.who ? `<p class="who">${s.who}</p>` : ''}<p class="cap">${s.cap}</p>${s.ask ? `<p class="ask">${s.ask}</p>` : ''}`;
+    return;
+  }
+  const k = KIDS[s.kid];
+  if (s.kind === 'kidHint') {
+    $('svg').style.opacity = 0;
+    drawing.innerHTML = s.show >= 4 ? (img(k.no + '-ve', '', 'Tranh bạn ấy vẽ') || '<p>[' + k.no + '-ve]</p>') : '<p style="font-size:200px">❓</p>';
+    drawing.classList.add('on');
+    const clues = [['❤️', 'Thích: ' + (k.thich || '…')], ['⭐', 'Giỏi: ' + (k.gioi || '…')], ['💼', 'Sau này làm: ' + (k.nghe || '…')], ['🖍️', 'Tranh bạn ấy vẽ ←']];
+    if (!right.querySelector('[data-kid="' + k.i + '"]')) right.innerHTML = `<p class="eyebrow" data-kid="${k.i}">🔍 Bạn ấy là ai? · ${k.i + 1}/${KIDS.length}</p>` + clues.map((c, j) => `<div class="clue" style="background:${clueBg[j]}"><span class="e">${c[0]}</span><span>${c[1]}</span></div>`).join('');
+    right.querySelectorAll('.clue').forEach((el, j) => requestAnimationFrame(() => el.classList.toggle('on', j < s.show)));
+    return;
+  }
+  model(k.st, [], k.nghe ? '⭐ ' + k.nghe : '⭐ Mai này em lớn');
+  right.innerHTML = `<p class="eyebrow">🎉 Chính là…</p><h2 class="kname">${k.ten}</h2>${k.nghe ? `<p class="ask">💼 Sau này làm: <b>${k.nghe}</b></p>` : ''}
+    <div class="krow">${IMG[k.no + '-nay'] ? `<img class="kport" src="${IMG[k.no + '-nay']}" alt="${k.ten} bây giờ">` : `<div class="kport">${k.no}-nay</div>`}<p class="cap" style="font-size:40px">Đứng lên đọc phiếu của em · <b>+1 điểm</b> cho nhóm</p></div>`;
+  if (s.kind === 'kidPhoto') {
+    showCard({ id: 'photo' + k.i, html: `<div class="row" style="align-items:center;gap:70px"><div class="imgslot" style="width:720px;height:720px;border-color:var(--help)">${img(k.no + '-2041', '', k.ten + ' năm 2041') || '[' + k.no + '-2041]'}</div><div style="display:flex;flex-direction:column;gap:30px"><p class="cm">✨ Năm 2041</p><h2 class="ct" style="font-size:120px;color:var(--help)">${k.ten}</h2><p class="cs">💪 Chăm chỉ học và luyện tập, con sẽ <b>đến được đây!</b></p></div></div>` });
+  }
+}
+function go(i) { at = Math.max(0, Math.min(STEPS.length - 1, i)); render(); }
+
+// ===== input =====
+const busy = () => !$('set').hidden;
+function key(e) {
+  if (busy() || (e.target.closest && e.target.closest('textarea,input'))) return;
+  const k = e.key;
+  if (['PageDown', 'ArrowRight', 'ArrowDown', ' ', 'Enter'].includes(k)) { e.preventDefault(); go(at + 1); }
+  else if (['PageUp', 'ArrowLeft', 'ArrowUp', 'Backspace'].includes(k)) { e.preventDefault(); go(at - 1); }
+  else if (k === 'n' || k === 'N') $('notes').hidden = !$('notes').hidden;
+  else if (k === 'b' || k === 'B' || k === '.') $('black').hidden = !$('black').hidden;
+  else if (k === 'f' || k === 'F') fullscreen();
+  else if (k === 'Home') go(0);
+}
+document.addEventListener('keydown', key);
+$('bNext').addEventListener('click', () => go(at + 1));
+$('bPrev').addEventListener('click', () => go(at - 1));
+$('black').addEventListener('click', () => { $('black').hidden = true; });
+function fullscreen() { try { if (document.fullscreenElement) document.exitFullscreen(); else document.documentElement.requestFullscreen().catch(() => {}); } catch (e) {} }
+$('bFs').addEventListener('click', fullscreen);
+function fit() { const s = Math.min(innerWidth / 1920, innerHeight / 1080); $('stage').style.transform = `scale(${s}) translate(-50%, -50%)`; }
+addEventListener('resize', fit); fit();
+
+// ===== scoreboard =====
+let SCORE = { a: 0, b: 0 };
+try { SCORE = JSON.parse(localStorage.getItem('mnel-score')) || SCORE; } catch (e) {}
+function updScore() {
+  $('sa').textContent = SCORE.a; $('sb').textContent = SCORE.b;
+  if ($('fa')) { $('fa').textContent = SCORE.a; $('fb').textContent = SCORE.b; }
+  try { localStorage.setItem('mnel-score', JSON.stringify(SCORE)); } catch (e) {}
+}
+const bump = (t, d) => { SCORE[t] = Math.max(0, SCORE[t] + d); updScore(); };
+$('pa').addEventListener('click', () => bump('a', 1)); $('ma').addEventListener('click', () => bump('a', -1));
+$('pb').addEventListener('click', () => bump('b', 1)); $('mb').addEventListener('click', () => bump('b', -1));
+
+// ===== settings =====
+const LKEY = 'mnel-lists';
+const DEF_TOP = Object.values(T0).join('\n'), DEF_HELP = Object.values(H0).join('\n');
+function loadSaved() { try { return JSON.parse(localStorage.getItem(LKEY)) || {}; } catch (e) { return {}; } }
+function applyLists(sv) {
+  DYN = {};
+  const add = (txt, base) => txt.split('\n').map(split).filter(p => p.n).forEach(p => {
+    const hit = Object.entries(base).find(([, v]) => split(v).n.toLowerCase() === p.n.toLowerCase());
+    DYN[hit ? hit[0] : 'k-' + slug(p.n)] = p.e + ' ' + p.n;
+  });
+  add(sv.top || DEF_TOP, T0); add(sv.help || DEF_HELP, H0);
+  KIDS = parseKids(sv.kids || DEF_KIDS);
+}
+function rebuild(keepId) {
+  const old = STEPS[at]; STEPS = build();
+  let i = 0; if (old) { const j = STEPS.findIndex(s => s.ch === old.ch); i = j >= 0 ? j : 0; }
+  at = keepId ? i : at; lastCard = ''; lastModelKey = ''; renderJump(); go(at);
+}
+function renderJump() {
+  const seen = new Set(); $('jump').innerHTML = '';
+  STEPS.forEach((s, i) => { if (seen.has(s.ch)) return; seen.add(s.ch); const b = document.createElement('button'); b.type = 'button'; b.textContent = s.ch; b.addEventListener('click', () => { closeSet(); go(i); }); $('jump').appendChild(b); });
+}
+function openSet() { const sv = loadSaved(); $('kidsTx').value = sv.kids || DEF_KIDS; $('topTx').value = sv.top || DEF_TOP; $('helpTx').value = sv.help || DEF_HELP; $('setMsg').textContent = ''; $('set').hidden = false; }
+function closeSet() { $('set').hidden = true; }
+$('bSet').addEventListener('click', openSet); $('setClose').addEventListener('click', closeSet);
+$('setSave').addEventListener('click', () => {
+  const sv = { kids: $('kidsTx').value, top: $('topTx').value, help: $('helpTx').value };
+  try { localStorage.setItem(LKEY, JSON.stringify(sv)); } catch (e) {}
+  applyLists(sv); rebuild(true); $('setMsg').textContent = `Đã lưu: ${KIDS.length} bạn.`;
+});
+$('setReset').addEventListener('click', () => { try { localStorage.removeItem(LKEY); } catch (e) {} applyLists({}); openSet(); rebuild(true); $('setMsg').textContent = 'Đã về mặc định.'; });
+$('scoreReset').addEventListener('click', () => { SCORE = { a: 0, b: 0 }; updScore(); $('setMsg').textContent = 'Đã xoá điểm.'; });
+$('imgIn').addEventListener('change', async e => {
+  let n = 0;
+  for (const f of e.target.files) {
+    const k = f.name.replace(/\.[^.]+$/, '').toLowerCase().trim();
+    IMG[k] = URL.createObjectURL(f); n++;
+    try { await idbPut(k, f); } catch (err) { /* kept for this session only */ }
+  }
+  $('imgStat').textContent = `Đã nạp ${n} ảnh.`; rebuild(true);
+});
+
+// ===== start =====
+applyLists(loadSaved());
+STEPS = build(); renderJump(); updScore();
+loadImages().then(() => { const n = Object.keys(IMG).length; if (n) $('imgStat').textContent = `Có sẵn ${n} ảnh trong máy này.`; rebuild(true); });
+go(0);
+</script>
