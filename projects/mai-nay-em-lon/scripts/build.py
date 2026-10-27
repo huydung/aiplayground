@@ -15,6 +15,7 @@ out = src.replace('__LOGO__', logo)
 assert '__LOGO__' not in out
 (ROOT / 'dist').mkdir(exist_ok=True)
 (ROOT / 'dist/ba-vong-tron.html').write_text(out, encoding='utf-8')
+(ROOT / 'index.html').write_text(out, encoding='utf-8')  # served by aiplayground at /projects/mai-nay-em-lon/
 
 # 1. JS syntax
 js = re.search(r'<script>(.*)</script>', out, re.S).group(1)

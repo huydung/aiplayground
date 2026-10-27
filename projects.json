@@ -28,7 +28,7 @@
   "mai-nay-em-lon": {
     "label": "Mai này em lớn · Ba vòng tròn",
     "description": "Buổi chia sẻ nghề nghiệp cho lớp 2: thích gì, giỏi gì, giúp được ai. Trình chiếu tương tác.",
-    "hidden": true
+    "hidden": false
   },
   "links": [
     {
