@@ -65,6 +65,8 @@ button{font:inherit;color:inherit;cursor:pointer}
 .tabs button[aria-selected="true"]{color:var(--ink);border-color:var(--accent)}
 .tabs button:disabled{opacity:.45;cursor:not-allowed}
 .tabs .sync{margin-left:auto;font-size:12px;color:var(--muted);padding:0 0 10px}
+.tabs .langsw{align-self:center;margin:0 0 8px}
+.tabs .langsw button{font:600 12px/1.4 var(--f-mono);padding:4px 10px;letter-spacing:.04em}
 
 /* ---------- plan layout ---------- */
 .plan{display:grid;grid-template-columns:minmax(0,460px) minmax(0,1fr);gap:24px;align-items:start}
@@ -100,6 +102,7 @@ input[type=number]{font-family:var(--f-mono)}
 .person{border:1px solid var(--line);border-radius:8px;padding:12px;display:grid;gap:10px;background:var(--bg)}
 .person .phead{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:8px;align-items:center}
 .person .phead input{background:var(--surface);font-weight:600}
+.person .row3{grid-template-columns:repeat(auto-fit,minmax(140px,1fr))}
 .person select{background:var(--surface)}
 .person .chips span{background:var(--surface)}
 .person details summary{cursor:pointer;font-size:13.5px;font-weight:600}
@@ -199,15 +202,15 @@ details.adjust[open]{display:grid;gap:10px}
   <header class="top">
     <div class="tag" aria-label="Trip summary">
       <div style="min-width:0">
-        <div class="label">Packing tag</div>
+        <div class="label" data-t="Packing tag">Packing tag</div>
         <div class="route" id="route"></div>
         <div class="tagmeta" id="tagmeta"></div>
-        <div class="example" id="exampleNote" hidden>Example trip. Change any answer below and the list rebuilds; your trip is saved as you go.</div>
+        <div class="example" id="exampleNote" data-t="Example trip. Change any answer below and the list rebuilds; your trip is saved as you go." hidden>Example trip. Change any answer below and the list rebuilds; your trip is saved as you go.</div>
       </div>
       <div class="barcode" aria-hidden="true"></div>
     </div>
     <div class="scale" aria-live="polite">
-      <div class="label">Luggage scale · whole group</div>
+      <div class="label" data-t="Luggage scale · whole group">Luggage scale · whole group</div>
       <div class="read"><span class="big mono" id="kgUsed">0.0</span><span class="mono" id="kgCap">/ 0 kg</span></div>
       <div class="gauge" id="gauge"><div class="fill" id="gaugeFill"></div><div class="ticks" id="ticks"></div></div>
       <small id="scaleNote"></small>
@@ -215,22 +218,23 @@ details.adjust[open]{display:grid;gap:10px}
   </header>
 
   <nav class="tabs" role="tablist">
-    <button role="tab" id="tabPlan" aria-selected="true">Plan &amp; review</button>
-    <button role="tab" id="tabPack" aria-selected="false">Pack</button>
-    <span class="sync" id="sync">Saved on this device</span>
+    <button role="tab" id="tabPlan" aria-selected="true" data-t="Plan &amp; review">Plan &amp; review</button>
+    <button role="tab" id="tabPack" aria-selected="false" data-t="Pack">Pack</button>
+    <span class="sync" id="sync" data-t="Saved on this device">Saved on this device</span>
+    <span class="seg langsw" role="group" aria-label="Language"><button type="button" data-lang="en" lang="en">EN</button><button type="button" data-lang="vi" lang="vi">VI</button></span>
   </nav>
 
   <section id="planView" class="plan">
     <form class="trip" id="trip" autocomplete="off"></form>
     <div>
       <div class="listhead">
-        <h2>Suggested list</h2>
-        <div class="legend"><span><span class="pri p1">Essential</span> always packed</span><span><span class="pri p2">Recommended</span> packed if it fits</span><span><span class="pri p3">Optional</span> fills spare weight</span></div>
+        <h2 data-t="Suggested list">Suggested list</h2>
+        <div class="legend"><span><span class="pri p1" data-t="Essential">Essential</span> <span data-t="always packed">always packed</span></span><span><span class="pri p2" data-t="Recommended">Recommended</span> <span data-t="packed if it fits">packed if it fits</span></span><span><span class="pri p3" data-t="Optional">Optional</span> <span data-t="fills spare weight">fills spare weight</span></span></div>
       </div>
       <div id="review"></div>
       <div class="confirmbar">
-        <button class="btn ghost" type="button" id="resetOv">Reset my changes</button>
-        <button class="btn accent" type="button" id="confirm">Confirm list and start packing</button>
+        <button class="btn ghost" type="button" id="resetOv" data-t="Reset my changes">Reset my changes</button>
+        <button class="btn accent" type="button" id="confirm" data-t="Confirm list and start packing">Confirm list and start packing</button>
       </div>
     </div>
   </section>
@@ -238,12 +242,12 @@ details.adjust[open]{display:grid;gap:10px}
   <section id="packView" hidden>
     <div class="packtools">
       <div class="progress"><div class="label" id="progLabel"></div><div class="bar"><i id="progBar"></i></div></div>
-      <label class="check" for="packWho">Show</label>
+      <label class="check" for="packWho" data-t="Show">Show</label>
       <select id="packWho" aria-label="Show items for"></select>
-      <label class="check"><input type="checkbox" id="hidePacked"> Hide packed</label>
-      <button class="btn ghost" type="button" id="copyText">Copy as text</button>
-      <button class="btn ghost" type="button" id="dlPrint">Download printable list</button>
-      <button class="btn ghost" type="button" id="untick">Untick all</button>
+      <label class="check"><input type="checkbox" id="hidePacked"> <span data-t="Hide packed">Hide packed</span></label>
+      <button class="btn ghost" type="button" id="copyText" data-t="Copy as text">Copy as text</button>
+      <button class="btn ghost" type="button" id="dlPrint" data-t="Download printable list">Download printable list</button>
+      <button class="btn ghost" type="button" id="untick" data-t="Untick all">Untick all</button>
     </div>
     <p class="note" id="packNote"></p>
     <div class="packgrid" id="packList"></div>
@@ -279,6 +283,253 @@ const LUG = {
 OPT.luggage=Object.entries(LUG).map(([k,v])=>[k,v.label]);
 const CATS = {docs:'Documents & money',clo:'Clothing',sho:'Shoes',toi:'Toiletries & grooming',med:'Health',ele:'Electronics',wrk:'Work & study',act:'Activities & gear',kid:'Babies & children',com:'Comfort & organisation',ext:'For this destination',own:'Your own items'};
 const PRI = {1:'Essential',2:'Recommended',3:'Optional'};
+
+/* ================= language =================
+   Interface strings are keyed by their English text; T() returns the Vietnamese when the page is in VI.
+   Catalog items are translated per item id in VI_ITEMS ([name, reason]) so names read naturally. */
+const VI = {
+  // shell
+  'Packing tag':'Thẻ hành lý','Example trip. Change any answer below and the list rebuilds; your trip is saved as you go.':'Chuyến đi mẫu. Thay đổi bất kỳ câu trả lời nào bên dưới, danh sách sẽ tự cập nhật; chuyến đi được lưu tự động.',
+  'Luggage scale · whole group':'Cân hành lý · cả nhóm','Plan & review':'Lên kế hoạch','Pack':'Xếp đồ',
+  'Saved on this device':'Đã lưu trên thiết bị này','Saved to your account':'Đã lưu vào tài khoản','Synced to your account':'Đã đồng bộ với tài khoản',
+  'Suggested list':'Danh sách gợi ý','always packed':'luôn mang','packed if it fits':'mang nếu còn cân','fills spare weight':'thêm khi dư cân',
+  'Reset my changes':'Hoàn tác thay đổi','Confirm list and start packing':'Chốt danh sách và bắt đầu xếp đồ',
+  'Show':'Hiển thị','Hide packed':'Ẩn món đã xếp','Copy as text':'Sao chép dạng văn bản','Download printable list':'Tải bản in','Print list':'In danh sách',
+  'Untick all':'Bỏ đánh dấu tất cả','Click again to untick all':'Bấm lần nữa để bỏ hết','Copied':'Đã sao chép','Select and copy the text below':'Hãy chọn và sao chép đoạn bên dưới',
+  'Saved. Open it to print':'Đã lưu. Mở tệp để in','Download not available here':'Không tải được ở đây','Language':'Ngôn ngữ',
+  // options
+  'Business meetings':'Công tác, gặp đối tác','Conference or expo':'Hội nghị, triển lãm','Holiday / sightseeing':'Nghỉ dưỡng / tham quan','City break':'Khám phá thành phố',
+  'Beach':'Biển','Hiking or trekking':'Leo núi, trekking','Ski or snow':'Trượt tuyết','Camping':'Cắm trại','Study or exam':'Học tập, thi cử',
+  'Competition or tournament':'Thi đấu, giải đấu','Wedding or formal event':'Đám cưới, sự kiện trang trọng','Visiting family':'Thăm người thân','Backpacking':'Du lịch bụi',
+  'Cruise':'Du thuyền','Pilgrimage or temple visits':'Hành hương, đi chùa','Remote work':'Làm việc từ xa',
+  'Flight':'Máy bay','Long-haul flight (6 h+)':'Bay đường dài (trên 6 giờ)','Train or bus':'Tàu hỏa hoặc xe khách','Car or road trip':'Ô tô, đi đường bộ','Ship or cruise':'Tàu thủy, du thuyền',
+  'Hotel':'Khách sạn','Apartment / rental':'Căn hộ / nhà thuê','Hostel':'Hostel, phòng tập thể','Family or friends':'Nhà người thân, bạn bè','Tent or cabin':'Lều hoặc nhà gỗ',
+  'Mostly dry':'Hầu như khô ráo','Some showers':'Thỉnh thoảng mưa','Rainy':'Mưa nhiều','Dry air':'Khô','Moderate':'Vừa phải','Humid':'Ẩm',
+  'Low (0–2)':'Thấp (0–2)','Moderate (3–5)':'Trung bình (3–5)','High (6–7)':'Cao (6–7)','Very high (8+)':'Rất cao (8+)',
+  'Minimalist':'Tối giản','Balanced':'Cân bằng','Prepared for anything':'Chuẩn bị đủ mọi thứ',
+  'Adult':'Người lớn','Teen':'Thiếu niên','Child':'Trẻ em','Baby':'Em bé','Teen 13–17':'Thiếu niên 13–17','Child 3–12':'Trẻ em 3–12','Baby 0–2':'Em bé 0–2',
+  'Few outfits, re-wear':'Ít đồ, mặc lại','Some variety':'Vừa đủ thay đổi','Lots of options':'Nhiều lựa chọn',
+  'Basic grooming':'Chăm sóc cơ bản','Full skincare':'Skincare đầy đủ','Light makeup':'Trang điểm nhẹ','Full makeup':'Trang điểm đầy đủ','Short hair':'Tóc ngắn','Long hair':'Tóc dài',
+  'Phone':'Điện thoại','Carries money and cards':'Giữ tiền và thẻ','Work laptop':'Laptop làm việc','Shaving':'Cạo râu','Contact lenses':'Kính áp tròng','Glasses':'Đeo kính',
+  'Prescription medicine':'Thuốc kê đơn','Period products':'Đồ dùng kỳ kinh nguyệt','Light sleeper':'Khó ngủ, ngủ nông','Gym or running':'Tập gym, chạy bộ','Swimming':'Bơi lội',
+  'Photography':'Chụp ảnh','Reading':'Đọc sách','Gaming':'Chơi game','Motion sickness':'Hay say xe, say sóng','Hair dryer / styling tools':'Máy sấy / dụng cụ làm tóc',
+  'Smartwatch':'Đồng hồ thông minh','Own coffee or tea':'Cà phê hoặc trà riêng',
+  'Personal item only (4 kg)':'Chỉ túi cá nhân (4 kg)','Cabin bag (7 kg)':'Xách tay (7 kg)','Cabin bag + personal item (10 kg)':'Xách tay + túi cá nhân (10 kg)',
+  'Checked 20 kg + cabin 7 kg':'Ký gửi 20 kg + xách tay 7 kg','Checked 23 kg + cabin 7 kg':'Ký gửi 23 kg + xách tay 7 kg','2 × checked 23 kg + cabin 7 kg':'2 × ký gửi 23 kg + xách tay 7 kg',
+  'Custom total for the group':'Tự đặt tổng cho cả nhóm','Custom {k} kg total':'Tự đặt, tổng {k} kg',
+  'Documents & money':'Giấy tờ & tiền','Clothing':'Quần áo','Shoes':'Giày dép','Toiletries & grooming':'Vệ sinh cá nhân & làm đẹp','Health':'Sức khỏe','Electronics':'Đồ điện tử',
+  'Work & study':'Công việc & học tập','Activities & gear':'Hoạt động & dụng cụ','Babies & children':'Em bé & trẻ em','Comfort & organisation':'Tiện nghi & sắp xếp',
+  'For this destination':'Riêng cho điểm đến này','Your own items':'Đồ tự thêm','Essential':'Thiết yếu','Recommended':'Nên mang','Optional':'Tùy chọn',
+  // form
+  'Who is travelling':'Thành viên chuyến đi','Add':'Thêm','Where and when':'Đi đâu, khi nào','From':'Từ','To':'Đến','City, country':'Thành phố, quốc gia',
+  'Leave':'Ngày đi','Return':'Ngày về','The return date is before the departure date.':'Ngày về đang trước ngày đi.',
+  'Crossing a border (passports, adapter, local cash)':'Đi nước ngoài (hộ chiếu, ổ cắm chuyển đổi, tiền địa phương)',
+  'Weather there':'Thời tiết ở đó','Look up again':'Tra cứu lại','Looked up automatically from the destination and dates.':'Tự động tra cứu theo điểm đến và ngày đi.',
+  'Adjust the weather by hand':'Tự chỉnh thời tiết','Night low °C':'Thấp nhất ban đêm °C','Day high °C':'Cao nhất ban ngày °C','Rain':'Mưa','Humidity':'Độ ẩm','Sun / UV':'Nắng / UV',
+  'Snow or ice likely':'Có thể có tuyết hoặc băng','Purpose of the trip':'Mục đích chuyến đi',
+  'Pick all that apply. Each traveller can opt out of any of them above.':'Chọn mọi mục phù hợp. Ở phần thành viên, mỗi người có thể bỏ những mục mình không tham gia.',
+  'Getting there and staying':'Di chuyển và lưu trú','Transport':'Phương tiện','Where you sleep':'Nơi ở','Bringing gifts for hosts':'Mang quà cho chủ nhà',
+  'Luggage allowance':'Hành lý được mang','Per traveller with a seat. Babies on a lap are not counted; infant allowances vary by airline.':'Tính theo mỗi người có ghế ngồi. Em bé ngồi lòng không được tính; hành lý của em bé tùy hãng bay.',
+  'Total limit for the whole group (kg)':'Tổng giới hạn cho cả nhóm (kg)','Laundry is possible during the trip':'Có thể giặt đồ trong chuyến đi','Packing style':'Phong cách xếp đồ',
+  'Traveller name':'Tên thành viên','Remove':'Xóa','Wardrobe':'Tủ đồ','Grooming':'Chăm sóc','Hair':'Tóc','Needs and habits':'Nhu cầu và thói quen','{n} selected':'đã chọn {n}',
+  'Joins on this trip':'Tham gia hoạt động','Nobody yet':'Chưa có ai',
+  // header and scale
+  'Dates':'Ngày','Nights':'Số đêm','Day trip':'Đi trong ngày','Travellers':'Thành viên','Weather':'Thời tiết','Purpose':'Mục đích','Not set':'Chưa chọn',
+  '/ {k} kg packable':'/ {k} kg có thể mang','Nobody has a seat allowance.':'Không ai có hành lý theo ghế.','Set a custom total.':'Hãy tự đặt tổng cân.',
+  'Essentials alone are {k} kg over.':'Riêng đồ thiết yếu đã vượt {k} kg.','Turn on laundry, pick fewer outfits, or add a bag.':'Hãy bật giặt đồ, bớt quần áo hoặc thêm túi.',
+  '{k} kg spare.':'Còn dư {k} kg.','{n} lower-priority item left out to stay under the limit.':'Đã bỏ {n} món ít quan trọng để không vượt cân.',
+  '{n} lower-priority items left out to stay under the limit.':'Đã bỏ {n} món ít quan trọng để không vượt cân.',
+  'Allowance: {a}, minus about {t} kg of empty bags':'Định mức: {a}, trừ khoảng {t} kg vỏ vali, túi','; {k} kg is worn on travel day.':'; {k} kg là đồ mặc trên người khi đi.',
+  // weather panel
+  'Enter a destination and dates to look up the weather.':'Nhập điểm đến và ngày đi để tra cứu thời tiết.',
+  'These values are for a previous destination or dates. Updating…':'Số liệu này của điểm đến hoặc ngày cũ. Đang cập nhật…',
+  'Temperature':'Nhiệt độ','night low – day high':'thấp đêm – cao ngày','{p}% chance':'khả năng {p}%','{p}% of days':'{p}% số ngày','{p}% average':'trung bình {p}%',
+  'UV index {u} max':'chỉ số UV tối đa {u}','Snow':'Tuyết','Likely':'Có khả năng','Unlikely':'Ít khả năng','Plug {p}':'Ổ cắm {p}','Cash {c}':'Tiền {c}',
+  'Example values':'Số liệu mẫu','Climate normals from Claude':'Khí hậu trung bình theo Claude','Same dates in {y}':'Cùng kỳ các năm {y}','Forecast for {a} – {b}':'Dự báo {a} – {b}',
+  ' (later days not forecast yet)':' (các ngày sau chưa có dự báo)',
+  'Cool, mostly clear late-November days with occasional showers.':'Cuối tháng 11 trời mát, phần lớn quang đãng, thỉnh thoảng có mưa rào.',
+  'Enter a destination and both dates to look up the weather.':'Nhập điểm đến và cả hai ngày để tra cứu thời tiết.','Looking up weather for {d}…':'Đang tra cứu thời tiết ở {d}…',
+  'Weather lookup needs a signed-in Claude viewer. Adjust the weather by hand below.':'Cần đăng nhập Claude để tra cứu thời tiết. Hãy tự chỉnh bên dưới.',
+  'Live forecast filled in.':'Đã điền dự báo thời tiết.','Typical weather for these dates filled in.':'Đã điền thời tiết thường gặp vào những ngày này.',
+  'Could not find "{d}". Try just the city name.':'Không tìm thấy "{d}". Hãy thử chỉ nhập tên thành phố.',
+  'Weather lookup was not allowed. Adjust the weather by hand below.':'Không được phép tra cứu thời tiết. Hãy tự chỉnh bên dưới.',
+  'Too many lookups just now. Try again in a minute.':'Tra cứu quá nhiều lần. Hãy thử lại sau một phút.',
+  'Could not get the weather. Try again, or adjust it by hand below.':'Không lấy được thời tiết. Hãy thử lại hoặc tự chỉnh bên dưới.',
+  // review list
+  'Each person':'Mỗi người','Shared':'Dùng chung','One set for the group':'Một bộ cho cả nhóm','Who it is for':'Dành cho ai',
+  'At least one traveller keeps it. Untick the item to drop it.':'Phải có ít nhất một người mang. Bỏ đánh dấu món đồ nếu muốn bỏ hẳn.',
+  '{n} items':'{n} món','No room · tick to add':'Hết cân · đánh dấu để thêm','Wear':'Mặc khi đi','Gate check':'Gửi ở cửa máy bay',
+  'Changes the count for each traveller; below 1 each, it becomes shared':'Đổi số lượng cho mỗi người; ít hơn 1 mỗi người thì chuyển thành dùng chung',
+  'Changes the total':'Đổi tổng số lượng','Fewer':'Bớt','More':'Thêm','Add your own item':'Thêm món đồ của bạn','Item name':'Tên món đồ','Category':'Nhóm',
+  'grams':'gam','Weight in grams':'Cân nặng (gam)',
+  // pack view and export
+  'Confirm your list on the Plan tab to start ticking items off.':'Hãy chốt danh sách ở thẻ Lên kế hoạch để bắt đầu đánh dấu.',
+  'Everyone':'Tất cả mọi người','Shared items':'Đồ dùng chung','{d} of {n} ticks done':'Đã xếp {d}/{n}','Your trip':'Chuyến đi',
+  'Ticks are saved as you go.':'Các đánh dấu được lưu tự động.',' Everything is packed. Have a good trip.':' Đã xếp xong mọi thứ. Chúc chuyến đi vui vẻ!',
+  'Nothing left to show with these filters.':'Không còn gì để hiển thị với bộ lọc này.','Packing list':'Danh sách hành lý','PACKING LIST':'DANH SÁCH HÀNH LÝ',
+  'For the whole group. Decide who carries each one.':'Cho cả nhóm. Hãy phân công ai mang món nào.','(wear)':'(mặc khi đi)','Page {n} of {m}':'Trang {n}/{m}'
+};
+const VI_ITEMS = {
+  passport:['Hộ chiếu (còn hạn trên 6 tháng)','Mỗi người đều cần, kể cả em bé'],
+  visa:['Thị thực hoặc giấy phép nhập cảnh','Kiểm tra quy định nhập cảnh theo từng quốc tịch'],
+  passcopy:['Bản sao hộ chiếu và ảnh thẻ dự phòng','Làm lại nhanh hơn nếu bị mất'],
+  idcard:['Căn cước công dân','Khách sạn và chuyến bay nội địa đều yêu cầu'],
+  wallet:['Ví'],
+  cards:['Hai thẻ thanh toán khác mạng (Visa, Mastercard…)','Dự phòng khi một thẻ bị khóa'],
+  pocketcard:['Thẻ liên lạc bỏ túi (số điện thoại người giám hộ, địa chỉ khách sạn)','Phòng khi bị lạc khỏi đoàn'],
+  bizcards:['Danh thiếp'],
+  eventdocs:['Giấy đăng ký, thư mời hoặc vé vào sự kiện'],
+  studentdocs:['Thẻ sinh viên, thư nhập học và bảng điểm'],
+  tickets:['Vé và thẻ lên máy bay của mọi người (bản lưu offline)','Lưu offline phòng khi mất sóng'],
+  bookings:['Xác nhận đặt phòng và địa chỉ nơi ở','Đưa địa chỉ cho tài xế taxi'],
+  insurance:['Bảo hiểm du lịch cho tất cả mọi người','Chi phí y tế ở nước ngoài có thể rất cao'],
+  cash:[c=>'Tiền mặt địa phương'+(c.currency?' ('+c.currency+')':''),'Để đi taxi, mua ở chợ và tiền boa khi vừa đến'],
+  license:['Bằng lái xe cho mỗi người lái'],
+  idp:['Bằng lái xe quốc tế cho mỗi người lái','Nhiều nước yêu cầu mang kèm bằng lái gốc'],
+  minordocs:['Giấy khai sinh hoặc giấy tờ giám hộ của các con','Một số cửa khẩu yêu cầu chứng minh quyền giám hộ'],
+  unaccompanied:['Đơn trẻ đi một mình và thư đồng ý có chữ ký của bố mẹ','Hãng bay và cửa khẩu yêu cầu khi không có người lớn đi cùng'],
+  emergency:['Danh bạ khẩn cấp ghi trên giấy','Phòng khi điện thoại hết pin'],
+  pen:['Bút để điền tờ khai nhập cảnh'],
+  underwear:['Đồ lót','Dư một bộ so với số ngày'],
+  babyoutfits:['Bộ body và quần áo em bé','Dự phòng khi đổ bẩn hoặc tràn bỉm'],
+  socks:['Tất (đôi)'],
+  tops:['Áo phông / áo mặc thường'],
+  bizshirt:['Áo sơ mi công sở'],
+  suit:['Bộ vest hoặc áo blazer'],
+  smartbottoms:['Quần âu hoặc chân váy công sở'],
+  bottoms:['Quần dài hoặc quần jeans'],
+  shorts:['Quần short hoặc váy mỏng'],
+  dinner:['Bộ đồ lịch sự để đi ăn tối'],
+  formal:['Trang phục trang trọng cho sự kiện'],
+  tie:['Cà vạt, khăn hoặc phụ kiện điểm nhấn'],
+  sleepwear:['Đồ ngủ'],
+  gymwear:['Bộ đồ tập'],
+  swim:[c=>c.baby?'Bỉm bơi và đồ bơi':'Đồ bơi'],
+  layer:['Áo len mỏng hoặc cardigan','Cho phòng điều hòa, trên máy bay và buổi tối mát'],
+  fleece:['Áo nỉ hoặc áo ấm lớp giữa'],
+  coat:[c=>c.baby?'Bộ áo liền giữ ấm cho em bé':'Áo khoác giữ nhiệt','Mặc lên người khi đi để đỡ cân hành lý'],
+  shell:['Áo khoác chống nước'],
+  thermals:['Đồ giữ nhiệt mặc lót (áo và quần)'],
+  beanie:['Mũ len'],
+  gloves:[c=>c.baby?'Bao tay em bé':'Găng tay'],
+  scarf:['Khăn quàng cổ'],
+  sunhat:['Mũ chống nắng hoặc mũ lưỡi trai'],
+  teamkit:['Đồng phục đội hoặc trang phục thi đấu'],
+  modest:['Trang phục kín đáo và khăn choàng','Che vai và đầu gối khi vào nơi linh thiêng'],
+  belt:['Thắt lưng'],
+  compression:['Tất y khoa (tất áp lực)','Giảm sưng chân trên chuyến bay trên 6 giờ'],
+  walkshoes:['Giày đi bộ êm chân','Đi đôi này khi khởi hành'],
+  dressshoes:['Giày tây / giày lịch sự'],
+  sandals:['Dép xăng-đan hoặc dép tông','Dùng cả khi tắm ở phòng tắm chung'],
+  boots:['Giày leo núi'],
+  snowboots:['Ủng chống nước giữ ấm'],
+  sportshoes:['Giày tập hoặc giày thi đấu'],
+  slippers:['Dép đi trong nhà'],
+  teeth:['Bàn chải đánh răng'],
+  deo:['Lăn khử mùi'],
+  skincare:['Sữa rửa mặt và kem dưỡng ẩm'],
+  routine:['Phần còn lại của bộ skincare (serum, mặt nạ)'],
+  lipbalm:['Son dưỡng có chống nắng'],
+  razor:['Dao cạo và bộ cạo râu',c=>c.cabin?'Hành lý xách tay chỉ mang được dao cạo lưỡi kép hoặc máy cạo điện':''],
+  makeup:['Bộ trang điểm'],
+  remover:['Nước tẩy trang và bông tẩy trang'],
+  hairbits:['Dây buộc tóc, kẹp tóc và sản phẩm tạo kiểu'],
+  hairtools:['Máy sấy hoặc dụng cụ tạo kiểu tóc',c=>'Kiểm tra máy dùng được hai mức điện áp'+(c.voltage?' (ở đó dùng '+c.voltage+')':'')],
+  period:['Băng vệ sinh và đồ dùng kỳ kinh nguyệt'],
+  contacts:['Kính áp tròng và nước ngâm'],
+  glasses:[c=>c.F.has('glasses')?'Kính và hộp kính':'Kính dự phòng'],
+  sunglasses:['Kính râm'],
+  liquidsbag:['Túi zip trong suốt 1 lít đựng chất lỏng','Quy định an ninh: mỗi lọ tối đa 100 ml'],
+  perfume:['Nước hoa (cỡ du lịch)'],
+  towel:['Khăn tắm khô nhanh'],
+  toothpaste:['Kem đánh răng và chỉ nha khoa'],
+  shampoo:[c=>'Dầu gội và dầu xả'+(c.cabin?' (≤100 ml)':''),c=>c.stay==='hotel'?'Phần lớn khách sạn có sẵn':''],
+  bodywash:[c=>'Sữa tắm hoặc xà phòng'+(c.cabin?' (≤100 ml)':'')],
+  brush:['Lược'],
+  sunscreen:['Kem chống nắng SPF 50'],
+  repellent:['Kem hoặc xịt chống muỗi'],
+  aftersun:['Gel dưỡng da sau khi đi nắng'],
+  nails:['Bấm móng tay và nhíp'],
+  sanitiser:['Nước rửa tay khô'],
+  wipes:['Khăn giấy khô và khăn ướt'],
+  laundrykit:['Giấy giặt du lịch','Để giặt tay quần áo trong bồn rửa'],
+  rx:['Thuốc kê đơn và bản sao đơn thuốc','Để trong hành lý xách tay, mang dư 3 ngày phòng trễ chuyến'],
+  motion:['Thuốc hoặc vòng chống say xe'],
+  sleepkit:['Nút bịt tai và bịt mắt'],
+  masks:['Khẩu trang'],
+  pain:['Thuốc giảm đau, hạ sốt (liều người lớn)'],
+  kidmeds:['Thuốc hạ sốt cho trẻ và nhiệt kế'],
+  firstaid:['Bộ sơ cứu (băng dán, sát khuẩn, băng cuộn)'],
+  stomach:['Thuốc trị tiêu chảy và oresol'],
+  seasick:['Thuốc chống say sóng khi đi tàu'],
+  allergy:['Thuốc chống dị ứng'],
+  blister:['Miếng dán chống phồng rộp'],
+  electrolytes:['Gói bù điện giải'],
+  phone:['Điện thoại và cáp sạc'],
+  esim:['SIM hoặc eSIM địa phương, cài trước khi đi'],
+  headphones:[c=>c.longhaul?'Tai nghe chống ồn':'Tai nghe'],
+  laptop:['Laptop và sạc'],
+  ereader:['Máy đọc sách hoặc một cuốn sách'],
+  camera:['Máy ảnh và ống kính'],
+  camacc:['Pin máy ảnh và thẻ nhớ dự phòng'],
+  tripod:['Chân máy du lịch'],
+  gaming:['Máy chơi game cầm tay hoặc tay cầm'],
+  watchcharger:['Sạc đồng hồ thông minh'],
+  tablet:['Máy tính bảng tải sẵn phim và tai nghe'],
+  adapter:[c=>'Ổ cắm chuyển đổi du lịch'+(c.plug?' ('+c.plug+')':''),c=>c.voltage?'Điện lưới ở đó là '+c.voltage:''],
+  powerbank:['Sạc dự phòng',c=>c.flight?'Pin lithium phải để trong hành lý xách tay':''],
+  charger:['Cục sạc USB nhiều cổng'],
+  hdmi:['Đầu chuyển trình chiếu (HDMI / USB-C) và bút trình chiếu'],
+  usb:['USB sao lưu các tệp quan trọng'],
+  tracker:['Thiết bị định vị Bluetooth trong mỗi vali ký gửi'],
+  notebook:['Sổ tay và bút'],
+  studymat:['Tài liệu học và giáo trình'],
+  examkit:['Bộ đồ đi thi (máy tính, bút chì, tẩy)'],
+  badge:['Dây đeo thẻ hoặc bao đựng thẻ'],
+  desk:['Giá đỡ laptop và chuột rời'],
+  folder:['Tài liệu in sẵn trong bìa hồ sơ'],
+  daypack:[c=>c.child?'Ba lô nhỏ':'Ba lô đi trong ngày'],
+  bottle:['Bình nước dùng nhiều lần',c=>c.flight?'Đổ hết nước trước khi qua cửa an ninh':''],
+  poles:['Gậy leo núi'],
+  headlamp:['Đèn pin đội đầu và pin dự phòng'],
+  sleepbag:['Túi ngủ'],
+  mat:['Đệm ngủ'],
+  goggles:['Kính trượt tuyết'],
+  skigloves:['Găng tay trượt tuyết chống nước'],
+  skisocks:['Tất trượt tuyết (đôi)'],
+  beachtowel:['Khăn đi biển hoặc khăn sarong'],
+  snorkel:['Kính lặn có ống thở'],
+  equipment:['Dụng cụ thi đấu (cơ bida, vợt, bàn phím…)','Kiểm tra quy định của hãng bay về dụng cụ thể thao'],
+  spares:['Phụ tùng thay thế và bộ sửa dụng cụ'],
+  prayer:['Đồ dùng cầu nguyện, tín ngưỡng'],
+  coffee:['Bộ pha cà phê hoặc trà'],
+  umbrella:['Ô gấp gọn'],
+  tent:['Lều'],
+  stove:['Bếp dã ngoại và nồi nấu',c=>c.flight?'Không được mang bình gas lên máy bay; mua ở nơi đến':''],
+  drybag:['Túi chống nước cho điện thoại và đồ quý giá'],
+  rules:['Lịch thi đấu, điều lệ và sơ đồ địa điểm in sẵn'],
+  gifts:['Quà nhỏ cho chủ nhà'],
+  diapers:['Bỉm (cho 3 ngày đầu)','Mua thêm khi đến nơi'],
+  babywipes:['Khăn ướt em bé'],
+  feeding:['Bình sữa, sữa công thức hoặc đồ ăn dặm'],
+  stroller:['Xe đẩy du lịch','Phần lớn hãng bay cho gửi miễn phí ở cửa máy bay'],
+  carrier:['Địu em bé'],
+  comfort:['Thú bông hoặc chăn quen thuộc'],
+  kidgames:['Đồ chơi nhỏ, sách và tranh tô màu'],
+  changemat:['Tấm lót thay bỉm'],
+  kidsnacks:['Đồ ăn vặt và cốc chống đổ cho trẻ'],
+  cubes:['Túi chia đồ (packing cubes)'],
+  pillow:['Gối kê cổ'],
+  laundrybag:['Túi đựng đồ bẩn'],
+  lock:['Khóa vali (chuẩn TSA) cho mỗi vali'],
+  luggagetag:['Thẻ hành lý ghi thông tin liên lạc cho mỗi vali'],
+  snacks:['Đồ ăn vặt cho chuyến đi'],
+  zipbags:['Vài túi zip','Đựng đồ bơi ướt, đồ dễ rò rỉ và hóa đơn'],
+  foldbag:['Túi gấp gọn đựng quà lưu niệm']
+};
+const isVi=()=>state.lang==='vi';
+const T=(s,v)=>{let r=isVi()&&VI[s]||s; if(v) r=r.replace(/\{(\w+)\}/g,(_,k)=>v[k]??''); return r;};
+
 
 /* ================= item catalog =================
    [scope, id, name, category, grams per unit, priority 1-3, quantity, include-when, why, {wear|free}]
@@ -463,39 +714,47 @@ const newPerson=(age,i)=>({pid:'t'+Date.now().toString(36)+(pidSeq++),name:'',ag
   wardrobe:'some',grooming:'basic',hair:'short',needs:age==='adult'?['phone','money']:age==='teen'?['phone']:[],skip:[]});
 const defaults=()=>({
   v:2, example:true, view:'plan', savedAt:0,
-  people:[{...newPerson('adult'),name:'Adult 1',needs:['phone','money','laptop']},{...newPerson('adult'),name:'Adult 2',needs:['phone','money'],hair:'long',grooming:'skincare'},{...newPerson('child'),name:'Child 1'}],
+  people:[{...newPerson('adult'),needs:['phone','money','laptop']},{...newPerson('adult'),needs:['phone','money'],hair:'long',grooming:'skincare'},{...newPerson('child')}],
+  lang:/^vi\b/i.test(navigator.language||'')?'vi':'en',
   trip:{dest:'Tokyo, Japan',home:'Hanoi, Vietnam',start:'2026-11-20',end:'2026-11-26',intl:true,
     low:9,high:17,rain:'some',snow:false,humidity:'moderate',uv:'moderate',
     purpose:['leisure','city'],transport:['flight'],stay:'hotel',gifts:false,luggage:'chk23',kg:40,laundry:false,style:'balanced',
     climate:{for:'Tokyo, Japan|2026-11-20|2026-11-26',code:'TYO',homeCode:'HAN',plug:'Type A/B',voltage:'100 V',currency:'JPY',
-      source:'Example values',summary:'Cool, mostly clear late-November days with occasional showers.',lowC:9,highC:17,rainPct:25,humidityPct:63,uvIndex:3,tips:[],extras:[]}},
+      srcKind:'example',summary:'Cool, mostly clear late-November days with occasional showers.',lowC:9,highC:17,rainPct:25,humidityPct:63,uvIndex:3,tips:[],extras:[]}},
   ov:{}, custom:[], confirmed:null, packed:{}, hidePacked:false, packWho:'all'
 });
-function merge(s){const d=defaults();return {...d,...s,trip:{...d.trip,...(s.trip||{})},people:Array.isArray(s.people)&&s.people.length?s.people:d.people};}
+function merge(s){const d=defaults();
+  // default names like "Adult 1" are now generated in the viewer's language, so clear stored ones
+  const people=Array.isArray(s.people)&&s.people.length?s.people.map(p=>/^(Adult|Teen|Child|Baby) \d+$/.test(p.name||'')?{...p,name:''}:p):d.people;
+  return {...d,...s,trip:{...d.trip,...(s.trip||{})},people};}
 let state=defaults();
 try{const raw=localStorage.getItem(KEY); if(raw) state=merge(JSON.parse(raw));}catch(e){}
+if(/^#(en|vi)$/.test(location.hash)) state.lang=location.hash.slice(1);   // share a link that opens in one language
 
 /* ================= helpers ================= */
 const $=s=>document.querySelector(s), $$=(s,r=document)=>[...r.querySelectorAll(s)];
 const esc=s=>String(s??'').replace(/[&<>"']/g,ch=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[ch]));
 const R=(f,c)=>typeof f==='function'?f(c):f;
-const kg=g=>(g/1000).toFixed(g>=10000?0:1);
+const kg=g=>{const v=(g/1000).toFixed(g>=10000?0:1); return isVi()?v.replace('.',','):v;};
 const slug=s=>String(s).toLowerCase().replace(/[^a-z0-9]+/g,'-').replace(/^-|-$/g,'').slice(0,40)||'item';
 const code=s=>String(s||'').replace(/[^A-Za-z]/g,'').slice(0,3).toUpperCase()||'???';
 const MON=['JAN','FEB','MAR','APR','MAY','JUN','JUL','AUG','SEP','OCT','NOV','DEC'];
-const fmtD=s=>{const d=new Date(s+'T00:00');return isNaN(d)?'—':d.getDate()+' '+MON[d.getMonth()];};
+const fmtD=s=>{const d=new Date(s+'T00:00');return isNaN(d)?'—':isVi()?d.getDate()+'/'+(d.getMonth()+1):d.getDate()+' '+MON[d.getMonth()];};
 const climateKey=t=>t.dest+'|'+t.start+'|'+t.end;
-const label=(k,v)=>OPT[k].find(o=>o[0]===v)?.[1]||v;
-const pname=(p,i)=>p.name?.trim()||label('age',p.age).split(' ')[0]+' '+(i+1);
+const label=(k,v)=>T(OPT[k].find(o=>o[0]===v)?.[1]||v);
+const AGE={adult:'Adult',teen:'Teen',child:'Child',baby:'Baby'};
+// a traveller without a name is "Adult 1", "Child 2"… counted within their age group, in the current language
+const pname=(p,i)=>p.name?.trim()||T(AGE[p.age])+' '+(state.people.slice(0,i).filter(x=>x.age===p.age).length+1);
 function groupSummary(){
   const n={adult:0,teen:0,child:0,baby:0}; state.people.forEach(p=>n[p.age]++);
-  const w={adult:['adult','adults'],teen:['teen','teens'],child:['child','children'],baby:['baby','babies']};
-  return Object.keys(n).filter(k=>n[k]).map(k=>n[k]+' '+w[k][n[k]>1?1:0]).join(' · ')||'Nobody yet';
+  const w=isVi()?{adult:['người lớn'],teen:['thiếu niên'],child:['trẻ em'],baby:['em bé']}
+    :{adult:['adult','adults'],teen:['teen','teens'],child:['child','children'],baby:['baby','babies']};
+  return Object.keys(n).filter(k=>n[k]).map(k=>n[k]+' '+(w[k][n[k]>1?1:0]||w[k][0])).join(' · ')||T('Nobody yet');
 }
 
 function lug(t,seats){
-  if(t.luggage!=='custom'){const L=LUG[t.luggage]||LUG.chk23; return {...L,capKg:(L.kg-L.tare)*seats,tareKg:L.tare*seats};}
-  const k=Math.max(1,+t.kg||10); return {label:'Custom '+k+' kg total',kg:k,capKg:k*.88,tareKg:+(k*.12).toFixed(1),cabin:k/Math.max(1,seats)<=10};
+  if(t.luggage!=='custom'){const L=LUG[t.luggage]||LUG.chk23; return {...L,label:T(L.label),capKg:(L.kg-L.tare)*seats,tareKg:L.tare*seats};}
+  const k=Math.max(1,+t.kg||10); return {label:T('Custom {k} kg total',{k}),kg:k,capKg:k*.88,tareKg:+(k*.12).toFixed(1),cabin:k/Math.max(1,seats)<=10};
 }
 function groupCtx(t){
   const s=Date.parse(t.start), e=Date.parse(t.end);
@@ -528,8 +787,9 @@ function personCtx(g,p){
 function build(){
   const t=state.trip, g=groupCtx(t), list=[];
   const people=state.people.map((p,i)=>({p,i,name:pname(p,i),c:personCtx(g,p)}));
-  for(const [sc,id,n,cat,gr,pr,q,cond,why,o] of C){
+  for(let [sc,id,n,cat,gr,pr,q,cond,why,o] of C){
     const ok=c=>cond===true||cond(c), ov=state.ov[id]||{};
+    const vi=isVi()&&VI_ITEMS[id]; if(vi){ n=vi[0]; why=vi.length>1?vi[1]:why; }
     if(sc==='s'){
       if(!ok(g)) continue;
       const qq=ov.q||Math.max(1,Math.round(R(q,g)));
@@ -575,69 +835,69 @@ function build(){
 function chips(k,multi,cls='',name){
   const nm=name||'f-'+k;
   return `<div class="chips ${cls}" role="group">`+OPT[k].map(([v,l])=>
-    `<label><input type="${multi?'checkbox':'radio'}" name="${nm}" id="${nm}-${v}" value="${v}" data-k="${k}"${multi?' data-multi':''}><span>${esc(l)}</span></label>`).join('')+'</div>';
+    `<label><input type="${multi?'checkbox':'radio'}" name="${nm}" id="${nm}-${v}" value="${v}" data-k="${k}"${multi?' data-multi':''}><span>${esc(T(l))}</span></label>`).join('')+'</div>';
 }
-const sel=(k,id,attrs)=>`<select id="${id}" ${attrs}>`+OPT[k].map(([v,l])=>`<option value="${v}">${esc(l)}</option>`).join('')+'</select>';
+const sel=(k,id,attrs)=>`<select id="${id}" ${attrs}>`+OPT[k].map(([v,l])=>`<option value="${v}">${esc(T(l))}</option>`).join('')+'</select>';
 function buildForm(){
   $('#trip').innerHTML=`
-  <fieldset><legend>Who is travelling</legend>
+  <fieldset><legend>${T('Who is travelling')}</legend>
     <div class="people" id="people"></div>
-    <div class="addrow"><span class="label">Add</span>
-      <button type="button" class="btn ghost sm" data-add="adult">+ Adult</button>
-      <button type="button" class="btn ghost sm" data-add="teen">+ Teen</button>
-      <button type="button" class="btn ghost sm" data-add="child">+ Child</button>
-      <button type="button" class="btn ghost sm" data-add="baby">+ Baby</button>
+    <div class="addrow"><span class="label">${T('Add')}</span>
+      <button type="button" class="btn ghost sm" data-add="adult">+ ${T('Adult')}</button>
+      <button type="button" class="btn ghost sm" data-add="teen">+ ${T('Teen')}</button>
+      <button type="button" class="btn ghost sm" data-add="child">+ ${T('Child')}</button>
+      <button type="button" class="btn ghost sm" data-add="baby">+ ${T('Baby')}</button>
       <span class="count" id="peopleCount"></span>
     </div>
   </fieldset>
 
-  <fieldset><legend>Where and when</legend>
+  <fieldset><legend>${T('Where and when')}</legend>
     <div class="row2">
-      <div class="field"><label class="label" for="f-home">From</label><input type="text" id="f-home" data-k="home" placeholder="City, country"></div>
-      <div class="field"><label class="label" for="f-dest">To</label><input type="text" id="f-dest" data-k="dest" placeholder="City, country"></div>
+      <div class="field"><label class="label" for="f-home">${T('From')}</label><input type="text" id="f-home" data-k="home" placeholder="${T('City, country')}"></div>
+      <div class="field"><label class="label" for="f-dest">${T('To')}</label><input type="text" id="f-dest" data-k="dest" placeholder="${T('City, country')}"></div>
     </div>
     <div class="row2">
-      <div class="field"><label class="label" for="f-start">Leave</label><input type="date" id="f-start" data-k="start"></div>
-      <div class="field"><label class="label" for="f-end">Return</label><input type="date" id="f-end" data-k="end"></div>
+      <div class="field"><label class="label" for="f-start">${T('Leave')}</label><input type="date" id="f-start" data-k="start"></div>
+      <div class="field"><label class="label" for="f-end">${T('Return')}</label><input type="date" id="f-end" data-k="end"></div>
     </div>
-    <div class="err" id="dateErr" hidden>The return date is before the departure date.</div>
-    <label class="check"><input type="checkbox" id="f-intl" data-k="intl"> Crossing a border (passports, adapter, local cash)</label>
+    <div class="err" id="dateErr" hidden>${T('The return date is before the departure date.')}</div>
+    <label class="check"><input type="checkbox" id="f-intl" data-k="intl"> ${T('Crossing a border (passports, adapter, local cash)')}</label>
   </fieldset>
 
-  <fieldset><legend>Weather there</legend>
+  <fieldset><legend>${T('Weather there')}</legend>
     <div style="display:flex;gap:10px;align-items:center;flex-wrap:wrap">
-      <button type="button" class="btn sm" id="lookup">Look up again</button>
-      <span class="hint" id="lookupMsg">Looked up automatically from the destination and dates.</span>
+      <button type="button" class="btn sm" id="lookup">${T('Look up again')}</button>
+      <span class="hint" id="lookupMsg">${T('Looked up automatically from the destination and dates.')}</span>
     </div>
     <div class="climate" id="climate"></div>
-    <details class="adjust" id="adjust"><summary>Adjust the weather by hand</summary>
+    <details class="adjust" id="adjust"><summary>${T('Adjust the weather by hand')}</summary>
       <div class="row2">
-        <div class="field"><label class="label" for="f-low">Night low °C</label><input type="number" id="f-low" data-k="low" step="1" min="-50" max="50"></div>
-        <div class="field"><label class="label" for="f-high">Day high °C</label><input type="number" id="f-high" data-k="high" step="1" min="-50" max="55"></div>
+        <div class="field"><label class="label" for="f-low">${T('Night low °C')}</label><input type="number" id="f-low" data-k="low" step="1" min="-50" max="50"></div>
+        <div class="field"><label class="label" for="f-high">${T('Day high °C')}</label><input type="number" id="f-high" data-k="high" step="1" min="-50" max="55"></div>
       </div>
-      <div class="field"><span class="label">Rain</span>${chips('rain')}</div>
-      <div class="field"><span class="label">Humidity</span>${chips('humidity')}</div>
-      <div class="field"><span class="label">Sun / UV</span>${chips('uv')}</div>
-      <label class="check"><input type="checkbox" id="f-snow" data-k="snow"> Snow or ice likely</label>
+      <div class="field"><span class="label">${T('Rain')}</span>${chips('rain')}</div>
+      <div class="field"><span class="label">${T('Humidity')}</span>${chips('humidity')}</div>
+      <div class="field"><span class="label">${T('Sun / UV')}</span>${chips('uv')}</div>
+      <label class="check"><input type="checkbox" id="f-snow" data-k="snow"> ${T('Snow or ice likely')}</label>
     </details>
   </fieldset>
 
-  <fieldset><legend>Purpose of the trip</legend>
-    <span class="hint">Pick all that apply. Each traveller can opt out of any of them above.</span>${chips('purpose',true)}
+  <fieldset><legend>${T('Purpose of the trip')}</legend>
+    <span class="hint">${T('Pick all that apply. Each traveller can opt out of any of them above.')}</span>${chips('purpose',true)}
   </fieldset>
 
-  <fieldset><legend>Getting there and staying</legend>
-    <div class="field"><span class="label">Transport</span>${chips('transport',true)}</div>
-    <div class="field"><span class="label">Where you sleep</span>${chips('stay')}</div>
-    <label class="check"><input type="checkbox" id="f-gifts" data-k="gifts"> Bringing gifts for hosts</label>
+  <fieldset><legend>${T('Getting there and staying')}</legend>
+    <div class="field"><span class="label">${T('Transport')}</span>${chips('transport',true)}</div>
+    <div class="field"><span class="label">${T('Where you sleep')}</span>${chips('stay')}</div>
+    <label class="check"><input type="checkbox" id="f-gifts" data-k="gifts"> ${T('Bringing gifts for hosts')}</label>
   </fieldset>
 
-  <fieldset><legend>Luggage allowance</legend>
-    <span class="hint">Per traveller with a seat. Babies on a lap are not counted; infant allowances vary by airline.</span>
+  <fieldset><legend>${T('Luggage allowance')}</legend>
+    <span class="hint">${T('Per traveller with a seat. Babies on a lap are not counted; infant allowances vary by airline.')}</span>
     ${chips('luggage',false,'lug')}
-    <div class="field" id="customKg" hidden><label class="label" for="f-kg">Total limit for the whole group (kg)</label><input type="number" id="f-kg" data-k="kg" min="1" max="300" step="0.5"></div>
-    <label class="check"><input type="checkbox" id="f-laundry" data-k="laundry"> Laundry is possible during the trip</label>
-    <div class="field"><span class="label">Packing style</span>${chips('style')}</div>
+    <div class="field" id="customKg" hidden><label class="label" for="f-kg">${T('Total limit for the whole group (kg)')}</label><input type="number" id="f-kg" data-k="kg" min="1" max="300" step="0.5"></div>
+    <label class="check"><input type="checkbox" id="f-laundry" data-k="laundry"> ${T('Laundry is possible during the trip')}</label>
+    <div class="field"><span class="label">${T('Packing style')}</span>${chips('style')}</div>
   </fieldset>`;
 }
 function renderPeople(){
@@ -645,13 +905,13 @@ function renderPeople(){
   $('#people').innerHTML=state.people.map((p,i)=>{
     const id='p-'+p.pid;
     return `<div class="person" data-pid="${p.pid}">
-      <div class="phead"><input type="text" id="${id}-name" data-pf="name" value="${esc(p.name)}" placeholder="${esc(pname({...p,name:''},i))}" aria-label="Traveller name">
-        <button type="button" class="xbtn" data-remove="${p.pid}"${state.people.length<2?' disabled':''}>Remove</button></div>
+      <div class="phead"><input type="text" id="${id}-name" data-pf="name" value="${esc(p.name)}" placeholder="${esc(pname({...p,name:''},i))}" aria-label="${T('Traveller name')}">
+        <button type="button" class="xbtn" data-remove="${p.pid}"${state.people.length<2?' disabled':''}>${T('Remove')}</button></div>
       ${chips('age',false,'sm',id+'-age').replace(/data-k="age"/g,'data-pf="age"')}
-      <div class="row3">${sel('wardrobe',id+'-wardrobe','data-pf="wardrobe" aria-label="Wardrobe"')}${sel('grooming',id+'-grooming','data-pf="grooming" aria-label="Grooming"')}${sel('hair',id+'-hair','data-pf="hair" aria-label="Hair"')}</div>
-      <details><summary>Needs and habits · <span class="count">${p.needs.length} selected</span></summary>
+      <div class="row3">${sel('wardrobe',id+'-wardrobe',`data-pf="wardrobe" aria-label="${T('Wardrobe')}"`)}${sel('grooming',id+'-grooming',`data-pf="grooming" aria-label="${T('Grooming')}"`)}${sel('hair',id+'-hair',`data-pf="hair" aria-label="${T('Hair')}"`)}</div>
+      <details><summary>${T('Needs and habits')} · <span class="count">${T('{n} selected',{n:p.needs.length})}</span></summary>
         ${chips('needs',true,'sm',id+'-needs').replace(/data-k="needs"/g,'data-pf="needs"')}</details>
-      ${purposes.length?`<div class="field"><span class="label">Joins on this trip</span><div class="chips sm">${purposes.map(v=>
+      ${purposes.length?`<div class="field"><span class="label">${T('Joins on this trip')}</span><div class="chips sm">${purposes.map(v=>
         `<label><input type="checkbox" id="${id}-join-${v}" value="${v}" data-pf="join"${(p.skip||[]).includes(v)?'':' checked'}><span>${esc(label('purpose',v))}</span></label>`).join('')}</div></div>`:''}
     </div>`;}).join('');
   state.people.forEach(p=>{
@@ -698,74 +958,85 @@ function renderHeader(b){
   const home=fresh&&cl.homeCode?cl.homeCode:code(t.home), dest=fresh&&cl.code?cl.code:code(t.dest);
   $('#route').innerHTML=`<span>${esc(home)}</span><span class="arrow" aria-label="to">→</span><span>${esc(dest)}</span>`;
   const purp=t.purpose.map(p=>label('purpose',p));
-  const meta=[['Dates',fmtD(t.start)+' – '+fmtD(t.end)],['Nights',b.g.nights||'Day trip'],['Travellers',groupSummary()],['Weather',`${t.low}° / ${t.high}°C`],
-    ['Purpose',purp.length?purp.slice(0,2).join(', ')+(purp.length>2?' +'+(purp.length-2):''):'Not set']];
-  $('#tagmeta').innerHTML=meta.map(([k,v])=>`<div><span class="label">${k}</span><b>${esc(v)}</b></div>`).join('');
+  const meta=[['Dates',fmtD(t.start)+' – '+fmtD(t.end)],['Nights',b.g.nights||T('Day trip')],['Travellers',groupSummary()],['Weather',`${t.low}° / ${t.high}°C`],
+    ['Purpose',purp.length?purp.slice(0,2).join(', ')+(purp.length>2?' +'+(purp.length-2):''):T('Not set')]];
+  $('#tagmeta').innerHTML=meta.map(([k,v])=>`<div><span class="label">${T(k)}</span><b>${esc(v)}</b></div>`).join('');
   $('#exampleNote').hidden=!state.example;
   const ratio=b.cap?b.used/b.cap:2, g=$('#gauge');
   $('#kgUsed').textContent=kg(b.used);
-  $('#kgCap').textContent='/ '+kg(b.cap)+' kg packable';
+  $('#kgCap').textContent=T('/ {k} kg packable',{k:kg(b.cap)});
   $('#gaugeFill').style.width=Math.min(100,ratio*100)+'%';
   const step=b.cap>60000?10000:b.cap>25000?5000:1000; $('#ticks').style.backgroundSize=(b.cap?step/b.cap*100:100)+'% 100%';
   g.className='gauge'+(ratio>1?' over':ratio>.9?' warn':'');
   const out=b.list.filter(i=>i.st==='nofit').length;
   const allowance=t.luggage==='custom'?b.L.label:`${b.g.seats} × ${b.L.label}`;
-  $('#scaleNote').innerHTML=(b.g.seats===0&&t.luggage!=='custom'?'<span class="state-over">Nobody has a seat allowance.</span> Set a custom total. '
-    :ratio>1?`<span class="state-over">Essentials alone are ${kg(b.used-b.cap)} kg over.</span> Turn on laundry, pick fewer outfits, or add a bag. `
-    :`<span class="state-ok">${kg(b.cap-b.used)} kg spare.</span>`+(out?` ${out} lower-priority item${out>1?'s':''} left out to stay under the limit. `:' '))
-    +`Allowance: ${esc(allowance)}, minus about ${b.L.tareKg.toFixed(1)} kg of empty bags`+(b.worn?`; ${kg(b.worn)} kg is worn on travel day.`:'.');
+  $('#scaleNote').innerHTML=(b.g.seats===0&&t.luggage!=='custom'?`<span class="state-over">${T('Nobody has a seat allowance.')}</span> ${T('Set a custom total.')} `
+    :ratio>1?`<span class="state-over">${T('Essentials alone are {k} kg over.',{k:kg(b.used-b.cap)})}</span> ${T('Turn on laundry, pick fewer outfits, or add a bag.')} `
+    :`<span class="state-ok">${T('{k} kg spare.',{k:kg(b.cap-b.used)})}</span> `+(out?T(out>1?'{n} lower-priority items left out to stay under the limit.':'{n} lower-priority item left out to stay under the limit.',{n:out})+' ':''))
+    +esc(T('Allowance: {a}, minus about {t} kg of empty bags',{a:allowance,t:kg(b.L.tareKg*1000)}))+(b.worn?esc(T('; {k} kg is worn on travel day.',{k:kg(b.worn)})):'.');
 }
-const uvName=i=>i<3?'Low':i<6?'Moderate':i<8?'High':i<11?'Very high':'Extreme';
+const uvName=i=>(isVi()?['Thấp','Trung bình','Cao','Rất cao','Cực cao']:['Low','Moderate','High','Very high','Extreme'])[i<3?0:i<6?1:i<8?2:i<11?3:4];
+// where the weather numbers came from, rendered in the current language
+function srcText(cl){
+  switch(cl.srcKind){
+    case 'example': return T('Example values');
+    case 'claude': return T('Climate normals from Claude');
+    case 'years': return T('Same dates in {y}',{y:(cl.srcYears||[]).join(', ')});
+    case 'forecast': return T('Forecast for {a} – {b}',{a:fmtD(cl.srcFrom),b:fmtD(cl.srcTo)})+(cl.srcPartial?T(' (later days not forecast yet)'):'');
+    default: return cl.source||'';
+  }
+}
 function renderClimate(){
   const t=state.trip, cl=t.climate||{}, fresh=cl.for===climateKey(t);
-  if(!cl.summary&&cl.lowC==null){ $('#climate').innerHTML='<span class="hint">Enter a destination and dates to look up the weather.</span>'; return; }
+  if(!cl.summary&&cl.lowC==null){ $('#climate').innerHTML=`<span class="hint">${T('Enter a destination and dates to look up the weather.')}</span>`; return; }
+  const src=srcText(cl);
   const n=v=>Number.isFinite(+v)&&v!==''&&v!=null;
-  $('#climate').innerHTML=(fresh?'':'<span class="err">These values are for a previous destination or dates. Updating…</span>')+
-    `<div><strong>${esc(cl.place||t.dest)}</strong>${cl.source?` <span class="hint">· ${esc(cl.source)}</span>`:''}</div>`+
+  $('#climate').innerHTML=(fresh?'':`<span class="err">${T('These values are for a previous destination or dates. Updating…')}</span>`)+
+    `<div><strong>${esc(cl.place||t.dest)}</strong>${src?` <span class="hint">· ${esc(src)}</span>`:''}</div>`+
     `<div class="wx">
-      <div><span class="label">Temperature</span><b>${n(cl.lowC)?Math.round(cl.lowC)+'–'+Math.round(cl.highC)+'°C':'—'}</b><small>night low – day high</small></div>
-      <div><span class="label">Rain</span><b>${label('rain',t.rain)}</b><small>${n(cl.rainPct)?Math.round(cl.rainPct)+'% '+(cl.forecast?'chance':'of days'):'&nbsp;'}</small></div>
-      <div><span class="label">Humidity</span><b>${label('humidity',t.humidity)}</b><small>${n(cl.humidityPct)?Math.round(cl.humidityPct)+'% average':'&nbsp;'}</small></div>
-      <div><span class="label">Sun / UV</span><b>${n(cl.uvIndex)?uvName(cl.uvIndex):label('uv',t.uv).split(' (')[0]}</b><small>${n(cl.uvIndex)?'UV index '+(+cl.uvIndex).toFixed(0)+' max':'&nbsp;'}</small></div>
-      <div><span class="label">Snow</span><b>${t.snow?'Likely':'Unlikely'}</b><small>&nbsp;</small></div>
+      <div><span class="label">${T('Temperature')}</span><b>${n(cl.lowC)?Math.round(cl.lowC)+'–'+Math.round(cl.highC)+'°C':'—'}</b><small>${T('night low – day high')}</small></div>
+      <div><span class="label">${T('Rain')}</span><b>${label('rain',t.rain)}</b><small>${n(cl.rainPct)?T(cl.forecast?'{p}% chance':'{p}% of days',{p:Math.round(cl.rainPct)}):'&nbsp;'}</small></div>
+      <div><span class="label">${T('Humidity')}</span><b>${label('humidity',t.humidity)}</b><small>${n(cl.humidityPct)?T('{p}% average',{p:Math.round(cl.humidityPct)}):'&nbsp;'}</small></div>
+      <div><span class="label">${T('Sun / UV')}</span><b>${n(cl.uvIndex)?uvName(cl.uvIndex):label('uv',t.uv).split(' (')[0]}</b><small>${n(cl.uvIndex)?T('UV index {u} max',{u:(+cl.uvIndex).toFixed(0)}):'&nbsp;'}</small></div>
+      <div><span class="label">${T('Snow')}</span><b>${t.snow?T('Likely'):T('Unlikely')}</b><small>&nbsp;</small></div>
     </div>`+
-    (cl.summary?`<div>${esc(cl.summary)}</div>`:'')+
-    `<div class="facts">${cl.plug?`<span>Plug ${esc(cl.plug)}</span>`:''}${cl.voltage?`<span>${esc(cl.voltage)}</span>`:''}${cl.currency?`<span>Cash ${esc(cl.currency)}</span>`:''}</div>`+
+    (cl.summary?`<div>${esc(T(cl.summary))}</div>`:'')+
+    `<div class="facts">${cl.plug?`<span>${esc(T('Plug {p}',{p:cl.plug}))}</span>`:''}${cl.voltage?`<span>${esc(cl.voltage)}</span>`:''}${cl.currency?`<span>${esc(T('Cash {c}',{c:cl.currency}))}</span>`:''}</div>`+
     (cl.tips?.length?`<ul>${cl.tips.map(x=>`<li>${esc(x)}</li>`).join('')}</ul>`:'');
 }
 function scopeCtl(it){
   if(state.people.length<2) return '';
-  const seg=['each','shared'].map(m=>`<button type="button" data-mode="${m}" data-id="${it.id}" aria-pressed="${it.mode===m}">${m==='each'?'Each person':'Shared'}</button>`).join('');
+  const seg=['each','shared'].map(m=>`<button type="button" data-mode="${m}" data-id="${it.id}" aria-pressed="${it.mode===m}">${m==='each'?T('Each person'):T('Shared')}</button>`).join('');
   const inc=new Set((it.who||[]).map(w=>w.pid));
   const chipsH=it.mode==='each'?it.elig.map(w=>{const on=inc.has(w.pid), lastOne=on&&inc.size===1;
-    return `<button type="button" class="pchip" data-person="${w.pid}" data-id="${it.id}" aria-pressed="${on}"${lastOne?' disabled title="At least one traveller keeps it. Untick the item to drop it."':''}>${esc(w.name)}${on&&w.q>1?' × '+w.q:''}</button>`;}).join('')
-    :'<span class="hint">One set for the group</span>';
-  return `<div class="scope"><span class="seg" role="group" aria-label="Who it is for">${seg}</span>${chipsH}</div>`;
+    return `<button type="button" class="pchip" data-person="${w.pid}" data-id="${it.id}" aria-pressed="${on}"${lastOne?` disabled title="${T('At least one traveller keeps it. Untick the item to drop it.')}"`:''}>${esc(w.name)}${on&&w.q>1?' × '+w.q:''}</button>`;}).join('')
+    :`<span class="hint">${T('One set for the group')}</span>`;
+  return `<div class="scope"><span class="seg" role="group" aria-label="${T('Who it is for')}">${seg}</span>${chipsH}</div>`;
 }
 function renderReview(b){
   const groups={};
   b.list.forEach(it=>(groups[it.cat]??=[]).push(it));
   let html='';
-  for(const [cat,lab] of Object.entries(CATS)){
-    const items=groups[cat];
+  for(const [cat,labEn] of Object.entries(CATS)){
+    const items=groups[cat], lab=T(labEn);
     if(!items&&cat!=='own') continue;
     const on=(items||[]).filter(i=>i.st==='on');
-    html+=`<div class="group"><h3><span>${lab}</span><span class="mono">${on.length} items · ${kg(on.reduce((a,i)=>a+i.w,0))} kg</span></h3>`;
+    html+=`<div class="group"><h3><span>${lab}</span><span class="mono">${T('{n} items',{n:on.length})} · ${kg(on.reduce((a,i)=>a+i.w,0))} kg</span></h3>`;
     for(const it of items||[]){
-      const tag=it.st==='nofit'?'<span class="flag">No room · tick to add</span>':it.wear&&it.st==='on'?'<span class="wear">Wear</span>':it.free&&it.st==='on'?'<span class="wear">Gate check</span>':'';
+      const tag=it.st==='nofit'?`<span class="flag">${T('No room · tick to add')}</span>`:it.wear&&it.st==='on'?`<span class="wear">${T('Wear')}</span>`:it.free&&it.st==='on'?`<span class="wear">${T('Gate check')}</span>`:'';
       html+=`<div class="item ${it.st}">
         <input type="checkbox" id="inc-${it.id}" data-inc="${it.id}" ${it.st==='on'?'checked':''}>
-        <div class="mid"><label for="inc-${it.id}"><span class="name">${esc(it.name)}</span> ${tag}${it.why?`<span class="why">${esc(it.why)}</span>`:''}</label>${cat==='own'?` <button type="button" class="del" data-del="${it.id}">Remove</button>`:''}${scopeCtl(it)}</div>
-        <span class="qty" title="${it.who?'Changes the count for each traveller; below 1 each, it becomes shared':'Changes the total'}"><button type="button" data-q="${it.id}" data-d="-1" aria-label="Fewer">−</button><output>${it.q}</output><button type="button" data-q="${it.id}" data-d="1" aria-label="More">+</button></span>
+        <div class="mid"><label for="inc-${it.id}"><span class="name">${esc(it.name)}</span> ${tag}${it.why?`<span class="why">${esc(it.why)}</span>`:''}</label>${cat==='own'?` <button type="button" class="del" data-del="${it.id}">${T('Remove')}</button>`:''}${scopeCtl(it)}</div>
+        <span class="qty" title="${T(it.who?'Changes the count for each traveller; below 1 each, it becomes shared':'Changes the total')}"><button type="button" data-q="${it.id}" data-d="-1" aria-label="${T('Fewer')}">−</button><output>${it.q}</output><button type="button" data-q="${it.id}" data-d="1" aria-label="${T('More')}">+</button></span>
         <span class="wt">${it.wear||it.free?'—':kg(it.w)+' kg'}</span>
-        <span class="pri p${it.p}">${PRI[it.p]}</span>
+        <span class="pri p${it.p}">${T(PRI[it.p])}</span>
       </div>`;
     }
     if(cat==='own') html+=`<form class="addown" id="addOwn">
-        <input type="text" id="own-name" placeholder="Add your own item" aria-label="Item name" required>
-        <select id="own-cat" aria-label="Category">${Object.entries(CATS).filter(([k])=>k!=='ext').map(([k,l])=>`<option value="${k}"${k==='own'?' selected':''}>${l}</option>`).join('')}</select>
-        <input type="number" id="own-g" min="0" step="10" placeholder="grams" aria-label="Weight in grams">
-        <button class="btn" type="submit">Add</button></form>`;
+        <input type="text" id="own-name" placeholder="${T('Add your own item')}" aria-label="${T('Item name')}" required>
+        <select id="own-cat" aria-label="${T('Category')}">${Object.entries(CATS).filter(([k])=>k!=='ext').map(([k,l])=>`<option value="${k}"${k==='own'?' selected':''}>${T(l)}</option>`).join('')}</select>
+        <input type="number" id="own-g" min="0" step="10" placeholder="${T('grams')}" aria-label="${T('Weight in grams')}">
+        <button class="btn" type="submit">${T('Add')}</button></form>`;
     html+='</div>';
   }
   $('#review').innerHTML=html;
@@ -775,38 +1046,41 @@ function renderReview(b){
 const keysOf=i=>i.who?i.who.map(w=>i.id+'@'+w.pid):[i.id];
 function renderPack(){
   const list=state.confirmed||[];
-  if(!list.length){$('#packList').innerHTML='<div class="empty">Confirm your list on the Plan tab to start ticking items off.</div>';return;}
+  if(!list.length){$('#packList').innerHTML=`<div class="empty">${T('Confirm your list on the Plan tab to start ticking items off.')}</div>`;return;}
   const pw=$('#packWho'), whoMap=new Map(); list.forEach(i=>i.who?.forEach(w=>whoMap.set(w.pid,w.name)));
-  pw.innerHTML='<option value="all">Everyone</option><option value="shared">Shared items</option>'+[...whoMap].map(([k,v])=>`<option value="${k}">${esc(v)}</option>`).join('');
+  pw.innerHTML=`<option value="all">${T('Everyone')}</option><option value="shared">${T('Shared items')}</option>`+[...whoMap].map(([k,v])=>`<option value="${k}">${esc(v)}</option>`).join('');
   if(![...pw.options].some(o=>o.value===state.packWho)) state.packWho='all';
   pw.value=state.packWho;
   const allKeys=list.flatMap(keysOf), done=allKeys.filter(k=>state.packed[k]).length;
-  $('#progLabel').textContent=`${done} of ${allKeys.length} ticks done`;
+  $('#progLabel').textContent=T('{d} of {n} ticks done',{d:done,n:allKeys.length});
   $('#progBar').style.width=(done/allKeys.length*100)+'%';
   $('#hidePacked').checked=!!state.hidePacked;
   const t=state.trip;
-  $('#packNote').textContent=`${t.dest||'Your trip'} · ${fmtD(t.start)} – ${fmtD(t.end)} · ${groupSummary()}. Ticks are saved as you go.`+(done===allKeys.length?' Everything is packed. Have a good trip.':'');
+  $('#packNote').textContent=`${t.dest||T('Your trip')} · ${fmtD(t.start)} – ${fmtD(t.end)} · ${groupSummary()}. ${T('Ticks are saved as you go.')}`+(done===allKeys.length?T(' Everything is packed. Have a good trip.'):'');
   const f=state.packWho;
   const visible=i=>f==='all'||(f==='shared'?!i.who:!!i.who?.some(w=>w.pid===f));
   const groups={}; list.filter(visible).forEach(i=>(groups[i.cat]??=[]).push(i));
-  $('#packList').innerHTML=Object.entries(CATS).filter(([k])=>groups[k]).map(([k,l])=>{
+  $('#packList').innerHTML=Object.entries(CATS).filter(([k])=>groups[k]).map(([k,lEn])=>{ const l=T(lEn);
     const rows=groups[k].map(i=>{
       const who=i.who&&f!=='all'&&f!=='shared'?i.who.filter(w=>w.pid===f):i.who;
       const ks=who?who.map(w=>i.id+'@'+w.pid):[i.id], allDone=ks.every(x=>state.packed[x]);
       if(state.hidePacked&&allDone) return '';
-      if(!who) return `<div class="pk${allDone?' done':''}"><div class="line"><label><input type="checkbox" id="pk-${i.id}" data-pk="${i.id}"${allDone?' checked':''}><span class="nm">${esc(i.name)}${state.people.length>1?' <span class="shared">Shared</span>':''}</span></label><span class="q">× ${i.q}</span></div></div>`;
-      if(who.length===1) { const x=i.id+'@'+who[0].pid; return `<div class="pk${allDone?' done':''}"><div class="line"><label><input type="checkbox" id="pk-${x}" data-pk="${x}"${allDone?' checked':''}><span class="nm">${esc(i.name)}${i.wear?' <span class="wear">Wear</span>':''}${f==='all'&&state.people.length>1?` <span class="shared">${esc(who[0].name)}</span>`:''}</span></label><span class="q">× ${who[0].q}</span></div></div>`; }
-      return `<div class="pk${allDone?' done':''}"><div class="line"><span class="nm">${esc(i.name)}${i.wear?' <span class="wear">Wear</span>':''}</span><span class="q">× ${who.reduce((a,w)=>a+w.q,0)}</span></div>
+      if(!who) return `<div class="pk${allDone?' done':''}"><div class="line"><label><input type="checkbox" id="pk-${i.id}" data-pk="${i.id}"${allDone?' checked':''}><span class="nm">${esc(i.name)}${state.people.length>1?` <span class="shared">${T('Shared')}</span>`:''}</span></label><span class="q">× ${i.q}</span></div></div>`;
+      if(who.length===1) { const x=i.id+'@'+who[0].pid; return `<div class="pk${allDone?' done':''}"><div class="line"><label><input type="checkbox" id="pk-${x}" data-pk="${x}"${allDone?' checked':''}><span class="nm">${esc(i.name)}${i.wear?` <span class="wear">${T('Wear')}</span>`:''}${f==='all'&&state.people.length>1?` <span class="shared">${esc(who[0].name)}</span>`:''}</span></label><span class="q">× ${who[0].q}</span></div></div>`; }
+      return `<div class="pk${allDone?' done':''}"><div class="line"><span class="nm">${esc(i.name)}${i.wear?` <span class="wear">${T('Wear')}</span>`:''}</span><span class="q">× ${who.reduce((a,w)=>a+w.q,0)}</span></div>
         <div class="ticks">${who.map(w=>{const x=i.id+'@'+w.pid;return `<label class="${state.packed[x]?'on':''}"><input type="checkbox" id="pk-${x}" data-pk="${x}"${state.packed[x]?' checked':''}>${esc(w.name)}${w.q>1?' × '+w.q:''}</label>`;}).join('')}</div></div>`;
     }).join('');
     if(!rows) return '';
     const ks=groups[k].flatMap(keysOf);
     return `<div class="group"><h3><span>${l}</span><span class="mono">${ks.filter(x=>state.packed[x]).length}/${ks.length}</span></h3>${rows}</div>`;
-  }).join('')||'<div class="empty">Nothing left to show with these filters.</div>';
+  }).join('')||`<div class="empty">${T('Nothing left to show with these filters.')}</div>`;
 }
 let last;
 function render(){
   const b=build(); last=b;
+  if(state.confirmed){ const names=new Map(b.list.map(i=>[i.id,i.name]));
+    state.confirmed.forEach(c=>{ if(names.has(c.id)) c.name=names.get(c.id);
+      c.who?.forEach(w=>{const i=state.people.findIndex(p=>p.pid===w.pid); if(i>=0) w.name=pname(state.people[i],i);}); }); }
   renderHeader(b); renderClimate();
   const pack=state.view==='pack'&&state.confirmed;
   $('#planView').hidden=!!pack; $('#packView').hidden=!pack;
@@ -817,7 +1091,7 @@ function render(){
 
 /* ================= saving (device + signed-in Claude account when available) ================= */
 let dbDoc=null, writing=false, pending=false, saveT;
-const setSync=s=>$('#sync').textContent=s;
+const setSync=s=>{const el=$('#sync'); el.dataset.t=s; el.textContent=T(s);};
 async function flush(){
   if(!dbDoc) return; if(writing){pending=true;return}
   writing=true;
@@ -854,23 +1128,23 @@ const classify=x=>({
 let lookupSeq=0;
 async function lookup(){
   const t=state.trip, msg=$('#lookupMsg'), btn=$('#lookup'), seq=++lookupSeq;
-  if(!t.dest||!t.start||!t.end||t.end<t.start){msg.textContent='Enter a destination and both dates to look up the weather.';return;}
-  btn.disabled=true; msg.textContent='Looking up weather for '+t.dest+'…';
+  if(!t.dest||!t.start||!t.end||t.end<t.start){msg.textContent=T('Enter a destination and both dates to look up the weather.');return;}
+  btn.disabled=true; msg.textContent=T('Looking up weather for {d}…',{d:t.dest});
   try{
     const sample=window.claude?await use('sample'):null;
     let r;
     if(sample) r=await askClaude(sample,t);
-    else if(window.claude){ msg.textContent='Weather lookup needs a signed-in Claude viewer. Adjust the weather by hand below.'; $('#adjust').open=true; return; }
+    else if(window.claude){ msg.textContent=T('Weather lookup needs a signed-in Claude viewer. Adjust the weather by hand below.'); $('#adjust').open=true; return; }
     else r=await openMeteo(t);
     if(seq!==lookupSeq) return;
     applyClimate(r);
-    msg.textContent=r.forecast?'Live forecast filled in.':'Typical weather for these dates filled in.';
+    msg.textContent=T(r.forecast?'Live forecast filled in.':'Typical weather for these dates filled in.');
   }catch(e){
     if(seq!==lookupSeq) return;
-    msg.textContent=e?.code==='not_found'?'Could not find "'+t.dest+'". Try just the city name.'
-      :e?.code==='not_granted'?'Weather lookup was not allowed. Adjust the weather by hand below.'
+    msg.textContent=e?.code==='not_found'?T('Could not find "{d}". Try just the city name.',{d:t.dest})
+      :T(e?.code==='not_granted'?'Weather lookup was not allowed. Adjust the weather by hand below.'
       :e?.code==='rate_limited'?'Too many lookups just now. Try again in a minute.'
-      :'Could not get the weather. Try again, or adjust it by hand below.';
+      :'Could not get the weather. Try again, or adjust it by hand below.');
   }finally{ if(seq===lookupSeq) btn.disabled=false; }
 }
 async function askClaude(sample,t){
@@ -885,12 +1159,12 @@ Use climate normals for those dates and that place (not a live forecast). Reply 
  "summary": one short sentence on the typical weather for those dates,
  "plug": plug types e.g. "Type A/B", "voltage": e.g. "100 V", "currency": ISO code e.g. "JPY",
  "tips": up to 3 short practical packing tips specific to this place and season,
- "extras": up to 5 objects {"name": short item to pack, "why": under 12 words} specific to this destination, not generic travel items}`,{modelTier:'default'})
-    .then(r=>({...r,source:'Climate normals from Claude'}));
+ "extras": up to 5 objects {"name": short item to pack, "why": under 12 words} specific to this destination, not generic travel items}${isVi()?'\nWrite "place", "summary", "tips" and the "name" and "why" of each extra in Vietnamese.':''}`,{modelTier:'default'})
+    .then(r=>({...r,srcKind:'claude'}));
 }
 async function openMeteo(t){
   const getJson=async u=>{const r=await fetch(u); const j=await r.json(); if(!r.ok||j.error) throw new Error(j.reason||r.status); return j;};
-  const geo=async q=>q?(await getJson('https://geocoding-api.open-meteo.com/v1/search?count=1&name='+encodeURIComponent(q.split(',')[0].trim()))).results?.[0]:null;
+  const geo=async q=>q?(await getJson('https://geocoding-api.open-meteo.com/v1/search?count=1&language='+(isVi()?'vi':'en')+'&name='+encodeURIComponent(q.split(',')[0].trim()))).results?.[0]:null;
   const [d,h]=await Promise.all([geo(t.dest),geo(t.home).catch(()=>null)]);
   if(!d) throw {code:'not_found'};
   const vars='temperature_2m_max,temperature_2m_min,precipitation_sum,snowfall_sum,relative_humidity_2m_mean,uv_index_max';
@@ -898,18 +1172,18 @@ async function openMeteo(t){
   const today=iso(Date.now()), horizon=iso(Date.now()+15*864e5);
   const days=Math.min(31,Math.round((Date.parse(t.end)-Date.parse(t.start))/864e5)+1);
   const loc=`latitude=${d.latitude}&longitude=${d.longitude}&timezone=auto`;
-  let runs, forecast=false, source;
+  let runs, forecast=false, src;
   if(t.start>=today&&t.start<=horizon){
     const end=t.end<horizon?t.end:horizon;
     runs=[(await getJson(`https://api.open-meteo.com/v1/forecast?${loc}&start_date=${t.start}&end_date=${end}&daily=${vars},precipitation_probability_max`)).daily];
-    forecast=true; source=`Forecast for ${fmtD(t.start)} – ${fmtD(end)}`+(end<t.end?' (later days not forecast yet)':'');
+    forecast=true; src={srcKind:'forecast',srcFrom:t.start,srcTo:end,srcPartial:end<t.end};
   }else{
     const y=+t.start.slice(0,4), shift=k=>(y-k)+t.start.slice(4).replace('-02-29','-02-28');
     const res=await Promise.allSettled([1,2,3].map(k=>{const s=shift(k);
       return getJson(`https://historical-forecast-api.open-meteo.com/v1/forecast?${loc}&start_date=${s}&end_date=${iso(Date.parse(s)+(days-1)*864e5)}&daily=${vars}`).then(j=>({y:y-k,d:j.daily}));}));
     const ok=res.filter(r=>r.status==='fulfilled').map(r=>r.value);
     if(!ok.length) throw new Error('no data');
-    runs=ok.map(o=>o.d); source='Same dates in '+ok.map(o=>o.y).sort().join(', ');
+    runs=ok.map(o=>o.d); src={srcKind:'years',srcYears:ok.map(o=>o.y).sort()};
   }
   const all=k=>runs.flatMap(r=>r[k]||[]).filter(v=>v!=null);
   const avg=a=>a.length?a.reduce((x,y)=>x+y,0)/a.length:NaN;
@@ -919,7 +1193,7 @@ async function openMeteo(t){
     international:h?h.country_code!==d.country_code:t.intl,
     lowC:avg(all('temperature_2m_min')),highC:avg(all('temperature_2m_max')),rainPct,
     humidityPct:avg(all('relative_humidity_2m_mean')),uvIndex:avg(all('uv_index_max')),
-    snow:pct(all('snowfall_sum'),v=>v>.5)>(forecast?0:10),forecast,source,summary:'',plug:'',voltage:'',currency:'',tips:[],extras:[]};
+    snow:pct(all('snowfall_sum'),v=>v>.5)>(forecast?0:10),forecast,...src,summary:'',plug:'',voltage:'',currency:'',tips:[],extras:[]};
 }
 function applyClimate(r){
   const t=state.trip, num=(v,d)=>Number.isFinite(+v)&&v!==null&&v!==''?+v:d;
@@ -929,7 +1203,7 @@ function applyClimate(r){
     rain:Number.isFinite(x.rainPct)?k.rain:t.rain,humidity:Number.isFinite(x.humidityPct)?k.humidity:t.humidity,uv:Number.isFinite(x.uvIndex)?k.uv:t.uv,
     intl:typeof r.international==='boolean'?r.international:t.intl});
   t.climate={for:climateKey(t),place:String(r.place||t.dest),code:String(r.code||'').slice(0,4).toUpperCase(),homeCode:String(r.homeCode||'').slice(0,4).toUpperCase(),
-    source:String(r.source||''),forecast:!!r.forecast,summary:String(r.summary||''),...x,
+    srcKind:r.srcKind||'',srcYears:r.srcYears||null,srcFrom:r.srcFrom||'',srcTo:r.srcTo||'',srcPartial:!!r.srcPartial,forecast:!!r.forecast,summary:String(r.summary||''),...x,
     plug:String(r.plug||''),voltage:String(r.voltage||''),currency:String(r.currency||''),
     tips:(Array.isArray(r.tips)?r.tips:[]).slice(0,3).map(String),
     extras:(Array.isArray(r.extras)?r.extras:[]).slice(0,5).filter(x=>x&&x.name).map(x=>({name:String(x.name),why:String(x.why||'')}))};
@@ -947,23 +1221,23 @@ function sheets(){
   list.forEach(i=>i.who?.forEach(w=>people.set(w.pid,w.name)));
   const row=(i,q,key)=>({name:i.name,cat:i.cat,q,wear:i.wear,done:[].concat(key).every(k=>state.packed[k])});
   if(state.people.length<2||people.size<2)
-    return [{title:people.size===1?[...people.values()][0]:'Packing list',items:list.map(i=>row(i,i.q,keysOf(i)))}];
+    return [{title:people.size===1?[...people.values()][0]:T('Packing list'),items:list.map(i=>row(i,i.q,keysOf(i)))}];
   const out=[], shared=list.filter(i=>!i.who);
-  if(shared.length) out.push({title:'Shared items',note:'For the whole group. Decide who carries each one.',items:shared.map(i=>row(i,i.q,i.id))});
+  if(shared.length) out.push({title:T('Shared items'),note:T('For the whole group. Decide who carries each one.'),items:shared.map(i=>row(i,i.q,i.id))});
   for(const p of state.people){ if(!people.has(p.pid)) continue;
     out.push({title:people.get(p.pid),items:list.flatMap(i=>i.who?.filter(w=>w.pid===p.pid).map(w=>row(i,w.q,i.id+'@'+w.pid))||[])}); }
   return out;
 }
-const byCat=items=>Object.entries(CATS).map(([k,l])=>[l,items.filter(i=>i.cat===k)]).filter(([,a])=>a.length);
+const byCat=items=>Object.entries(CATS).map(([k,l])=>[T(l),items.filter(i=>i.cat===k)]).filter(([,a])=>a.length);
 function asText(){
   const t=state.trip;
-  return `PACKING LIST · ${t.dest} · ${fmtD(t.start)} – ${fmtD(t.end)} · ${groupSummary()}\n`+sheets().map(sh=>
-    `\n=== ${sh.title.toUpperCase()} (${sh.items.length} items) ===\n`+byCat(sh.items).map(([l,a])=>
-      `\n${l}\n`+a.map(i=>`[${i.done?'x':' '}] ${i.name}${i.q>1?' × '+i.q:''}${i.wear?' (wear)':''}`).join('\n')).join('\n')).join('\n');
+  return `${T('PACKING LIST')} · ${t.dest} · ${fmtD(t.start)} – ${fmtD(t.end)} · ${groupSummary()}\n`+sheets().map(sh=>
+    `\n=== ${sh.title.toUpperCase()} (${T('{n} items',{n:sh.items.length})}) ===\n`+byCat(sh.items).map(([l,a])=>
+      `\n${l}\n`+a.map(i=>`[${i.done?'x':' '}] ${i.name}${i.q>1?' × '+i.q:''}${i.wear?' '+T('(wear)'):''}`).join('\n')).join('\n')).join('\n');
 }
 function printable(){
   const t=state.trip, all=sheets(), trip=`${esc(t.dest)} · ${fmtD(t.start)} – ${fmtD(t.end)} · ${esc(groupSummary())}`;
-  return `<!doctype html><html><head><meta charset="utf-8"><title>Packing list · ${esc(t.dest)}</title><style>
+  return `<!doctype html><html lang="${state.lang}"><head><meta charset="utf-8"><title>${T('Packing list')} · ${esc(t.dest)}</title><style>
 body{font:13px/1.45 Arial,sans-serif;color:#111;margin:0}
 .sheet{padding:16mm 18mm;break-after:page;page-break-after:always}.sheet:last-child{break-after:auto;page-break-after:auto}
 header{display:flex;justify-content:space-between;align-items:baseline;gap:12px;border-bottom:2.5px solid #111;padding-bottom:6px;margin-bottom:6px}
@@ -971,14 +1245,23 @@ h1{font-size:26px;margin:0}.pg{font-size:12px;color:#555;white-space:nowrap}p{ma
 .cols{columns:2;column-gap:10mm}.g{break-inside:avoid;margin-bottom:10px}h2{font-size:12px;text-transform:uppercase;letter-spacing:.08em;border-bottom:1.5px solid #111;padding-bottom:2px;margin:0 0 4px}
 .i{display:flex;gap:8px;padding:3px 0;border-bottom:1px dotted #bbb}.b{width:11px;height:11px;border:1.5px solid #111;flex:none;margin-top:2px;font:bold 10px/11px Arial;text-align:center}
 .q{margin-left:auto;color:#555;white-space:nowrap}.wr{font-size:11px;color:#555}
-@page{margin:0}</style></head><body>`+all.map((sh,n)=>`<section class="sheet"><header><h1>${esc(sh.title)}</h1><span class="pg">Page ${n+1} of ${all.length}</span></header>
-<p>${trip} · ${sh.items.length} items${sh.note?'<br>'+esc(sh.note):''}</p><div class="cols">`+byCat(sh.items).map(([l,a])=>`<div class="g"><h2>${l}</h2>`+a.map(i=>
-  `<div class="i"><span class="b">${i.done?'✓':''}</span><span>${esc(i.name)}${i.wear?' <span class="wr">(wear)</span>':''}</span><span class="q">${i.q>1?'× '+i.q:''}</span></div>`).join('')+'</div>').join('')+
+@page{margin:0}</style></head><body>`+all.map((sh,n)=>`<section class="sheet"><header><h1>${esc(sh.title)}</h1><span class="pg">${T('Page {n} of {m}',{n:n+1,m:all.length})}</span></header>
+<p>${trip} · ${T('{n} items',{n:sh.items.length})}${sh.note?'<br>'+esc(sh.note):''}</p><div class="cols">`+byCat(sh.items).map(([l,a])=>`<div class="g"><h2>${l}</h2>`+a.map(i=>
+  `<div class="i"><span class="b">${i.done?'✓':''}</span><span>${esc(i.name)}${i.wear?` <span class="wr">${T('(wear)')}</span>`:''}</span><span class="q">${i.q>1?'× '+i.q:''}</span></div>`).join('')+'</div>').join('')+
   `</div></section>`).join('')+`<script>window.onload=function(){window.print()}<\/script></body></html>`;
 }
 
 /* ================= events ================= */
-buildForm(); fillForm(); render();
+function applyLang(){
+  document.documentElement.lang=state.lang;
+  $$('[data-t]').forEach(el=>el.textContent=T(el.dataset.t));
+  $$('[data-lang]').forEach(b=>b.setAttribute('aria-pressed',String(b.dataset.lang===state.lang)));
+}
+$('.langsw').addEventListener('click',e=>{
+  const b=e.target.closest('[data-lang]'); if(!b||b.dataset.lang===state.lang) return;
+  state.lang=b.dataset.lang; applyLang(); buildForm(); fillForm(); render(); save();
+});
+applyLang(); buildForm(); fillForm(); render();
 if(state.trip.climate?.for!==climateKey(state.trip)) autoLookup();
 
 $('#trip').addEventListener('input',e=>{
@@ -995,8 +1278,8 @@ $('#lookup').addEventListener('click',lookup);
 // travellers
 $('#trip').addEventListener('click',e=>{
   const add=e.target.closest('[data-add]'), rm=e.target.closest('[data-remove]');
-  if(add){ const age=add.dataset.add, n=state.people.filter(p=>p.age===age).length+1;
-    state.people.push({...newPerson(age),name:label('age',age).split(' ')[0]+' '+n}); state.example=false; renderPeople(); render(); save();
+  if(add){ const age=add.dataset.add;
+    state.people.push(newPerson(age)); state.example=false; renderPeople(); render(); save();
     $$('.person').at(-1)?.querySelector('input[type=text]')?.focus(); }
   if(rm&&state.people.length>1){ state.people=state.people.filter(p=>p.pid!==rm.dataset.remove); state.example=false; renderPeople(); render(); save(); }
 });
@@ -1005,7 +1288,7 @@ $('#trip').addEventListener('input',e=>{
   const p=state.people.find(x=>x.pid===card.dataset.pid), f=e.target.dataset.pf; if(!p||!f) return;
   if(f==='name') p.name=e.target.value;
   else if(f==='age'){ if(e.target.checked) p.age=e.target.value; $('#peopleCount').textContent=groupSummary(); }
-  else if(f==='needs'){ p.needs=$$('[data-pf="needs"]:checked',card).map(x=>x.value); card.querySelector('summary .count').textContent=p.needs.length+' selected'; }
+  else if(f==='needs'){ p.needs=$$('[data-pf="needs"]:checked',card).map(x=>x.value); card.querySelector('summary .count').textContent=T('{n} selected',{n:p.needs.length}); }
   else if(f==='join') p.skip=$$('[data-pf="join"]',card).filter(x=>!x.checked).map(x=>x.value);
   else p[f]=e.target.value;
   state.example=false; render(); save();
@@ -1062,28 +1345,28 @@ $('#hidePacked').addEventListener('change',e=>{state.hidePacked=e.target.checked
 let untickArmed;
 $('#untick').addEventListener('click',e=>{
   const b=e.currentTarget;
-  if(!untickArmed){untickArmed=setTimeout(()=>{untickArmed=null;b.textContent='Untick all';},3000); b.textContent='Click again to untick all'; return;}
-  clearTimeout(untickArmed); untickArmed=null; b.textContent='Untick all';
+  if(!untickArmed){untickArmed=setTimeout(()=>{untickArmed=null;b.textContent=T('Untick all');},3000); b.textContent=T('Click again to untick all'); return;}
+  clearTimeout(untickArmed); untickArmed=null; b.textContent=T('Untick all');
   state.packed={}; renderPack(); save();
 });
 $('#copyText').addEventListener('click',e=>{
   const b=e.currentTarget, txt=asText();
-  const done=m=>{b.textContent=m; setTimeout(()=>b.textContent='Copy as text',2000);};
+  const done=m=>{b.textContent=T(m); setTimeout(()=>b.textContent=T('Copy as text'),2000);};
   try{navigator.clipboard.writeText(txt).then(()=>done('Copied'),()=>fallback());}catch(err){fallback();}
   function fallback(){const ta=document.createElement('textarea');ta.value=txt;ta.style.cssText='width:100%;height:200px;margin-top:10px';$('#packNote').after(ta);ta.select();done('Select and copy the text below');}
 });
 // Inside Claude the frame cannot print, so offer a printable file; standalone, just print.
 const dlReady=use('downloads');
-dlReady.then(d=>{if(!d){ if(window.claude) $('#dlPrint').hidden=true; else $('#dlPrint').textContent='Print list'; }});
+dlReady.then(d=>{if(!d){ const b=$('#dlPrint'); if(window.claude) b.hidden=true; else { b.dataset.t='Print list'; b.textContent=T('Print list'); } }});
 $('#dlPrint').addEventListener('click',async e=>{
   const b=e.currentTarget, d=await dlReady;
   if(!d){ if(!window.claude){ $('#printFrame')?.remove();
     const f=document.createElement('iframe'); f.id='printFrame'; f.title='Printable list';
     f.style.cssText='position:fixed;right:0;bottom:0;width:0;height:0;border:0';
     f.srcdoc=printable(); document.body.append(f); } return; }
-  try{await d.save({filename:'packing-list-'+slug(state.trip.dest)+'.html',data:printable()}); b.textContent='Saved. Open it to print';}
-  catch(err){b.textContent=err?.code==='declined'?'Download printable list':'Download not available here';}
-  setTimeout(()=>b.textContent='Download printable list',4000);
+  try{await d.save({filename:(isVi()?'danh-sach-hanh-ly-':'packing-list-')+slug(state.trip.dest)+'.html',data:printable()}); b.textContent=T('Saved. Open it to print');}
+  catch(err){b.textContent=T(err?.code==='declined'?'Download printable list':'Download not available here');}
+  setTimeout(()=>b.textContent=T('Download printable list'),4000);
 });
 </script>
 
