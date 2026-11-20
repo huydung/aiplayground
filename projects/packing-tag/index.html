@@ -908,27 +908,41 @@ let autoT;
 function autoLookup(){ clearTimeout(autoT); autoT=setTimeout(()=>{const t=state.trip; if(t.climate?.for!==climateKey(t)) lookup();},1200); }
 
 /* ================= export ================= */
-const lineFor=i=>`${i.name}${i.who?' — '+whoText(i):(i.q>1?' × '+i.q:'')}`;
+/* One sheet per page: with several travellers, a page of shared items, then one page per traveller
+   holding only their own items; a single traveller gets one combined page. */
+function sheets(){
+  const list=state.confirmed||[], people=new Map();
+  list.forEach(i=>i.who?.forEach(w=>people.set(w.pid,w.name)));
+  const row=(i,q,key)=>({name:i.name,cat:i.cat,q,wear:i.wear,done:[].concat(key).every(k=>state.packed[k])});
+  if(state.people.length<2||people.size<2)
+    return [{title:people.size===1?[...people.values()][0]:'Packing list',items:list.map(i=>row(i,i.q,keysOf(i)))}];
+  const out=[], shared=list.filter(i=>!i.who);
+  if(shared.length) out.push({title:'Shared items',note:'For the whole group. Decide who carries each one.',items:shared.map(i=>row(i,i.q,i.id))});
+  for(const p of state.people){ if(!people.has(p.pid)) continue;
+    out.push({title:people.get(p.pid),items:list.flatMap(i=>i.who?.filter(w=>w.pid===p.pid).map(w=>row(i,w.q,i.id+'@'+w.pid))||[])}); }
+  return out;
+}
+const byCat=items=>Object.entries(CATS).map(([k,l])=>[l,items.filter(i=>i.cat===k)]).filter(([,a])=>a.length);
 function asText(){
-  const t=state.trip, list=state.confirmed||[];
-  const groups={}; list.forEach(i=>(groups[i.cat]??=[]).push(i));
-  return `PACKING LIST · ${t.dest} · ${fmtD(t.start)} – ${fmtD(t.end)} · ${groupSummary()}\n`+Object.entries(CATS).filter(([k])=>groups[k]).map(([k,l])=>
-    `\n${l.toUpperCase()}\n`+groups[k].map(i=>`[${keysOf(i).every(x=>state.packed[x])?'x':' '}] ${lineFor(i)}`).join('\n')).join('\n');
+  const t=state.trip;
+  return `PACKING LIST · ${t.dest} · ${fmtD(t.start)} – ${fmtD(t.end)} · ${groupSummary()}\n`+sheets().map(sh=>
+    `\n=== ${sh.title.toUpperCase()} (${sh.items.length} items) ===\n`+byCat(sh.items).map(([l,a])=>
+      `\n${l}\n`+a.map(i=>`[${i.done?'x':' '}] ${i.name}${i.q>1?' × '+i.q:''}${i.wear?' (wear)':''}`).join('\n')).join('\n')).join('\n');
 }
 function printable(){
-  const t=state.trip, list=state.confirmed||[];
-  const groups={}; list.forEach(i=>(groups[i.cat]??=[]).push(i));
+  const t=state.trip, all=sheets(), trip=`${esc(t.dest)} · ${fmtD(t.start)} – ${fmtD(t.end)} · ${esc(groupSummary())}`;
   return `<!doctype html><html><head><meta charset="utf-8"><title>Packing list · ${esc(t.dest)}</title><style>
-body{font:13px/1.45 Arial,sans-serif;color:#111;margin:18mm}h1{font-size:22px;margin:0}p{margin:4px 0 14px;color:#444}
-.cols{columns:2;column-gap:10mm}.g{break-inside:avoid;margin-bottom:10px}h2{font-size:13px;text-transform:uppercase;letter-spacing:.08em;border-bottom:1.5px solid #111;padding-bottom:2px;margin:0 0 4px}
-.i{padding:3px 0;border-bottom:1px dotted #bbb}.i>div{display:flex;gap:8px}.b{width:11px;height:11px;border:1.5px solid #111;flex:none;margin-top:2px;display:inline-block}.q{margin-left:auto;color:#555}
-.w{display:flex;flex-wrap:wrap;gap:4px 12px;padding:2px 0 0 19px;color:#333;font-size:12px}.w span{display:inline-flex;gap:5px;align-items:center}.w .b{width:9px;height:9px;margin:0}
-@page{margin:0}</style></head><body><h1>Packing list · ${esc(t.dest)}</h1><p>${fmtD(t.start)} – ${fmtD(t.end)} · ${esc(groupSummary())} · ${list.length} items</p><div class="cols">`+
-  Object.entries(CATS).filter(([k])=>groups[k]).map(([k,l])=>`<div class="g"><h2>${l}</h2>`+groups[k].map(i=>
-    i.who&&i.who.length>1
-      ?`<div class="i"><div><span>${esc(i.name)}</span><span class="q">× ${i.q}</span></div><div class="w">${i.who.map(w=>`<span><span class="b"></span>${esc(w.name)}${w.q>1?' × '+w.q:''}</span>`).join('')}</div></div>`
-      :`<div class="i"><div><span class="b"></span><span>${esc(i.name)}${i.who?' ('+esc(i.who[0].name)+')':''}</span><span class="q">${i.q>1?'× '+i.q:''}</span></div></div>`).join('')+'</div>').join('')+
-  `</div><script>window.onload=function(){window.print()}<\/script></body></html>`;
+body{font:13px/1.45 Arial,sans-serif;color:#111;margin:0}
+.sheet{padding:16mm 18mm;break-after:page;page-break-after:always}.sheet:last-child{break-after:auto;page-break-after:auto}
+header{display:flex;justify-content:space-between;align-items:baseline;gap:12px;border-bottom:2.5px solid #111;padding-bottom:6px;margin-bottom:6px}
+h1{font-size:26px;margin:0}.pg{font-size:12px;color:#555;white-space:nowrap}p{margin:0 0 12px;color:#444}
+.cols{columns:2;column-gap:10mm}.g{break-inside:avoid;margin-bottom:10px}h2{font-size:12px;text-transform:uppercase;letter-spacing:.08em;border-bottom:1.5px solid #111;padding-bottom:2px;margin:0 0 4px}
+.i{display:flex;gap:8px;padding:3px 0;border-bottom:1px dotted #bbb}.b{width:11px;height:11px;border:1.5px solid #111;flex:none;margin-top:2px;font:bold 10px/11px Arial;text-align:center}
+.q{margin-left:auto;color:#555;white-space:nowrap}.wr{font-size:11px;color:#555}
+@page{margin:0}</style></head><body>`+all.map((sh,n)=>`<section class="sheet"><header><h1>${esc(sh.title)}</h1><span class="pg">Page ${n+1} of ${all.length}</span></header>
+<p>${trip} · ${sh.items.length} items${sh.note?'<br>'+esc(sh.note):''}</p><div class="cols">`+byCat(sh.items).map(([l,a])=>`<div class="g"><h2>${l}</h2>`+a.map(i=>
+  `<div class="i"><span class="b">${i.done?'✓':''}</span><span>${esc(i.name)}${i.wear?' <span class="wr">(wear)</span>':''}</span><span class="q">${i.q>1?'× '+i.q:''}</span></div>`).join('')+'</div>').join('')+
+  `</div></section>`).join('')+`<script>window.onload=function(){window.print()}<\/script></body></html>`;
 }
 
 /* ================= events ================= */
@@ -1021,7 +1035,10 @@ const dlReady=use('downloads');
 dlReady.then(d=>{if(!d){ if(window.claude) $('#dlPrint').hidden=true; else $('#dlPrint').textContent='Print list'; }});
 $('#dlPrint').addEventListener('click',async e=>{
   const b=e.currentTarget, d=await dlReady;
-  if(!d){ if(!window.claude) window.print(); return; }
+  if(!d){ if(!window.claude){ $('#printFrame')?.remove();
+    const f=document.createElement('iframe'); f.id='printFrame'; f.title='Printable list';
+    f.style.cssText='position:fixed;right:0;bottom:0;width:0;height:0;border:0';
+    f.srcdoc=printable(); document.body.append(f); } return; }
   try{await d.save({filename:'packing-list-'+slug(state.trip.dest)+'.html',data:printable()}); b.textContent='Saved. Open it to print';}
   catch(err){b.textContent=err?.code==='declined'?'Download printable list':'Download not available here';}
   setTimeout(()=>b.textContent='Download printable list',4000);
