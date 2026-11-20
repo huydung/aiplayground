@@ -126,12 +126,22 @@ details.adjust[open]{display:grid;gap:10px}
 .group{background:var(--surface);border-radius:var(--r);margin-bottom:12px;overflow:hidden}
 .group h3{font-size:19px;padding:12px 16px 8px;display:flex;justify-content:space-between;gap:10px}
 .group h3 .mono{font:500 12.5px var(--f-mono);color:var(--muted);align-self:center}
-.item{display:grid;grid-template-columns:22px minmax(0,1fr) auto 64px auto;gap:6px 10px;align-items:center;padding:8px 16px;border-top:1px solid var(--line)}
+.item{display:grid;grid-template-columns:22px minmax(0,1fr) auto 64px 108px;gap:6px 10px;align-items:center;padding:8px 16px;border-top:1px solid var(--line)}
 .item input[type=checkbox]{width:17px;height:17px;accent-color:var(--accent);margin:0}
-.item label{min-width:0;cursor:pointer}
+.item .mid{min-width:0}
+.item label{cursor:pointer}
+.scope{display:flex;flex-wrap:wrap;gap:6px;align-items:center;margin-top:5px}
+.seg{display:inline-flex;border:1px solid var(--line);border-radius:6px;overflow:hidden}
+.seg button{background:none;border:0;padding:3px 9px;font:600 11px/1.4 var(--f-body);letter-spacing:.03em;color:var(--muted)}
+.seg button+button{border-left:1px solid var(--line)}
+.seg button[aria-pressed="true"]{background:var(--ink);color:var(--surface)}
+.pchip{border:1px dashed var(--line);background:none;border-radius:999px;padding:2px 9px;font:500 12px/1.4 var(--f-mono);color:var(--muted);text-decoration:line-through}
+.pchip[aria-pressed="true"]{border-style:solid;border-color:var(--ink);background:var(--sunk);color:var(--ink);text-decoration:none}
+.pchip:disabled{cursor:default}
 .item .why{display:block;font-size:12.5px;color:var(--muted)}
 .item .who{display:block;font:500 12px/1.4 var(--f-mono);color:var(--ink);opacity:.8}
 .item .wt{font:500 12.5px var(--f-mono);text-align:right;color:var(--muted)}
+.item .pri{justify-self:end}
 .qty{display:inline-flex;align-items:center;border:1px solid var(--line);border-radius:6px}
 .qty button{background:none;border:0;width:24px;height:24px;line-height:1}
 .qty output{min-width:22px;text-align:center;font:500 13px var(--f-mono)}
@@ -523,18 +533,34 @@ function build(){
     if(sc==='s'){
       if(!ok(g)) continue;
       const qq=ov.q||Math.max(1,Math.round(R(q,g)));
-      list.push({id,name:R(n,g),cat,p:R(pr,g),q:qq,why:R(why,g)||'',wear:!!o?.wear,free:!!o?.free,who:null,unit:R(gr,g),w:R(gr,g)*qq});
+      list.push({id,name:R(n,g),cat,p:R(pr,g),q:qq,why:R(why,g)||'',wear:!!o?.wear,free:!!o?.free,who:null,unit:R(gr,g)});
     }else{
-      const who=[]; let first=null, p=3, w=0;
+      const who=[]; let first=null, p=3;
       for(const x of people){ if(!ok(x.c)) continue;
-        const qq=Math.max(1,Math.round(R(q,x.c))+(ov.d||0)), u=R(gr,x.c);
-        who.push({pid:x.p.pid,name:x.name,q:qq}); w+=u*qq; p=Math.min(p,R(pr,x.c)); first??=x.c; }
+        who.push({pid:x.p.pid,name:x.name,q:Math.max(1,Math.round(R(q,x.c))+(ov.d||0)),u:R(gr,x.c)}); p=Math.min(p,R(pr,x.c)); first??=x.c; }
       if(!who.length) continue;
-      list.push({id,name:R(n,first),cat,p,q:who.reduce((a,x)=>a+x.q,0),why:R(why,first)||'',wear:!!o?.wear,free:!!o?.free,who,w});
+      list.push({id,name:R(n,first),cat,p,why:R(why,first)||'',wear:!!o?.wear,free:!!o?.free,who});
     }
   }
-  (t.climate?.for===climateKey(t)?t.climate.extras||[]:[]).forEach(x=>list.push({id:'x-'+slug(x.name),name:x.name,cat:'ext',p:2,q:1,why:x.why||'',who:null,w:200}));
-  state.custom.forEach(x=>list.push({id:x.id,name:x.name,cat:'own',realCat:x.realCat,p:1,q:state.ov[x.id]?.q||1,why:'',who:null,w:(x.g||0)*(state.ov[x.id]?.q||1)}));
+  (t.climate?.for===climateKey(t)?t.climate.extras||[]:[]).forEach(x=>list.push({id:'x-'+slug(x.name),name:x.name,cat:'ext',p:2,q:1,why:x.why||'',who:null,unit:200}));
+  state.custom.forEach(x=>list.push({id:x.id,name:x.name,cat:'own',realCat:x.realCat,p:1,q:1,why:'',who:null,unit:x.g||0}));
+  /* Every item can be switched between "each person" and "shared", and a per-person item can leave anyone out.
+     native = how the catalog suggests it; elig = who may have one; who = who actually gets one. */
+  const everyone=people.map(x=>({pid:x.p.pid,name:x.name}));
+  for(const it of list){
+    const ov=state.ov[it.id]||{};
+    it.native=it.who?'each':'shared';
+    it.mode=state.people.length>1?(ov.mode||it.native):it.native;
+    if(it.mode==='each'){
+      it.elig=it.who||everyone.map(a=>({...a,q:Math.max(1,1+(ov.d||0)),u:it.unit}));
+      const ex=new Set(ov.excl||[]);
+      it.who=it.elig.filter(w=>!ex.has(w.pid)); if(!it.who.length) it.who=[it.elig[0]];
+      it.q=it.who.reduce((a,w)=>a+w.q,0); it.w=it.who.reduce((a,w)=>a+w.u*w.q,0);
+    }else{
+      if(it.who){ it.unit=Math.max(...it.who.map(w=>w.u)); it.q=Math.max(...it.who.map(w=>w.q)); it.who=null; }
+      it.q=Math.max(1,ov.q||it.q); it.w=it.unit*it.q;
+    }
+  }
   for(const it of list) if(it.wear||it.free){ it.wornW=it.wear?it.w:0; it.w=0; }
   const L=lug(t,g.seats), cap=Math.round(L.capKg*1000);
   let used=0;
@@ -707,8 +733,15 @@ function renderClimate(){
     `<div class="facts">${cl.plug?`<span>Plug ${esc(cl.plug)}</span>`:''}${cl.voltage?`<span>${esc(cl.voltage)}</span>`:''}${cl.currency?`<span>Cash ${esc(cl.currency)}</span>`:''}</div>`+
     (cl.tips?.length?`<ul>${cl.tips.map(x=>`<li>${esc(x)}</li>`).join('')}</ul>`:'');
 }
-const whoText=it=>it.who?(it.who.length===state.people.length&&new Set(it.who.map(w=>w.q)).size===1&&it.who.length>1
-  ?`Everyone × ${it.who[0].q}`:it.who.map(w=>`${w.name}${w.q>1?' × '+w.q:''}`).join(' · ')):'';
+function scopeCtl(it){
+  if(state.people.length<2) return '';
+  const seg=['each','shared'].map(m=>`<button type="button" data-mode="${m}" data-id="${it.id}" aria-pressed="${it.mode===m}">${m==='each'?'Each person':'Shared'}</button>`).join('');
+  const inc=new Set((it.who||[]).map(w=>w.pid));
+  const chipsH=it.mode==='each'?it.elig.map(w=>{const on=inc.has(w.pid), lastOne=on&&inc.size===1;
+    return `<button type="button" class="pchip" data-person="${w.pid}" data-id="${it.id}" aria-pressed="${on}"${lastOne?' disabled title="At least one traveller keeps it. Untick the item to drop it."':''}>${esc(w.name)}${on&&w.q>1?' × '+w.q:''}</button>`;}).join('')
+    :'<span class="hint">One set for the group</span>';
+  return `<div class="scope"><span class="seg" role="group" aria-label="Who it is for">${seg}</span>${chipsH}</div>`;
+}
 function renderReview(b){
   const groups={};
   b.list.forEach(it=>(groups[it.cat]??=[]).push(it));
@@ -720,11 +753,10 @@ function renderReview(b){
     html+=`<div class="group"><h3><span>${lab}</span><span class="mono">${on.length} items · ${kg(on.reduce((a,i)=>a+i.w,0))} kg</span></h3>`;
     for(const it of items||[]){
       const tag=it.st==='nofit'?'<span class="flag">No room · tick to add</span>':it.wear&&it.st==='on'?'<span class="wear">Wear</span>':it.free&&it.st==='on'?'<span class="wear">Gate check</span>':'';
-      const scope=it.who?`<span class="who">${esc(whoText(it))}</span>`:(state.people.length>1&&cat!=='own'&&cat!=='ext'?'<span class="shared">Shared</span> ':'');
       html+=`<div class="item ${it.st}">
         <input type="checkbox" id="inc-${it.id}" data-inc="${it.id}" ${it.st==='on'?'checked':''}>
-        <label for="inc-${it.id}"><span class="name">${esc(it.name)}</span> ${tag} ${it.who?'':scope}${it.who?scope:''}${it.why?`<span class="why">${esc(it.why)}</span>`:''}${cat==='own'?` <button type="button" class="del" data-del="${it.id}">Remove</button>`:''}</label>
-        <span class="qty" title="${it.who?'Changes the count for each person':'Changes the total'}"><button type="button" data-q="${it.id}" data-d="-1" aria-label="Fewer">−</button><output>${it.q}</output><button type="button" data-q="${it.id}" data-d="1" aria-label="More">+</button></span>
+        <div class="mid"><label for="inc-${it.id}"><span class="name">${esc(it.name)}</span> ${tag}${it.why?`<span class="why">${esc(it.why)}</span>`:''}</label>${cat==='own'?` <button type="button" class="del" data-del="${it.id}">Remove</button>`:''}${scopeCtl(it)}</div>
+        <span class="qty" title="${it.who?'Changes the count for each traveller; below 1 each, it becomes shared':'Changes the total'}"><button type="button" data-q="${it.id}" data-d="-1" aria-label="Fewer">−</button><output>${it.q}</output><button type="button" data-q="${it.id}" data-d="1" aria-label="More">+</button></span>
         <span class="wt">${it.wear||it.free?'—':kg(it.w)+' kg'}</span>
         <span class="pri p${it.p}">${PRI[it.p]}</span>
       </div>`;
@@ -986,8 +1018,18 @@ $('#review').addEventListener('change',e=>{
 });
 $('#review').addEventListener('click',e=>{
   const q=e.target.closest('[data-q]'), del=e.target.closest('[data-del]');
+  const mode=e.target.closest('[data-mode]'), person=e.target.closest('[data-person]');
+  if(mode){const it=last.list.find(i=>i.id===mode.dataset.id), o=(state.ov[it.id]??={});
+    if(mode.dataset.mode===it.native) delete o.mode; else o.mode=mode.dataset.mode;
+    if(o.mode==='shared'&&!o.q) o.q=it.mode==='each'?Math.max(...it.who.map(w=>w.q)):it.q;
+    render(); save();}
+  if(person){const it=last.list.find(i=>i.id===person.dataset.id), o=(state.ov[it.id]??={}), ex=new Set(o.excl||[]), pid=person.dataset.person;
+    if(ex.has(pid)) ex.delete(pid); else if(it.who.length>1) ex.add(pid);
+    o.excl=[...ex]; render(); save();}
   if(q){const it=last.list.find(i=>i.id===q.dataset.q), o=(state.ov[it.id]??={}), d=+q.dataset.d;
-    if(it.who){ const minQ=Math.min(...it.who.map(w=>w.q)); if(d<0&&minQ<=1) return; o.d=(o.d||0)+d; }
+    if(it.who){ const minQ=Math.min(...it.who.map(w=>w.q));
+      if(d<0&&minQ<=1){ if(state.people.length<2||it.q<2) return; o.mode='shared'; o.q=it.q-1; }   // 3 daypacks → 2 shared
+      else o.d=(o.d||0)+d; }
     else o.q=Math.max(1,it.q+d);
     render(); save();}
   if(del){e.preventDefault(); state.custom=state.custom.filter(x=>x.id!==del.dataset.del); render(); save();}
